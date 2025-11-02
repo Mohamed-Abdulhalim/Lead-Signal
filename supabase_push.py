@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import os, csv, math
+import csv
+import os
+import sys
 from supabase import create_client, Client
 
+if len(sys.argv) < 2:
+    print("Usage: python supabase_push.py Cleaned.csv")
+    sys.exit(1)
 
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE"]
-SUPABASE_TABLE = os.getenv("SUPABASE_TABLE", "places")
-INPUT = os.getenv("CLEAN_CSV", "NewResults_clean.csv")
-BATCH = int(os.getenv("UPSERT_BATCH", "500"))
+csv_path = sys.argv[1]
 
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE")
 
-sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE)
 
+with open(csv_path, "r", encoding="utf-8-sig") as f:
+    reader = csv.DictReader(f)
+    rows = list(reader)
 
-rows = []
-with open(INPUT, "r", encoding="utf-8-sig", newline="") as f:
-r = csv.DictReader(f)
-for row in r:
-rows.append(row)
+for row in rows:
+    supabase.table("places").upsert(row, on_conflict="profile_url").execute()
 
-
-for i in range(0, len(rows), BATCH):
-chunk = rows[i:i+BATCH]
-sb.table(SUPABASE_TABLE).upsert(chunk, on_conflict="profile_url").execute()
+print(f"Pushed {len(rows)} rows to Supabase.")
