@@ -1,72 +1,63 @@
-name: scrape-and-push
-
+name: scrape
 
 on:
-workflow_dispatch: {}
-schedule:
-- cron: "0 23,11 * * *"
-
+  schedule:
+    - cron: "0 11,23 * * *"
+  workflow_dispatch:
 
 env:
-PYTHONDONTWRITEBYTECODE: "1"
-PIP_NO_CACHE_DIR: "off"
-TZ: Africa/Cairo
-
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_NO_CACHE_DIR: "off"
+  TZ: "Africa/Cairo"
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
 
 jobs:
-run:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout
-uses: actions/checkout@v4
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-- name: Set up Python
-uses: actions/setup-python@v5
-with:
-python-version: "3.11"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
+      - name: Install Google Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg unzip
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
-- name: Install Google Chrome
-run: |
-sudo apt-get update
-sudo apt-get install -y wget gnupg unzip xvfb
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-sudo apt-get update
-sudo apt-get install -y google-chrome-stable
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
+      - name: Scrape (headless)
+        run: |
+          python maps.py \
+            --categories-file categories.txt \
+            --location "Cairo, Egypt" \
+            --max-places 20 \
+            --output TheResultss.csv \
+            --headless \
+            --log INFO
 
-- name: Install deps
-run: |
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+      - name: Clean CSV
+        run: |
+          python csv_cleaner.py --in TheResultss.csv --out TheResultss_clean.csv
 
-
-- name: Run scraper (per category 20)
-env:
-DISPLAY: ":99"
-run: |
-xvfb-run -a py maps.py --categories-file categories.txt --location "Cairo, Egypt" --max-places 20 --output NewResults.csv --headless --log INFO
-
-
-- name: Clean CSV
-run: |
-py csv_cleaner.py --in NewResults.csv --out NewResults_clean.csv
-
-
-- name: Push to Supabase
-env:
-SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-SUPABASE_TABLE: places
-CLEAN_CSV: NewResults_clean.csv
-run: |
-py supabase_push.py
-
-
-- name: Upload artifacts
-uses: actions/upload-artifact@v4
-with:
-name: csv-output
-NewResults_clean.csv
+      - name: Push to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+        run: |
+          python supabase_push.py --csv TheResultss_clean.csv
