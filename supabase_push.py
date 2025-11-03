@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
-LEADS_TABLE = os.environ.get("LEADS_TABLE", "leads")
+LEADS_TABLE = os.environ.get("LEADS_TABLE", "places")
 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
