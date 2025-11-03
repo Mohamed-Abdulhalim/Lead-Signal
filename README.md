@@ -74,11 +74,11 @@ py supabase_push.py Cleaned.csv
 
 The repo includes a workflow that:
 
-Runs the scraper headlessly
+- Runs the scraper headlessly
 
-Cleans the results
+- Cleans the results
 
-Pushes to Supabase
+- Pushes to Supabase
 
 To trigger manually:
 GitHub repo → Actions → Run workflow
@@ -93,7 +93,9 @@ GitHub repo → Actions → Run workflow
 
 📜 License
 
-This project is licensed under MIT License.🙋‍♂️ Author
+This project is licensed under MIT License.
+
+🙋‍♂️ Author
 
 Mohamed Abdulhalim
 
