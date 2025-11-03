@@ -17,7 +17,7 @@ _cached_locations = []
 
 
 def _distinct(col):
-    res = sb.table(LEADS_TABLE).select(col, distinct=True).execute()
+    res = sb.table(LEADS_TABLE).select(col).execute()
     vals = []
     for r in res.data or []:
         v = r.get(col)
