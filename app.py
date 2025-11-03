@@ -116,35 +116,3 @@ def search():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
-
-# requirements.txt
-Flask==3.0.3
-gunicorn==21.2.0
-pandas==2.2.3
-supabase==2.6.0
-python-dotenv==1.0.1
-
-
-# render.yaml
-services:
-  - type: web
-    name: lead-finder
-    env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars:
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: LEADS_TABLE
-        value: leads
-
-
-# Procfile
-web: gunicorn app:app
-
-# runtime.txt
-python-3.11.9
