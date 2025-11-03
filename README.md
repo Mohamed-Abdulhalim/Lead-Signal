@@ -40,15 +40,15 @@ This repository contains an automated scraping pipeline that:
 
 maps-scraper/
 │
-├── maps.py # The scraper
-├── csv_cleaner.py # Cleans / normalizes scraped CSV
-├── supabase_push.py # Upserts final CSV into Supabase
-├── categories.txt # List of categories to scrape
+├── maps.py             # Google Maps scraper → results.csv
+├── csv_cleaner.py      # Cleans / normalizes scraped CSV
+├── supabase_push.py    # Upserts final CSV into Supabase
+├── categories.txt      # List of categories to scrape (one per line)
 ├── .github/workflows/
-│ └── scrape.yml # Scheduled GitHub Action
+│   └── scrape.yml      # Scheduled GitHub Action (scrape + clean + push)
 ├── requirements.txt
-└── .env.example # Environment variables (local only)
----
+└── .env.example        # Environment variables (local only)
+
 
 ## ⚙️ Environment Variables
 
