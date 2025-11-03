@@ -1,110 +1,147 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import os, sys, csv, argparse, logging, math
-from typing import List, Dict, Any
+# app.py
+from flask import Flask, jsonify, request, render_template
 from supabase import create_client
+import os
+import math
+
+app = Flask(__name__)
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+LEADS_TABLE = os.environ.get("LEADS_TABLE", "leads")
+
+sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+_cached_categories = []
+_cached_locations = []
 
 
-def to_bool(v: str):
-    if v is None:
-        return None
-    s = str(v).strip().lower()
-    if s in {"true","t","1","yes","y"}:
-        return True
-    if s in {"false","f","0","no","n"}:
-        return False
-    return None
-
-
-def to_int(v: str):
-    if v is None or v == "":
-        return None
-    try:
-        return int(str(v).replace(",",""))
-    except Exception:
-        return None
-
-
-def to_float(v: str):
-    if v is None or v == "":
-        return None
-    try:
-        return float(str(v).replace(",",""))
-    except Exception:
-        return None
-
-
-def clean_row(row: Dict[str, Any]) -> Dict[str, Any]:
-    r = dict(row)
-    r["rating"] = to_float(r.get("rating"))
-    r["reviews_count"] = to_int(r.get("reviews_count"))
-    r["price_min_egp"] = to_int(r.get("price_min_egp"))
-    r["price_max_egp"] = to_int(r.get("price_max_egp"))
-    b = to_bool(r.get("price_is_plus"))
-    if b is not None:
-        r["price_is_plus"] = b
-    if r.get("photo_urls"):
-        r["photo_urls"] = r["photo_urls"].split(" ")[0].strip()
-    return r
-
-
-def read_csv(path: str) -> List[Dict[str, Any]]:
-    with open(path, "r", encoding="utf-8-sig", newline="") as f:
-        rdr = csv.DictReader(f)
-        return [dict(x) for x in rdr]
-
-
-def upsert_batch(supabase, rows: List[Dict[str, Any]]):
-    if not rows:
-        return
-    try:
-        supabase.table("places").upsert(rows, on_conflict="profile_url").execute()
-    except Exception as e:
-        logging.warning("batch upsert failed: %s; falling back per-row", e)
-        for x in rows:
-            try:
-                supabase.table("places").upsert(x, on_conflict="profile_url").execute()
-            except Exception as ee:
-                logging.warning("row failed: %s | %s", x.get("profile_url"), ee)
-
-
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("csv_path")
-    ap.add_argument("--batch", type=int, default=500)
-    args = ap.parse_args()
-
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-    url = os.environ.get("SUPABASE_URL", "").strip()
-    key = os.environ.get("SUPABASE_SERVICE_ROLE", "").strip()
-    if not url or not key:
-        logging.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE")
-        sys.exit(1)
-
-    supabase = create_client(url, key)
-
-    rows = read_csv(args.csv_path)
-    logging.info("loaded %d rows from %s", len(rows), args.csv_path)
-
-    queue: List[Dict[str, Any]] = []
-    sent = 0
-    for row in rows:
-        u = (row.get("profile_url") or "").strip()
-        if not u:
+def _distinct(col):
+    res = sb.table(LEADS_TABLE).select(col, distinct=True).execute()
+    vals = []
+    for r in res.data or []:
+        v = r.get(col)
+        if v is None:
             continue
-        payload = clean_row(row)
-        queue.append(payload)
-        if len(queue) >= args.batch:
-            upsert_batch(supabase, queue)
-            sent += len(queue)
-            logging.info("upserted %d rows so far", sent)
-            queue = []
-    if queue:
-        upsert_batch(supabase, queue)
-        sent += len(queue)
-    logging.info("done. total upserted: %d", sent)
+        s = str(v).strip()
+        if not s:
+            continue
+        vals.append(s)
+    vals = sorted(list(dict.fromkeys(vals)))
+    return vals
+
+
+def unique_categories():
+    global _cached_categories
+    if not _cached_categories:
+        _cached_categories = _distinct("category")
+    return _cached_categories
+
+
+def unique_locations():
+    global _cached_locations
+    if not _cached_locations:
+        _cached_locations = _distinct("query_location")
+    return _cached_locations
+
+
+@app.get("/")
+def index():
+    return render_template(
+        "index.html",
+        categories=unique_categories(),
+        locations=unique_locations(),
+    )
+
+
+@app.get("/search")
+def search():
+    category = request.args.get("category", type=str)
+    location = request.args.get("location", type=str)
+    page = request.args.get("page", default=1, type=int)
+    per_page = request.args.get("per_page", default=20, type=int)
+
+    q = sb.table(LEADS_TABLE).select("name,category,query_location,category_line,address_line,phone,phone_e164,website,website_fallback,profile_url,rating,reviews_count,opening_hours,is_open_now,today_time_hint,hours_note,gmaps_primary_category,main_photo_url,photo_urls", count="exact")
+    if category:
+        q = q.eq("category", category)
+    if location:
+        q = q.eq("query_location", location)
+
+    start = (page - 1) * per_page
+    end = start + per_page - 1
+    q = q.range(start, end)
+    res = q.execute()
+
+    total = res.count or 0
+    pages = max(1, math.ceil(total / per_page))
+    page = max(1, min(page, pages))
+
+    items = []
+    for row in res.data or []:
+        photos = []
+        raw = row.get("photo_urls")
+        if isinstance(raw, list):
+            photos = [str(u) for u in raw if str(u).startswith("http")]
+        elif isinstance(raw, str):
+            parts = [p.strip() for p in raw.split(",")]
+            photos = [p for p in parts if p.startswith("http")]
+        rec = {
+            "name": str(row.get("name", "")),
+            "category": str(row.get("category", "")),
+            "query_location": str(row.get("query_location", "")),
+            "category_line": str(row.get("category_line", "")),
+            "address_line": str(row.get("address_line", "")),
+            "phone": str(row.get("phone", "")),
+            "phone_e164": str(row.get("phone_e164", "")),
+            "website": str(row.get("website", "")),
+            "website_fallback": str(row.get("website_fallback", "")),
+            "profile_url": str(row.get("profile_url", "")),
+            "rating": str(row.get("rating", "")),
+            "reviews_count": str(row.get("reviews_count", "")),
+            "opening_hours": str(row.get("opening_hours", "")),
+            "is_open_now": str(row.get("is_open_now", "")),
+            "today_time_hint": str(row.get("today_time_hint", "")),
+            "hours_note": str(row.get("hours_note", "")),
+            "gmaps_primary_category": str(row.get("gmaps_primary_category", "")),
+            "main_photo_url": str(row.get("main_photo_url", "")),
+            "photo_urls": ",".join(photos),
+            "photos": photos,
+        }
+        if not rec.get("main_photo_url") and photos:
+            rec["main_photo_url"] = photos[0]
+        items.append(rec)
+
+    return jsonify({"items": items, "page": page, "per_page": per_page, "total": total, "pages": pages})
 
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=5000, debug=False)
+
+
+# requirements.txt
+Flask==3.0.3
+gunicorn==21.2.0
+pandas==2.2.3
+supabase==2.6.0
+python-dotenv==1.0.1
+
+
+# render.yaml
+services:
+  - type: web
+    name: lead-finder
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: LEADS_TABLE
+        value: leads
+
+
+# Procfile
+web: gunicorn app:app
