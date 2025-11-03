@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lead Finder</title>
+  <style>
+    :root{
+      --bg-1:#3b2ab6; /* purple */
+      --bg-2:#0f1226; /* deep navy */
+      --surface:#0b1022;
+      --muted:#8b94b8;
+      --text:#eaf0ff;
+      --accent:#7c5cff;
+      --glass:rgba(16,20,45,.6);
+      --glass-2:rgba(30,35,70,.6);
+      --border:rgba(255,255,255,.08);
+      --chip:#1e2346;
+      --green:#15b888; --blue:#3aa0ff; --pink:#ff6db1; --indigo:#6d7cff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--text);
+      background: radial-gradient(1200px 600px at 20% -10%, var(--bg-1), transparent) , radial-gradient(1200px 700px at 120% 120%, #2d1d7a, transparent), linear-gradient(180deg, #1b1f3b 0%, var(--bg-2) 100%);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+    }
+    .app{max-width:1200px;margin:48px auto;padding:0 16px}
+    .window{display:grid;grid-template-columns:240px 1fr;background:var(--glass);backdrop-filter: blur(14px); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow: 0 30px 80px rgba(0,0,0,.35)}
+    .sidebar{background:var(--glass-2); padding:18px 14px; border-right:1px solid var(--border)}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+    .dot{width:12px;height:12px;border-radius:50%;background:var(--accent)}
+    .brand .title{font-weight:700;letter-spacing:.2px}
+    .nav{display:grid;gap:6px}
+    .nav .item{padding:10px 10px;border-radius:10px;color:var(--muted);cursor:default}
+    .nav .item.active{background:rgba(255,255,255,.06);color:#fff}
+
+    .main{display:flex;flex-direction:column;min-height:680px}
+    .header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+    .header .h1{font-size:22px;font-weight:800}
+    .ghost{height:34px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text);padding:0 12px;cursor:pointer}
+
+    .panel{padding:18px 20px;border-bottom:1px solid var(--border)}
+    .form-grid{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:12px;align-items:end}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    select,input{height:38px;border:1px solid var(--border);border-radius:10px;background:#0b1128;color:var(--text);padding:0 10px;outline:none}
+    select:focus,input:focus{border-color:#4f46e5}
+    .primary{height:38px;border:0;background:linear-gradient(135deg,var(--accent),#00bcd4);color:#fff;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer}
+
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .toolbar .chip{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);height:34px;padding:0 10px;border-radius:999px}
+
+    .content{padding:18px 20px}
+    .counts{color:var(--muted);font-size:13px;margin-bottom:10px}
+    .grid-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+    @media (max-width: 1024px){ .grid-cards{grid-template-columns:1fr 1fr} }
+    @media (max-width: 640px){ .window{grid-template-columns:1fr} .sidebar{display:none} .grid-cards{grid-template-columns:1fr} }
+
+    .card{position:relative;border-radius:14px;overflow:hidden;background:#0e1430;border:1px solid var(--border);
+      transition: transform .24s ease, box-shadow .24s ease, border-color .24s ease}
+    .card:hover{transform: translateY(-2px); box-shadow: 0 16px 48px rgba(0,0,0,.45); border-color: rgba(124,92,255,.35)}
+    .cover{height:160px;background:#141a3b;position:relative;overflow:hidden}
+    .cover img{position:absolute;inset:0; width:100%; height:100%; object-fit:cover; filter:saturate(1.15) contrast(1.05)}
+    .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg, rgba(124,92,255,.45), rgba(58,160,255,.35) 50%, rgba(0,0,0,.35) 100%); pointer-events:none; z-index:1}
+    /* slider */
+    .cover img.slide{opacity:0; transition:opacity .35s ease; z-index:0}
+    .cover img.slide.active{opacity:1}
+    .cover .nav{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:999px;border:1px solid var(--border);background:rgba(0,0,0,.35);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:3}
+    .cover .nav:hover{background:rgba(0,0,0,.55)}
+    .cover .nav.prev{left:8px}
+    .cover .nav.next{right:8px}
+    .cover .dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:3}
+    .cover .dots .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
+    .cover .dots .dot.active{background:#fff}
+    .card-body{padding:14px}
+    .card-title{font-weight:700;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .card-title a{color:#fff;text-decoration:none}
+    .card-title a:hover{text-decoration:underline}
+    .chips{display:flex;gap:6px;flex-wrap:wrap}
+    .chip{font-size:11px;padding:4px 8px;border-radius:999px;background:var(--chip);color:#bfc7ff;border:1px solid var(--border)}
+    .chip--rating{color:#ffd579;border-color:rgba(255,213,121,.35);background:rgba(255,213,121,.12)}
+    .meta{font-size:12px;color:var(--muted);margin-top:6px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#eaf0ff;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:600;letter-spacing:.1px}
+    .btn:hover{background:rgba(255,255,255,.08)}
+
+    .pagination{display:flex;gap:8px;justify-content:center;margin-top:16px}
+    .pagebtn{height:32px;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:#fff}
+    .pagebtn.active{background:var(--accent);border-color:transparent}
+
+    .overlay{position:fixed;inset:0;background:rgba(5,8,20,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50}
+    .overlay.show{display:flex}
+    .spinner{ width:56px; height:56px; border-radius:9999px; border:6px solid rgba(255,255,255,0.15); border-top-color: rgba(255,255,255,0.9); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .stage{margin-left:14px;font-weight:600}
+
+    .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:none}
+    .toast .bubble{background:#11172f;color:#fff;border:1px solid var(--border);padding:8px 12px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .toast.show{display:block}
+
+    /* Action button variants + a11y */
+    .btn--call{border-color:#1e8b6f;background:rgba(20,145,113,.12)}
+    .btn--copy{border-color:#222;background:#222}
+    .btn--wa{border-color:#1e8b6f;background:rgba(20,145,113,.12)}
+    .btn--site{border-color:#3953a7;background:rgba(57,83,167,.12)}
+    .btn--maps{border-color:#5a63d6;background:rgba(90,99,214,.12)}
+    .btn:focus-visible{outline:3px solid #7c5cff; outline-offset:2px}
+    @media (prefers-reduced-motion: reduce){
+      *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="window">
+      <aside class="sidebar">
+        <div class="brand"><div class="dot"></div><div class="title">Lead Finder</div></div>
+        <div class="nav">
+          <div class="item active">Home</div>
+          <div class="item">Search</div>
+          <div class="item">Saved</div>
+        </div>
+      </aside>
+      <section class="main">
+        <div class="header">
+          <div class="h1">Discover Leads</div>
+          <button id="themeBtn" class="ghost">Dark</button>
+        </div>
+        <div class="panel">
+          <form id="searchForm" class="form-grid">
+            <div>
+              <label>Category</label>
+              <select id="category">{% for c in categories %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+            </div>
+            <div>
+              <label>Area</label>
+              <select id="location">{% for l in locations %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
+            </div>
+            <div>
+              <label>Per page</label>
+              <select id="perPage"><option>20</option><option>50</option><option>100</option></select>
+            </div>
+            <button type="submit" class="primary">Search</button>
+          </form>
+          <div id="toolbar" class="toolbar" style="display:none">
+            <input id="q" type="text" placeholder="Filter by name or address" style="height:34px;border:1px solid var(--border);border-radius:10px;background:#0b1128;color:var(--text);padding:0 10px;min-width:260px"/>
+            <select id="sortBy" class="chip">
+              <option value="rating_desc">Sort: Rating ↓</option>
+              <option value="reviews_desc">Sort: Reviews ↓</option>
+              <option value="name_asc">Sort: Name A–Z</option>
+            </select>
+            <button id="exportBtn" class="chip">Export CSV (page)</button>
+            <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="counts" id="counts"></div>
+          <section id="resultsSection" class="results" style="display:none">
+            <div id="results" class="grid-cards"></div>
+            <div id="pagination" class="pagination"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="loading" class="overlay">
+    <div style="display:flex;align-items:center">
+      <div class="spinner"></div>
+      <div id="stageText" class="stage"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"><div class="bubble" id="toastMsg"></div></div>
+
+  <script>
+    const stages=["Searching for leads in this area","Adapting to the category","Collecting data","Cleaning the data","Finalizing"]
+    const state={ items:[], page:1, perPage:20, q:'', sort:'rating_desc' }
+    const qs = (id)=>document.getElementById(id)
+
+    function showOverlay(b){ qs('loading').classList.toggle('show', b) }
+    function setStage(t){ const el=qs('stageText'); el.textContent=t }
+    function runStages(done){ showOverlay(true); let i=0; setStage(stages[i]); const tick=()=>{ i++; if(i<stages.length){ setStage(stages[i]); setTimeout(tick,1400) } else { showOverlay(false); done() } }; setTimeout(tick,1400) }
+
+    async function fetchResults(category, location, page, perPage){
+      const params=new URLSearchParams({category, location, page, per_page: perPage});
+      const res=await fetch('/search?'+params.toString());
+      return await res.json();
+    }
+
+    function sanitize(s){ if(!s) return ''; const d=document.createElement('div'); d.textContent=String(s); return d.innerHTML }
+    function normalizeUrl(u){ if(!u) return ''; try{ new URL(u); return u } catch { return 'https://'+u } }
+    function phoneDisplay(p){ let s=String(p||'').trim(); s=s.replace(/\s+/g,'').replace(/\.0$/,''); return s }
+
+    function renderCard(x){
+      const phone = x.phone_e164 || x.phone || '';
+      const phoneDial = phoneDisplay(phone);
+      const tel   = phoneDial ? `tel:${encodeURI(phoneDial)}` : '';
+      const wa    = phoneDial ? `https://wa.me/${encodeURIComponent(phoneDial.replace(/[^\d]/g,''))}` : '';
+      const site  = normalizeUrl(x.website || x.website_fallback || '');
+      const chips = [x.category, x.gmaps_primary_category].filter(Boolean)
+                      .map(v=>`<span class="chip">${sanitize(v)}</span>`).join('');
+      const stars = x.rating
+          ? `<span class="chip chip--rating" aria-label="Rating ${sanitize(x.rating)} of 5">⭐ ${sanitize(x.rating)}</span>` : '';
+
+      const photos = Array.isArray(x.photos) && x.photos.length ? x.photos : (x.main_photo_url ? [x.main_photo_url] : [])
+      const slides = photos.map((u,i)=>`<img loading="lazy" src="${sanitize(u)}" alt="" class="slide ${i===0?'active':''}" />`).join('')
+      const controls = photos.length>1 ? `<button class="nav prev" data-role="prev" aria-label="Previous">‹</button><button class="nav next" data-role="next" aria-label="Next">›</button><div class="dots">${photos.map((_,i)=>`<span class=\"dot ${i===0?'active':''}\" data-idx=\"${i}\"></span>`).join('')}</div>` : ''
+      return `
+        <article class="card" role="article">
+          <div class="cover">
+            ${slides}
+            ${controls}
+          </div>
+          <div class="card-body">
+            <h3 class="card-title" dir="auto">
+              <a href="${sanitize(x.profile_url||'#')}" target="_blank" rel="noopener noreferrer">${sanitize(x.name)}</a>
+            </h3>
+            <div class="chips">${chips}${stars}</div>
+            <div class="meta" dir="auto">${sanitize(x.address_line||'')}</div>
+            <div class="actions">
+              ${phoneDial ? `<a class="btn btn--call" href="${tel}" aria-label="Call ${sanitize(phoneDial)}">Call</a>` : ''}
+              ${phoneDial ? `<button class="btn btn--copy" data-copy="${sanitize(phoneDial)}" aria-label="Copy phone">Copy</button>` : ''}
+              ${wa    ? `<a class="btn btn--wa" href="${wa}" target="_blank" rel="noopener" aria-label="Open WhatsApp">WhatsApp</a>` : ''}
+              ${site  ? `<a class="btn btn--site" href="${sanitize(site)}" target="_blank" rel="noopener">Website</a>` : ''}
+              ${(x.profile_url||'') ? `<a class="btn btn--maps" href="${sanitize(x.profile_url)}" target="_blank" rel="noopener">Maps</a>` : ''}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function applySort(arr){
+      if(state.sort==='rating_desc') return [...arr].sort((a,b)=>(parseFloat(b.rating||0))-(parseFloat(a.rating||0)))
+      if(state.sort==='reviews_desc') return [...arr].sort((a,b)=>(parseInt(b.reviews_count||0))-(parseInt(a.reviews_count||0)))
+      if(state.sort==='name_asc') return [...arr].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')))
+      return arr
+    }
+    function applyFilter(arr){ const q=state.q.trim().toLowerCase(); if(!q) return arr; return arr.filter(x=> String(x.name||'').toLowerCase().includes(q) || String(x.address_line||'').toLowerCase().includes(q)) }
+    function paginate(arr, page, perPage){ const start=(page-1)*perPage; return arr.slice(start, start+perPage) }
+
+    function renderChips(){ const c=qs('chips'); c.innerHTML=''; if(state.q){ const b=document.createElement('button'); b.className='chip'; b.textContent='Clear filter'; b.onclick=()=>{ state.q=''; qs('q').value=''; renderAll() }; c.appendChild(b) } }
+    function renderPagination(total){ const wrap=qs('pagination'); wrap.innerHTML=''; const pages=Math.max(1, Math.ceil(total/state.perPage)); if(state.page>pages) state.page=pages; const mk=(t,p,a=false)=>{ const b=document.createElement('button'); b.className='pagebtn'+(a?' active':''); b.textContent=t; b.onclick=()=>{ state.page=p; renderAll() }; wrap.appendChild(b)}; const max=7; let s=Math.max(1,state.page-3); let e=Math.min(pages,s+max-1); s=Math.max(1,e-max+1); if(state.page>1) mk('Prev', state.page-1); for(let i=s;i<=e;i++) mk(String(i), i, i===state.page); if(state.page<pages) mk('Next', state.page+1) }
+    function showToast(msg){ const t=qs('toast'); const m=qs('toastMsg'); m.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1500) }
+
+    function renderAll(){
+      const filtered = applyFilter(state.items)
+      const sorted = applySort(filtered)
+      const pages = Math.max(1, Math.ceil(sorted.length/state.perPage))
+      const pageItems = paginate(sorted, state.page, state.perPage)
+      qs('results').innerHTML = pageItems.map(renderCard).join('')
+      qs('resultsSection').style.display='block'
+      qs('toolbar').style.display='flex'
+      qs('counts').textContent = `${sorted.length} items • Page ${state.page} of ${pages}`
+      renderPagination(sorted.length)
+      renderChips()
+    }
+
+    function debounce(fn, wait=200){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait) } }
+
+    // delegated copy handler
+    document.addEventListener('click', (e)=>{
+      const t = e.target.closest('[data-copy]');
+      if(!t) return;
+      const val = t.getAttribute('data-copy') || '';
+      navigator.clipboard.writeText(val)
+        .then(()=>showToast('Copied phone'))
+        .catch(()=>showToast('Copy failed'));
+    });
+
+    // delegated slider controls
+    document.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.cover .nav');
+      if(!btn) return;
+      const cover = btn.closest('.cover');
+      const slides = cover.querySelectorAll('img.slide');
+      if(!slides.length) return;
+      let idx = 0;
+      slides.forEach((s,i)=>{ if(s.classList.contains('active')) idx=i });
+      idx = btn.dataset.role === 'next' ? (idx+1)%slides.length : (idx-1+slides.length)%slides.length;
+      slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+      const dots = cover.querySelectorAll('.dots .dot');
+      dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+    });
+
+    document.addEventListener('click', (e)=>{
+      const dot = e.target.closest('.cover .dots .dot');
+      if(!dot) return;
+      const cover = dot.closest('.cover');
+      const slides = cover.querySelectorAll('img.slide');
+      const dots = cover.querySelectorAll('.dots .dot');
+      const idx = parseInt(dot.getAttribute('data-idx')||'0',10) || 0;
+      slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+      dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+    });
+
+    function init(){
+      const form=qs('searchForm'); const category=qs('category'); const location=qs('location'); const perPage=qs('perPage')
+      const q=qs('q'); const sortBy=qs('sortBy'); const exportBtn=qs('exportBtn'); const themeBtn=qs('themeBtn')
+
+      function exportCSV(){ const lines=[["name","category","address","phone","website","rating"]]; const filtered=applySort(applyFilter(state.items)); const pageItems=paginate(filtered, state.page, state.perPage); pageItems.forEach(x=>{ lines.push([x.name||'',x.category||'',x.address_line||'',x.phone_e164||'',(x.website||x.website_fallback||''),x.rating||'']) }); const csv = lines.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='leads_page.csv'; a.click(); URL.revokeObjectURL(url) }
+
+      // restore persisted UI state
+      const saved = {
+        category: localStorage.getItem('lf.category')||'',
+        location: localStorage.getItem('lf.location')||'',
+        perPage: localStorage.getItem('lf.perPage')||'',
+        sort: localStorage.getItem('lf.sort')||''
+      }
+      const setIfOptionExists=(sel,val)=>{ if(!val) return; for(const o of sel.options){ if(o.value===val){ sel.value=val; break } } }
+      setIfOptionExists(category, saved.category)
+      setIfOptionExists(location, saved.location)
+      if(saved.perPage) perPage.value = saved.perPage
+      if(saved.sort) sortBy.value = saved.sort, state.sort = saved.sort
+
+      form.addEventListener('submit', async (e)=>{ e.preventDefault(); state.perPage=parseInt(perPage.value||20); state.page=1; localStorage.setItem('lf.category', category.value); localStorage.setItem('lf.location', location.value); localStorage.setItem('lf.perPage', String(state.perPage)); runStages(async ()=>{ const data = await fetchResults(category.value, location.value, 1, state.perPage); state.items = data.items; renderAll(); window.scrollTo({top: document.body.offsetTop}) }) })
+      q.addEventListener('input', debounce(()=>{ state.q=q.value; state.page=1; renderAll() }, 200))
+      sortBy.addEventListener('change', ()=>{ state.sort=sortBy.value; localStorage.setItem('lf.sort', state.sort); renderAll() })
+      exportBtn.addEventListener('click', ()=> exportCSV())
+      themeBtn.addEventListener('click', ()=>{ document.body.classList.toggle('light') })
+      // Auto search disabled by default. Enable by setting
+      // localStorage.setItem('lf.autosearch','1') and having both values.
+      const auto = localStorage.getItem('lf.autosearch') === '1'
+      if(auto && saved.category && saved.location){
+        form.dispatchEvent(new Event('submit'))
+      }
+    }
+
+    init()
+  </script>
+</body>
+</html>
