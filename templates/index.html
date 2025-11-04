@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lead Finder</title>
+  <title>LeadSignal</title>
+  <!-- Favicon: simple static radar icon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Ccircle cx='32' cy='32' r='26' stroke='%2360a5ff' stroke-width='4' opacity='0.9'/%3E%3Cpath d='M32 14a18 18 0 0 1 0 36' stroke='%233a8bff' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M32 20a12 12 0 0 1 0 24' stroke='%231d4ed8' stroke-width='6' stroke-linecap='round' opacity='0.8'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%233a8bff'/%3E%3C/svg%3E" />
   <style>
     :root{--bg1:#3820a6;--bg2:#0f1226;--glass:rgba(16,20,45,.55);--glass2:rgba(25,30,65,.55);--border:rgba(255,255,255,.08);--text:#eaf0ff;--muted:#96a1c9;--accent:#7c5cff;--accent2:#3aa0ff;--chip:#1e2346;--success:#15b888;--hot:#ff355d}
     *{box-sizing:border-box}html,body{height:100%}
@@ -37,6 +39,12 @@
     .hero .copy h2{margin:0 0 6px;font-size:34px;letter-spacing:.2px}
     .hero .copy p{margin:6px 0 0;color:var(--muted);max-width:52ch}
     .cta{height:44px;border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:12px;padding:0 18px;font-weight:800;cursor:pointer}
+    /* CTA glow for Start button */
+    #startBtn{position:relative;animation:ctaGlow 2.2s cubic-bezier(.2,.7,.2,1) infinite;box-shadow:0 0 0 0 rgba(124,92,255,0),0 0 0 0 rgba(58,160,255,0)}
+    #startBtn::after{content:"";position:absolute;inset:-2px;border-radius:inherit;background:radial-gradient(60% 60% at 50% 50%, rgba(124,92,255,.35), transparent 70%);opacity:.0;transition:opacity .25s ease;pointer-events:none}
+    #startBtn:hover::after{opacity:.9}
+    @keyframes ctaGlow{0%,100%{transform:translateY(0) scale(1);box-shadow:0 0 0 0 rgba(124,92,255,.0),0 0 0 0 rgba(58,160,255,.0)}50%{transform:translateY(-1px) scale(1.02);box-shadow:0 0 24px 6px rgba(124,92,255,.35),0 0 36px 12px rgba(58,160,255,.25)}}
+    @media (prefers-reduced-motion: reduce){ #startBtn{animation:none} }
     .cta.secondary{background:transparent;border:1px solid var(--border)}
     .hero .cta-row{display:flex;gap:10px;margin-top:16px}
 
@@ -68,14 +76,14 @@
     @keyframes spinCCW{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
     @media (prefers-reduced-motion: reduce){.logo3d .arc--cw,.logo3d .arc--ccw{animation:none}}
 
-    /* scroll-in reveal */
-    .reveal-stagger>*{opacity:0;transform:translateY(18px);will-change:opacity,transform}
-    .reveal-stagger.is-in>*{animation:riseIn .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
-    @keyframes riseIn{to{opacity:1;transform:translateY(0)}}
+    /* scroll-in reveal (grids slide up on load/scroll) */
+    .reveal-stagger>*{opacity:0;transform:translateY(60px);will-change:opacity,transform}
+    .reveal-stagger.is-in>*{animation:slideUpIn .95s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
+    @keyframes slideUpIn{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
     @media (prefers-reduced-motion: reduce){.reveal-stagger>*{opacity:1;transform:none}.reveal-stagger.is-in>*{animation:none}}
     /* Force animation even if OS prefers-reduced-motion (opt-in via html.no-prm) */
-    .no-prm .reveal-stagger>*{opacity:0;transform:translateY(18px)}
-    .no-prm .reveal-stagger.is-in>*{animation:riseIn .55s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
+    .no-prm .reveal-stagger>*{opacity:0;transform:translateY(60px)}
+    .no-prm .reveal-stagger.is-in>*{animation:slideUpIn .95s cubic-bezier(.2,.7,.2,1) both;animation-delay:var(--d,0ms)}
 
     .proof{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
     .metric{display:flex;gap:10px;align-items:center;border:1px solid var(--border);background:rgba(255,255,255,.04);padding:10px 12px;border-radius:12px}
@@ -178,6 +186,11 @@
     .playerbar input[type="range"]::-webkit-slider-runnable-track{height:4px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
     .playerbar input[type="range"]::-moz-range-thumb{width:12px;height:12px;border-radius:999px;background:var(--accent);border:0}
     .playerbar input[type="range"]::-moz-range-track{height:4px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    /* custom combo dropdown (for category) */
+    .combo-menu{position:absolute;z-index:9999;min-width:240px;max-width:520px;max-height:260px;overflow:auto;padding:6px;border:1px solid var(--border);border-radius:12px;background:rgba(16,20,45,.95);box-shadow:0 20px 60px rgba(0,0,0,.45);backdrop-filter:blur(8px)}
+    .combo-item{padding:8px 10px;border-radius:8px;color:var(--text);cursor:pointer}
+    .combo-item:hover,.combo-item.active{background:rgba(255,255,255,.08)}
+    .combo-empty{padding:10px;color:var(--muted)}
     /* extra-tight mobile tweaks */
     @media (max-width: 480px){
       .app{margin:18px auto;padding:0 10px}
@@ -251,6 +264,7 @@
             </div>
           </div>
 
+          <!-- How it works -->
           <div class="home-section">
             <h3 class="home-h3">How it works</h3>
             <div class="features">
@@ -260,6 +274,7 @@
             </div>
           </div>
 
+          <!-- Built for real use -->
           <div class="home-section">
             <h3 class="home-h3">Built for real use</h3>
             <div class="usecases">
@@ -269,13 +284,14 @@
             </div>
           </div>
 
+          <!-- FAQ -->
           <div class="home-section">
             <h3 class="home-h3">FAQ</h3>
             <div class="faq">
               <div class="qa"><h4>Where is the data from?</h4><p>Parsed from public Google Maps listings, stored in a Supabase table you control.</p></div>
               <div class="qa"><h4>Is it legal?</h4><p>We display publicly available business info. You decide how to use it within your local laws.</p></div>
               <div class="qa"><h4>Can I export all results?</h4><p>Export per page now. Full export endpoint is on the roadmap.</p></div>
-              <div class="qa"><h4>Why do some records miss phones?</h4><p>Some listings don’t publish numbers. We still include address, site, photos and rating.</p></div>
+              <div class="qa"><h4>Why do some records miss phones?</h4><p>Some listings don't publish numbers. We still include address, site, photos and rating.</p></div>
             </div>
           </div>
 
@@ -289,7 +305,7 @@
           <form id="searchForm" class="form-grid">
             <div>
               <label>Category</label>
-              <input id="category" list="categoryList" placeholder="Type or choose" />
+              <input id="category" list="categoryList" placeholder="Type or choose" autocomplete="off" />
               <datalist id="categoryList">{% for c in categories %}<option value="{{c}}"></option>{% endfor %}</datalist>
             </div>
             <div>
@@ -340,6 +356,108 @@
     const state={items:[],page:1,pages:1,perPage:20,q:"",sort:"rating_desc",category:"",location:""}
     const qs=id=>document.getElementById(id)
 
+    // Lightweight custom dropdown for the Category input.
+    // Replaces the native datalist popup so we can theme it.
+    function attachCategoryCombo(){
+      const input = qs('category');
+      const list = document.getElementById('categoryList');
+      if(!input || !list) return;
+
+      const options = Array.from(list.querySelectorAll('option')).map(o=>o.value).filter(Boolean);
+
+      const menu = document.createElement('div');
+      menu.className = 'combo-menu';
+      menu.style.display = 'none';
+      menu.setAttribute('role','listbox');
+      document.body.appendChild(menu);
+
+      let visible = [];
+      let activeIndex = -1;
+
+      const positionMenu = () => {
+        const r = input.getBoundingClientRect();
+        menu.style.top = (window.scrollY + r.bottom + 6) + 'px';
+        menu.style.left = (window.scrollX + r.left) + 'px';
+        menu.style.minWidth = Math.max(240, Math.round(r.width)) + 'px';
+      };
+
+      const hideMenu = () => { menu.style.display='none'; activeIndex = -1; };
+      const showMenu = () => {
+        if(!visible.length){ hideMenu(); return; }
+        positionMenu();
+        menu.style.display='block';
+      };
+
+      const setActive = (idx) => {
+        const items = menu.querySelectorAll('.combo-item');
+        items.forEach((el,i)=> el.classList.toggle('active', i===idx));
+        activeIndex = idx;
+        ensureVisible();
+      };
+
+      const ensureVisible = () => {
+        const a = menu.querySelector('.combo-item.active');
+        if(!a) return;
+        const ar = a.getBoundingClientRect();
+        const mr = menu.getBoundingClientRect();
+        if(ar.top < mr.top) menu.scrollTop += ar.top - mr.top - 6;
+        if(ar.bottom > mr.bottom) menu.scrollTop += ar.bottom - mr.bottom + 6;
+      };
+
+      const choose = (idx) => {
+        if(idx < 0 || idx >= visible.length) return;
+        input.value = visible[idx];
+        hideMenu();
+        // Trigger change so any listeners update state later
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+
+      const render = (q) => {
+        const needle = String(q||'').trim().toLowerCase();
+        visible = options.filter(o => o.toLowerCase().includes(needle)).slice(0, 60);
+        menu.innerHTML = '';
+        if(!visible.length){
+          const empty = document.createElement('div');
+          empty.className = 'combo-empty';
+          empty.textContent = 'No matches';
+          menu.appendChild(empty);
+          return;
+        }
+        visible.forEach((val, idx) => {
+          const item = document.createElement('div');
+          item.className = 'combo-item';
+          item.textContent = val;
+          item.setAttribute('role','option');
+          item.addEventListener('mouseenter', () => setActive(idx));
+          item.addEventListener('mousedown', (e) => { e.preventDefault(); choose(idx); });
+          menu.appendChild(item);
+        });
+        activeIndex = -1;
+      };
+
+      // Events
+      input.addEventListener('focus', () => { render(input.value); showMenu(); });
+      input.addEventListener('input', () => { render(input.value); showMenu(); });
+      input.addEventListener('keydown', (e) => {
+        if(menu.style.display !== 'block') return;
+        if(e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(activeIndex + 1, visible.length - 1)); }
+        else if(e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(activeIndex - 1, 0)); }
+        else if(e.key === 'Enter') { if(activeIndex>=0){ e.preventDefault(); choose(activeIndex); } }
+        else if(e.key === 'Escape') { hideMenu(); }
+      });
+
+      document.addEventListener('mousedown', (e) => {
+        if(e.target === input || menu.contains(e.target)) return;
+        hideMenu();
+      });
+      window.addEventListener('scroll', positionMenu, true);
+      window.addEventListener('resize', positionMenu);
+
+      // Remove native datalist to avoid double popups but keep as a graceful fallback in HTML
+      input.setAttribute('data-list-id', list.id);
+      input.removeAttribute('list');
+    }
+
     function showOverlay(b){qs("loading").classList.toggle("show",b)}
     function setStage(t){qs("stageText").textContent=t}
     function runStages(done){showOverlay(true);let i=0;setStage(stages[i]);const tick=()=>{i++;if(i<stages.length){setStage(stages[i]);setTimeout(tick,1100)}else{showOverlay(false);done()}};setTimeout(tick,1100)}
@@ -377,12 +495,32 @@
 
     function hookPlayerBar(){const prev=qs('pbPrev'), next=qs('pbNext'), r=qs('pbRange');if(prev)prev.onclick=()=>{if(state.page>1){state.page--;loadPage()}};if(next)next.onclick=()=>{if(state.page<state.pages){state.page++;loadPage()}};if(r)r.oninput=(e)=>{const v=parseInt(e.target.value||'1',10);if(v!==state.page){state.page=v;loadPage()}}}
 
-    function activatePanel(id){['homePanel','searchPanel'].forEach(pid=>qs(pid).classList.toggle('hidden',pid!==id));document.querySelectorAll('.nav .item').forEach(el=>{el.classList.toggle('active',el.dataset.target===id)});qs('pageTitle').textContent=id==='homePanel'?'Welcome':'Discover Leads';if(id==='searchPanel'){const c=qs('category');if(c)c.focus()}}
+    function activatePanel(id){
+      const sp=qs('searchPanel');
+      const wasHidden=sp?sp.classList.contains('hidden'):false;
+      ['homePanel','searchPanel'].forEach(pid=>qs(pid).classList.toggle('hidden',pid!==id));
+      document.querySelectorAll('.nav .item').forEach(el=>{el.classList.toggle('active',el.dataset.target===id)});
+      qs('pageTitle').textContent=id==='homePanel'?'Welcome':'Discover Leads';
+      const resultsSection=qs('resultsSection');
+      const toolbar=qs('toolbar');
+      const countsEl=qs('counts');
+      if(id==='homePanel'){
+        if(resultsSection) resultsSection.style.display='none';
+        if(toolbar) toolbar.style.display='none';
+        if(countsEl){ countsEl.style.display='none'; countsEl.textContent=''; }
+      } else {
+        const hasItems = Array.isArray(state.items) && state.items.length>0;
+        if(resultsSection) resultsSection.style.display = hasItems ? 'block' : 'none';
+        if(toolbar) toolbar.style.display = hasItems ? 'flex' : 'none';
+        if(countsEl) countsEl.style.display = hasItems ? 'block' : 'none';
+        if(wasHidden){const c=qs('category');if(c)c.focus()}
+      }
+    }
 
     async function populateHomePreview(){
       const art=qs('homePreview');
       if(!art) return;
-      if(art.classList.contains('art--logo')) return; // keep the logo in place
+      if(art.classList.contains('art--logo')) return;
       try{
         const firstLoc=(document.querySelector('#location option')||{}).value||'';
         const firstCat=(document.querySelector('#categoryList option')||{}).value||'';
@@ -395,11 +533,50 @@
       }catch(e){}
     }
 
-    function init(){hookPlayerBar();updatePlayerBar({pages:0});const form=qs('searchForm');const category=qs('category');const location=qs('location');const perPage=qs('perPage');const sortBy=qs('sortBy');const exportBtn=qs('exportBtn');const saved={category:localStorage.getItem('lf.category')||'',location:localStorage.getItem('lf.location')||'',perPage:localStorage.getItem('lf.perPage')||'',sort:localStorage.getItem('lf.sort')||''};const setIfOptionExists=(sel,val)=>{if(!val||!sel||!sel.options)return;for(const o of sel.options){if(o.value===val){sel.value=val;break}}};if(saved.category)category.value=saved.category;setIfOptionExists(location,saved.location);if(saved.perPage)perPage.value=saved.perPage;if(saved.sort){sortBy.value=saved.sort;state.sort=saved.sort}const normalizeCategory=(val)=>{const opts=Array.from(document.querySelectorAll('#categoryList option')).map(o=>o.value);const exact=opts.find(x=>x.toLowerCase()===String(val||'').trim().toLowerCase());return exact||String(val||'').trim()};form.addEventListener('submit',e=>{e.preventDefault();state.category=normalizeCategory(category.value);state.location=location.value;state.perPage=parseInt(perPage.value||20);state.page=1;localStorage.setItem('lf.category',state.category);localStorage.setItem('lf.location',state.location);localStorage.setItem('lf.perPage',String(state.perPage));activatePanel('searchPanel');loadPage()});sortBy.addEventListener('change',()=>{state.sort=sortBy.value;localStorage.setItem('lf.sort',state.sort);renderAll({total:state.items.length,page:state.page,pages:state.pages})});exportBtn.addEventListener('click',()=>{const lines=[["name","category","address","phone","website","rating"],...applySort(applyFilter(state.items)).map(x=>[x.name||'',x.category||'',x.address_line||'',x.phone_e164||'',x.website||x.website_fallback||'',x.rating||''])];const csv=lines.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');const bom="\uFEFF";const blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download="leads_page.csv";a.click();URL.revokeObjectURL(url);});document.getElementById('nav').addEventListener('click',e=>{const it=e.target.closest('.item');if(!it)return;activatePanel(it.dataset.target)});document.getElementById('startBtn').addEventListener('click',()=>activatePanel('searchPanel'));document.getElementById('seeSampleBtn').addEventListener('click',()=>{activatePanel('homePanel');populateHomePreview()});document.getElementById('jumpSearch').addEventListener('click',(e)=>{e.preventDefault();activatePanel('searchPanel')});qs('year').textContent=(new Date()).getFullYear();populateHomePreview();}
+    function init(){
+      hookPlayerBar();
+      updatePlayerBar({pages:0});
+      const form=qs('searchForm');
+      const category=qs('category');
+      const location=qs('location');
+      const perPage=qs('perPage');
+      const sortBy=qs('sortBy');
+      const exportBtn=qs('exportBtn');
+      const saved={category:localStorage.getItem('lf.category')||'',location:localStorage.getItem('lf.location')||'',perPage:localStorage.getItem('lf.perPage')||'',sort:localStorage.getItem('lf.sort')||''};
+      const setIfOptionExists=(sel,val)=>{if(!val||!sel||!sel.options)return;for(const o of sel.options){if(o.value===val){sel.value=val;break}}};
+      if(saved.category)category.value=saved.category;
+      setIfOptionExists(location,saved.location);
+      if(saved.perPage)perPage.value=saved.perPage;
+      if(saved.sort){sortBy.value=saved.sort;state.sort=saved.sort}
+
+      attachCategoryCombo();
+
+      const normalizeCategory=(val)=>{const opts=Array.from(document.querySelectorAll('#categoryList option')).map(o=>o.value);const exact=opts.find(x=>x.toLowerCase()===String(val||'').trim().toLowerCase());return exact||String(val||'').trim()};
+      form.addEventListener('submit',e=>{
+        e.preventDefault();
+        const cm=document.querySelector('.combo-menu'); if(cm) cm.style.display='none';
+        state.category=normalizeCategory(category.value);
+        state.location=location.value;
+        state.perPage=parseInt(perPage.value||20);
+        state.page=1;
+        localStorage.setItem('lf.category',state.category);
+        localStorage.setItem('lf.location',state.location);
+        localStorage.setItem('lf.perPage',String(state.perPage));
+        activatePanel('searchPanel');
+        loadPage()
+      });
+      sortBy.addEventListener('change',()=>{state.sort=sortBy.value;localStorage.setItem('lf.sort',state.sort);renderAll({total:state.items.length,page:state.page,pages:state.pages})});
+      exportBtn.addEventListener('click',()=>{const lines=[["name","category","address","phone","website","rating"],...applySort(applyFilter(state.items)).map(x=>[x.name||'',x.category||'',x.address_line||'',x.phone_e164||'',x.website||x.website_fallback||'',x.rating||''])];const csv=lines.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');const bom="\uFEFF";const blob=new Blob([bom+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download="leads_page.csv";a.click();URL.revokeObjectURL(url);});
+      document.getElementById('nav').addEventListener('click',e=>{const it=e.target.closest('.item');if(!it)return;activatePanel(it.dataset.target)});
+      document.getElementById('startBtn').addEventListener('click',()=>activatePanel('searchPanel'));
+      document.getElementById('seeSampleBtn').addEventListener('click',()=>{activatePanel('homePanel');populateHomePreview()});
+      document.getElementById('jumpSearch').addEventListener('click',(e)=>{e.preventDefault();activatePanel('searchPanel')});
+      qs('year').textContent=(new Date()).getFullYear();
+      populateHomePreview();
+    }
 
     (function(){ const eb=document.querySelector('.hero .eyebrow'); if(eb && !eb.querySelector('.zap')){ eb.innerHTML='<span class="zap" aria-hidden="true">&#9889;</span> Instant lead lists &bull; No scraping required'; } })();
 
-    // Tiny tilt + moving shine for hero logo mode
     (function(){
       const art=document.getElementById('homePreview');
       if(!art || !art.classList.contains('art--logo')) return;
@@ -425,41 +602,61 @@
       box.addEventListener('touchmove',onMove,{passive:true});
       box.addEventListener('mouseleave',reset); box.addEventListener('touchend',reset);
     })();
+
     init()
 
-    // stagger rows for .features, .usecases, .faq then reveal on scroll
     (function(){
-      const groups=document.querySelectorAll('.features,.usecases,.faq');
-      const setDelays=(grid)=>{
-        const styles=getComputedStyle(grid);
-        const cols=(styles.gridTemplateColumns||'').split(' ').filter(Boolean).length||1;
-        [...grid.children].forEach((el,i)=>{
-          const row=Math.floor(i/cols);
-          const col=i%cols;
-          el.style.setProperty('--d', (row*180 + col*40) + 'ms');
+      const groups = document.querySelectorAll('.features,.usecases,.faq');
+
+      const setDelays = (grid) => {
+        const styles = getComputedStyle(grid);
+        const cols = (styles.gridTemplateColumns || '').split(' ').filter(Boolean).length || 1;
+        [...grid.children].forEach((el, i) => {
+          const row = Math.floor(i / cols);
+          const col = i % cols;
+          el.style.setProperty('--d', (row * 180 + col * 40) + 'ms');
+          el.style.willChange = 'opacity, transform';
         });
       };
-      groups.forEach(g=>{g.classList.add('reveal-stagger'); setDelays(g)});
-      const io=new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target) } });
-      },{rootMargin:'-10% 0px -10% 0px', threshold:0.12});
-      const revealables=document.querySelectorAll('.reveal-stagger');
-      const inView=(el)=>{ const r=el.getBoundingClientRect(); const vh=window.innerHeight||document.documentElement.clientHeight; return r.top < vh*0.9 && r.bottom > 0 };
-      revealables.forEach(el=>{ if(inView(el)){ el.classList.add('is-in') } else { io.observe(el) } });
-      window.addEventListener('resize', debounce(()=>{
+
+      groups.forEach(g => { g.classList.add('reveal-stagger'); setDelays(g); });
+
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '-10% 0px -10% 0px', threshold: 0.12 });
+
+      const inView = (el) => {
+        const r = el.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        return r.top < vh * 0.9 && r.bottom > 0;
+      };
+
+      setTimeout(() => {
+        groups.forEach(el => {
+          if (inView(el)) {
+            el.classList.add('is-in');
+          } else {
+            io.observe(el);
+          }
+        });
+      }, 100);
+
+      window.addEventListener('resize', (function debounce(fn, wait=200){ let t; return ()=>{ clearTimeout(t); t=setTimeout(fn,wait) } })(() => {
         document.querySelectorAll('.reveal-stagger').forEach(setDelays);
-        document.querySelectorAll('.reveal-stagger:not(.is-in)').forEach(el=>{
-          if(inView(el)){ el.classList.add('is-in'); io.unobserve(el) }
-        })
-      },200));
+        document.querySelectorAll('.reveal-stagger:not(.is-in)').forEach(el => {
+          if (inView(el)) {
+            el.classList.add('is-in');
+          }
+        });
+      }));
     })();
 
     setInterval(()=>{document.querySelectorAll('.card.multi').forEach(card=>{if(card.matches(':hover'))return;const slides=card.querySelectorAll('.slide');if(slides.length<2)return;let idx=0;slides.forEach((s,i)=>{if(s.classList.contains('active'))idx=i});idx=(idx+1)%slides.length;slides.forEach((s,i)=>s.classList.toggle('active',i===idx));const dots=card.querySelectorAll('.dots .dot');dots.forEach((d,i)=>d.classList.toggle('active',i===idx));})},4200)
   </script>
 </body>
 </html>
-
-
-
-
-
