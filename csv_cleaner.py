@@ -15,7 +15,7 @@ ADDR_SPLIT_RE = re.compile(r"\s*[•·]\s*|")
 NBSP_REPL = {"\u00A0": " ", "\u202F": " "}
 
 PHONE_RE = re.compile(r"(?:\+?20)?0?1[0-2,5]\d{8}|(?:\+?20)?0?2\d{7,8}|(?:\+?20)?0?\d{8,11}")
-HTTP_RE = re.compile(r"^https?://", re.IGNORECASE)
+HTTP_RE = re.compile(r"^(?:https?:)?//", re.IGNORECASE)
 
 SOCIAL_HOSTS = ["facebook.com","fb.com","instagram.com","x.com","twitter.com","tiktok.com","linkedin.com","youtube.com"]
 
@@ -203,11 +203,11 @@ def dedupe_key(row):
     if u:
         return ("u", u)
     n = nfc(row.get("name", "")).lower()
-    if n:
-        return ("n", n)
     a = nfc(row.get("address_line", "")).lower()
     if n and a:
         return ("na", n + "|" + a)
+    if n:
+        return ("n", n)
     return ("row", json.dumps(row, ensure_ascii=False))
 
 
@@ -217,6 +217,8 @@ def normalize_photo_identity(u):
     u = nfc(u).strip().strip(",")
     if not u:
         return "", ""
+    if u.startswith("//"):
+        u = "https:" + u
     if not HTTP_RE.search(u):
         return "", ""
     base = re.sub(r"[\?].*$", "", u)
