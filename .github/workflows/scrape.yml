@@ -44,9 +44,6 @@ jobs:
           # One city per line, exactly as you want it sent to the scraper.
           mapfile -t cities <<'EOF'
           # --- Egypt (governorate capitals / major cities) ---
-          Cairo, Egypt
-          Giza, Egypt
-          Alexandria, Egypt
           Port Said, Egypt
           Suez, Egypt
           Ismailia, Egypt
