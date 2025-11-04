@@ -2,8 +2,12 @@ name: Scrape
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # every 6 hours (00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: "0 */3 * * *"   # every 3 hours UTC
   workflow_dispatch:         # allow manual trigger
+
+concurrency:
+  group: scrape
+  cancel-in-progress: false
 
 jobs:
   run:
@@ -32,25 +36,136 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Pick city for this run (rotating)
+      - name: Pick city for this run (Egypt → Arab capitals → Global)
         id: pick
         shell: bash
         run: |
-          # Edit this list to add/remove cities
-          cities=("Cairo, Egypt" "Giza, Egypt" "Alexandria, Egypt")
-          count=${#cities[@]}
+          # Use a HEREDOC so we can keep a long list tidy.
+          # One city per line, exactly as you want it sent to the scraper.
+          mapfile -t cities <<'EOF'
+          # --- Egypt (governorate capitals / major cities) ---
+          Cairo, Egypt
+          Giza, Egypt
+          Alexandria, Egypt
+          Port Said, Egypt
+          Suez, Egypt
+          Ismailia, Egypt
+          Tanta, Egypt
+          Mansoura, Egypt
+          Zagazig, Egypt
+          Damietta, Egypt
+          Kafr El Sheikh, Egypt
+          Damanhur, Egypt
+          Shebin El Kom, Egypt
+          Banha, Egypt
+          Fayoum, Egypt
+          Beni Suef, Egypt
+          Minya, Egypt
+          Asyut, Egypt
+          Sohag, Egypt
+          Qena, Egypt
+          Luxor, Egypt
+          Aswan, Egypt
+          Hurghada, Egypt
+          Sharm El Sheikh, Egypt
+          Arish, Egypt
+          # --- Arab capitals (de facto/admin where relevant) ---
+          Algiers, Algeria
+          Manama, Bahrain
+          Cairo, Egypt
+          Baghdad, Iraq
+          Amman, Jordan
+          Kuwait City, Kuwait
+          Beirut, Lebanon
+          Tripoli, Libya
+          Nouakchott, Mauritania
+          Rabat, Morocco
+          Muscat, Oman
+          Doha, Qatar
+          Riyadh, Saudi Arabia
+          Khartoum, Sudan
+          Damascus, Syria
+          Tunis, Tunisia
+          Abu Dhabi, United Arab Emirates
+          Sana'a, Yemen
+          Djibouti, Djibouti
+          Mogadishu, Somalia
+          Moroni, Comoros
+          Ramallah, Palestine
+          # --- International priority cities ---
+          Paris, France
+          London, United Kingdom
+          New York, USA
+          Los Angeles, USA
+          San Francisco, USA
+          Chicago, USA
+          Toronto, Canada
+          Vancouver, Canada
+          Berlin, Germany
+          Munich, Germany
+          Madrid, Spain
+          Barcelona, Spain
+          Rome, Italy
+          Milan, Italy
+          Istanbul, Türkiye
+          Athens, Greece
+          Amsterdam, Netherlands
+          Brussels, Belgium
+          Zurich, Switzerland
+          Vienna, Austria
+          Copenhagen, Denmark
+          Stockholm, Sweden
+          Oslo, Norway
+          Helsinki, Finland
+          Warsaw, Poland
+          Prague, Czechia
+          Budapest, Hungary
+          Lisbon, Portugal
+          Dublin, Ireland
+          Dubai, United Arab Emirates
+          Singapore, Singapore
+          Hong Kong
+          Tokyo, Japan
+          Osaka, Japan
+          Seoul, South Korea
+          Sydney, Australia
+          Melbourne, Australia
+          Auckland, New Zealand
+          Mexico City, Mexico
+          São Paulo, Brazil
+          Buenos Aires, Argentina
+          Johannesburg, South Africa
+          Casablanca, Morocco
+          EOF
 
-          # Rotate by workflow run number (works for schedule + manual)
+          # Strip comments/blank lines
+          filtered=()
+          for c in "${cities[@]}"; do
+            [[ -z "$c" ]] && continue
+            [[ "$c" =~ ^# ]] && continue
+            filtered+=("$c")
+          done
+
+          count=${#filtered[@]}
+          if [[ $count -eq 0 ]]; then
+            echo "No cities configured"; exit 1
+          fi
+
+          # Rotate by repository-wide run number
           idx=$(( GITHUB_RUN_NUMBER % count ))
-          city="${cities[$idx]}"
+          city="${filtered[$idx]}"
 
+          # Expose CITY and a filesystem-safe variant
           echo "CITY=$city" >> "$GITHUB_ENV"
+          safe="$(echo "$city" | tr '[:space:]/,' '_')"
+          echo "CITY_SAFE=$safe" >> "$GITHUB_ENV"
+
           echo "Picked city: $city"
-      
+
       - name: Run scraper (never fail even if scraper crashes at the end)
         run: |
           echo "Scraping city: $CITY"
-          python maps.py --categories-file categories.txt --location "$CITY" --max-places 20 --output TheResultss.csv --headless || true
+          python maps.py --categories-file categories.txt --location "$CITY" --max-places 30 --output TheResultss.csv --headless || true
 
       - name: Clean CSV
         run: |
@@ -65,5 +180,5 @@ jobs:
       - name: Upload cleaned CSV artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cleaned_csv_${{ env.CITY || 'unknown' }}
+          name: cleaned_csv_${{ env.CITY_SAFE }}
           path: Cleaned.csv
