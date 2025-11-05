@@ -38,14 +38,36 @@ ACCEPT_LANG = [
     "en-GB,en;q=0.9,ar;q=0.7",
     "ar-EG,ar;q=0.9,en;q=0.6",
 ]
+def canonicalize_maps_url(u: str) -> str:
+    if not u:
+        return ""
+    u = u.strip()
+    if u.startswith("//"):
+        u = "https:" + u
+    if not re.match(r"^https?://", u, re.I):
+        u = "https://" + u.lstrip("/")
+    u = re.sub(r"(?i)[&?](?:hl|utm_[^=]+|fbclid|gclid|hsa_[^=]+|entry|ved|sa|source|authuser)=[^&#]*", "", u)
+    u = re.sub(r"[&?]+$", "", u)
+    return u
 
+def slug_from_profile_url(u: str) -> str:
+    if not u:
+        return ""
+    m = re.search(r"/maps/place/([^/]+)", u)
+    return re.sub(r"[-_+]+", " ", m.group(1)).strip().lower() if m else ""
+
+def norm_name_for_compare(s: str) -> str:
+    s = unicodedata.normalize("NFKC", str(s))
+    s = re.sub(r"\s+", " ", s).strip().lower()
+    s = re.sub(r"\b(branch|فرع)\b", "", s).strip()
+    return s
 CARD_CONTAINER_CSS = "div.Nv2PK"
 CARD_TITLE_CSS = ".qBF1Pd"
 CARD_ANCHOR_CSS = "a.hfpxzc"
 INFO_ROW_CSS = ".W4Efsd"
 DETAIL_NAME_XP = "//h1[contains(@class,'fontHeadline') or contains(@class,'DUwDvf') or @role='heading']"
 DETAIL_RATING_XP = "//span[contains(@aria-label,'rating') or contains(@class,'F7nice') or contains(@class,'ceNzKf')]"
-DETAIL_REVIEW_COUNT_XP = "//button[.//span[contains(text(),'reviews') or contains(text(),'review') or contains(text(),'تقييم')]]]//span[1]"
+DETAIL_REVIEW_COUNT_XP = "//button[.//span[contains(text(),'reviews') or contains(text(),'review') or contains(text(),'تقييم')]]//span[1]"
 DETAIL_HOURS_STATUS_XP = "//span[(@aria-label and (contains(@aria-label,'Open') or contains(@aria-label,'Closed'))) or (contains(normalize-space(.),'Open') or contains(normalize-space(.),'Closed') or contains(normalize-space(.),'24 hours'))][1]"
 DETAIL_ADDRESS_XP = "//button[.//div[contains(text(),'Address') or contains(text(),'العنوان')]] | //div[contains(@aria-label,'Address')]"
 DETAIL_PHONE_XP = "//button[.//div[contains(text(),'Phone') or contains(text(),'الهاتف') or contains(text(),'اتصال')]] | //a[contains(@href,'tel:')]"
@@ -93,7 +115,7 @@ def read_existing_profile_urls(csv_path: str) -> Set[str]:
     try:
         with open(csv_path, "r", encoding="utf-8-sig", newline="") as f:
             for row in csv.DictReader(f):
-                url = (row.get("profile_url") or "").strip()
+                url = canonicalize_maps_url((row.get("profile_url") or "").strip())
                 if url:
                     seen.add(url)
     except Exception as e:
@@ -417,8 +439,8 @@ def _get_results_feed(driver):
 def _click_more_places_if_present(driver):
     candidates = [
         (By.XPATH, "//button[.//span[contains(.,'More places') or contains(.,'View all')]]"),
-        (By.XPATH, "//a[contains(.,'More places') or contains(.,'View all')]]"),
-        (By.XPATH, "//button[contains(.,'More places') or contains(.,'View all')]]"),
+        (By.XPATH, "//a[contains(.,'More places') or contains(.,'View all')]"),
+        (By.XPATH, "//button[contains(.,'More places') or contains(.,'View all')]"),
     ]
     for by, sel in candidates:
         try:
@@ -565,7 +587,7 @@ def harvest_category(driver, category: str, location: str, csv_path: str, seen: 
     for idx, card in enumerate(cards, start=1):
         try:
             basic = extract_card_basic(driver, card)
-            profile_url = basic.get("profile_url", "").strip()
+            profile_url = canonicalize_maps_url((basic.get("profile_url") or "").strip())
             if profile_url and profile_url in seen:
                 continue
             detail = {}
@@ -576,6 +598,10 @@ def harvest_category(driver, category: str, location: str, csv_path: str, seen: 
             except Exception:
                 detail = {}
             name = detail.get("name") or basic.get("name") or ""
+            slug_guess = slug_from_profile_url(profile_url)
+            nm_norm = norm_name_for_compare(name)
+            if slug_guess and nm_norm and nm_norm not in slug_guess:
+                logging.warning("NAME_SLUG_MISMATCH | name='%s' | slug='%s' | url=%s", name, slug_guess, profile_url)
             address_line = detail.get("address") or basic.get("address_line") or ""
             address_line = re.sub(r'^\s*(Address|العنوان)\s*:\s*', '', address_line, flags=re.I)
             opening_hours = detail.get("opening_hours") or basic.get("opening_hours") or ""
