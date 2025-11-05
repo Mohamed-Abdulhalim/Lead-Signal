@@ -12,9 +12,6 @@ LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") 
 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-_cached_categories = []
-_cached_locations = []
-
 
 def _distinct(col):
     res = sb.table(LEADS_TABLE).select(col).execute()
@@ -32,17 +29,11 @@ def _distinct(col):
 
 
 def unique_categories():
-    global _cached_categories
-    if not _cached_categories:
-        _cached_categories = _distinct("category")
-    return _cached_categories
+    return _distinct("category")
 
 
 def unique_locations():
-    global _cached_locations
-    if not _cached_locations:
-        _cached_locations = _distinct("query_location")
-    return _cached_locations
+    return _distinct("query_location")
 
 
 @app.get("/")
