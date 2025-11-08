@@ -58,12 +58,12 @@ def upsert_batch(supabase, rows: List[Dict[str, Any]]):
     if not rows:
         return
     try:
-        supabase.table("places").upsert(rows, on_conflict="profile_url").execute()
+        supabase.table("map_places").upsert(rows, on_conflict="profile_url").execute()
     except Exception as e:
         logging.warning("batch upsert failed: %s; falling back per-row", e)
         for x in rows:
             try:
-                supabase.table("places").upsert(x, on_conflict="profile_url").execute()
+                supabase.table("map_places").upsert(x, on_conflict="profile_url").execute()
             except Exception as ee:
                 logging.warning("row failed: %s | %s", x.get("profile_url"), ee)
 
