@@ -13,11 +13,11 @@ LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 
+# app.py
 def _distinct(col):
     rows = (
         sb.table(LEADS_TABLE)
-          .select(col)
-          .distinct()
+          .select(f"distinct {col}") # ✅ FIX: Use 'distinct col' in the select call
           .not_.is_(col, None)
           .order(col)
           .execute()
@@ -30,6 +30,8 @@ def _distinct(col):
         if s:
             vals.append(s)
     return vals
+
+# ... rest of your app.py file
 
 def unique_categories():
     return _distinct("category")
