@@ -17,7 +17,9 @@ sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 def _distinct(col):
     rows = (
         sb.table(LEADS_TABLE)
-          .select(f"distinct {col}") # ✅ FIX: Use 'distinct col' in the select call
+          # ✅ FIX: Use 'distinct' and column name in the select string, separated by a comma.
+          # The resulting query will look like 'SELECT DISTINCT column_name FROM table_name'
+          .select(f"distinct,{col}")
           .not_.is_(col, None)
           .order(col)
           .execute()
