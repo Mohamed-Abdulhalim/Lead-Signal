@@ -17,21 +17,25 @@ sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 def _distinct(col):
     rows = (
         sb.table(LEADS_TABLE)
-          # ✅ FIX: Use 'distinct' and column name in the select string, separated by a comma.
-          # The resulting query will look like 'SELECT DISTINCT column_name FROM table_name'
-          .select(f"distinct,{col}")
+          .select("*")      # 1. Select all columns
+          .distinct()     # 2. Call the distinct modifier
+          .on(col)        # 3. Specify the column to apply DISTINCT ON (e.g., 'category' or 'query_location')
           .not_.is_(col, None)
           .order(col)
           .execute()
           .data
         or []
     )
+    
     vals = []
     for r in rows:
+        # Extract the value from the returned row
         s = str(r.get(col, "")).strip()
         if s:
             vals.append(s)
     return vals
+
+# ... the rest of your app.py ...
 
 # ... rest of your app.py file
 
