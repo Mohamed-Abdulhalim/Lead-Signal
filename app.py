@@ -44,7 +44,7 @@ def unique_locations():
 @app.get("/")
 def index():
     return render_template(
-        "leadsignal.html",
+        "index.html",
         categories=unique_categories(),
         locations=unique_locations(),
     )
