@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 from supabase import create_client
 import os
-import math
 
 app = Flask(__name__)
 
@@ -61,24 +60,17 @@ def meta():
 def search():
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
-    page = request.args.get("page", default=1, type=int)
-    per_page = request.args.get("per_page", default=20, type=int)
 
-    q = sb.table(LEADS_TABLE).select("*", count="exact")
+    q = sb.table(LEADS_TABLE).select("*")
 
     if category:
         q = q.eq("category", category)
     if location:
         q = q.ilike("query_location", f"%{location}%")
 
-    start = (page - 1) * per_page
-    end = start + per_page - 1
-    q = q.range(start, end)
+    q = q.limit(100)
 
     res = q.execute()
-    total = res.count or 0
-    pages = max(1, math.ceil(total / per_page))
-    page = max(1, min(page, pages))
 
     items = []
     rows = res.data or []
@@ -105,20 +97,12 @@ def search():
     return jsonify(
         {
             "items": items,
-            "page": page,
-            "per_page": per_page,
-            "total": total,
-            "pages": pages,
-            "message": "No results found. Try a different category or location."
-            if not items
-            else "",
         }
     )
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 
 
 
