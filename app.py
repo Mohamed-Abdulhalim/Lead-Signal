@@ -15,12 +15,13 @@ with open("categories.txt") as f:
     HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
 
 
-def _distinct(col):
+def _distinct(col, limit=500):
     rows = (
         sb.table(LEADS_TABLE)
         .select(col)
         .not_.is_(col, None)
         .order(col)
+        .limit(limit)
         .execute()
         .data
         or []
@@ -43,11 +44,7 @@ def unique_locations():
 
 @app.get("/")
 def index():
-    return render_template(
-        "index.html",
-        categories=unique_categories(),
-        locations=unique_locations(),
-    )
+    return render_template("index.html")
 
 
 @app.get("/meta")
@@ -89,15 +86,20 @@ def search():
         row = {k: ("" if v is None else v) for k, v in row.items()}
 
         raw = (row.get("photo_urls") or "").strip()
-        photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
+        photos = [
+            u.strip()
+            for u in raw.split(",")
+            if u.strip().startswith("http")
+        ]
 
         if not row.get("main_photo_url") and photos:
             row["main_photo_url"] = photos[0]
 
-        row_name = row.get("correct_name") or row.get("name") or ""
-        row["name"] = row_name
-
         row["photos"] = photos
+
+        if row.get("correct_name"):
+            row["name"] = row["correct_name"]
+
         items.append(row)
 
     return jsonify(
@@ -116,7 +118,6 @@ def search():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 
 
 
