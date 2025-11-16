@@ -91,6 +91,7 @@ a{color:inherit;text-decoration:none}
 .pagination .page-info{margin:0 6px}
 .result-card{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:14px}
 .result-thumb{width:78px;height:78px;border-radius:10px;background:var(--bg-3);object-fit:cover}
+.result-thumb--empty{background:linear-gradient(135deg,#0f172a,#020617);}
 .result-main{display:grid;gap:8px}
 .result-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .badge{font-size:12px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
@@ -153,9 +154,16 @@ a{color:inherit;text-decoration:none}
 #btn-search{display:inline-grid;grid-auto-flow:column;align-items:center;gap:8px;border-radius:12px}
 #btn-preview{border:1px solid rgba(107,121,255,.35);background:transparent;color:#cfd5ff;border-radius:12px;padding:10px 12px}
 #btn-preview:hover{background:rgba(255,255,255,.06)}
+.nav-toggle{position:fixed;top:16px;left:16px;z-index:50;width:34px;height:30px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(15,23,42,.9);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;cursor:pointer;}
+.nav-toggle span{width:18px;height:2px;border-radius:999px;background:#e5e7ff;}
+body.nav-closed .sidebar{display:none;}
+@media (max-width:1024px){.nav-toggle{top:12px;left:12px;}}
 </style>
 </head>
 <body>
+<button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+  <span></span><span></span><span></span>
+</button>
 <div class="container">
   <aside class="sidebar card">
     <div class="brand">
@@ -295,11 +303,17 @@ const panelSearch=document.getElementById('panel-search');
 const navHome=document.getElementById('nav-home');
 const navSearch=document.getElementById('nav-search');
 const ctaStart=document.getElementById('cta-start');
-function showHome(){panelHome.hidden=false;panelSearch.hidden=true;navHome.setAttribute('aria-current','page');navSearch.removeAttribute('aria-current')}
+const navToggle=document.getElementById('nav-toggle');
+function showHome(){panelHome.hidden=false;panelSearch.hidden=true;navHome.setAttribute('aria-current','page');navSearch.removeAttribute('aria-current');}
+function showSearch(){panelHome.hidden=true;panelSearch.hidden=false;navSearch.setAttribute('aria-current','page');navHome.removeAttribute('aria-current');}
 function showSearch(){panelHome.hidden=true;panelSearch.hidden=false;navSearch.setAttribute('aria-current','page');navHome.removeAttribute('aria-current')}
 navHome.addEventListener('click',showHome);
 navSearch.addEventListener('click',showSearch);
 ctaStart.addEventListener('click',e=>{e.preventDefault();showSearch();document.getElementById('category').focus()});
+document.body.classList.add('nav-closed');
+navToggle.addEventListener('click',()=>{
+  document.body.classList.toggle('nav-closed');
+});
 document.getElementById('year').textContent=new Date().getFullYear();
 document.getElementById('to-top').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})});
 const toast=document.getElementById('toast');
@@ -464,11 +478,18 @@ let lastQuery={};
 function renderResult(item){
   const card=document.createElement('article');
   card.className='result-card card shadow-hover';
-  const img=document.createElement('img');
-  img.className='result-thumb';
-  img.loading='lazy';
-  img.alt='Business photo';
-  img.src=item.main_photo_url||'';
+
+  let img;
+  if(item.main_photo_url){
+    img=document.createElement('img');
+    img.className='result-thumb';
+    img.loading='lazy';
+    img.alt='';
+    img.src=item.main_photo_url;
+  }else{
+    img=document.createElement('div');
+    img.className='result-thumb result-thumb--empty';}
+  const main=document.createElement('div');
   const main=document.createElement('div');
   main.className='result-main';
   const title=document.createElement('div');
