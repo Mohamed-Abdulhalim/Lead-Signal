@@ -43,7 +43,12 @@ def unique_locations():
 
 @app.get("/")
 def index():
-    return render_template("index.html")
+    # Pass categories/locations for the Jinja loops in index.html
+    return render_template(
+        "index.html",
+        categories=unique_categories(),
+        locations=unique_locations(),
+    )
 
 
 @app.get("/meta")
@@ -61,14 +66,23 @@ def search():
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
 
+    # UI "results" dropdown → per_page
+    per_page = request.args.get("per_page", default=50, type=int)
+    # Clamp, so no one asks for 10k rows and kills the DB
+    per_page = max(10, min(per_page, 200))
+
     q = sb.table(LEADS_TABLE).select("*")
 
     if category:
         q = q.eq("category", category)
-    if location:
-        q = q.ilike("query_location", f"%{location}%")
 
-    q = q.limit(100)
+    if location:
+        loc = location.strip()
+        if loc:
+            # IMPORTANT: no leading % to avoid full table scan
+            q = q.ilike("query_location", f"{loc}%")
+
+    q = q.limit(per_page)
 
     res = q.execute()
 
@@ -94,16 +108,11 @@ def search():
 
         items.append(row)
 
-    return jsonify(
-        {
-            "items": items,
-        }
-    )
+    return jsonify({"items": items})
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 
 
 
