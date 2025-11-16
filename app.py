@@ -80,6 +80,8 @@ def search():
 
         row["photos"] = photos
         items.append(row)
+        row_name = row.get("correct_name") or row.get("name") or ""
+        row["name"] = row_name
 
     return jsonify({
         "items": items,
