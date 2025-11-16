@@ -85,6 +85,10 @@ a{color:inherit;text-decoration:none}
 .ac-item:hover,.ac-item[aria-selected="true"]{background:rgba(107,121,255,.18)}
 .ac-empty{padding:10px 12px;color:var(--muted)}
 .results{display:grid;gap:12px;margin-top:6px}
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:14px;color:var(--muted-2)}
+.pagination button{background:var(--bg-3);border:1px solid rgba(255,255,255,.18);color:var(--text);border-radius:999px;padding:6px 10px;font-size:13px;cursor:pointer}
+.pagination button[disabled]{opacity:.4;cursor:default}
+.pagination .page-info{margin:0 6px}
 .result-card{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:14px}
 .result-thumb{width:78px;height:78px;border-radius:10px;background:var(--bg-3);object-fit:cover}
 .result-main{display:grid;gap:8px}
@@ -265,6 +269,7 @@ a{color:inherit;text-decoration:none}
       </form>
       <div id="no-results" class="no-results card">No results found. Try a different category or location.</div>
       <div id="results" class="results" aria-live="polite" aria-busy="false"></div>
+      <div id="pagination" class="pagination" aria-live="polite"></div>
     </section>
   </main>
 </div>
@@ -451,7 +456,11 @@ function renderSkeleton(n=6){
 }
 const resultsEl=document.getElementById('results');
 const noResultsEl=document.getElementById('no-results');
+const paginationEl=document.getElementById('pagination');
 let lastResults=[];
+let currentPage=1;
+let totalPages=1;
+let lastQuery={};
 function renderResult(item){
   const card=document.createElement('article');
   card.className='result-card card shadow-hover';
@@ -519,25 +528,68 @@ function renderResult(item){
   card.appendChild(main);
   return card;
 }
-async function doSearch(q){
+}
+function renderPagination(){
+  if(!totalPages || totalPages<=1){
+    paginationEl.innerHTML='';
+    return;
+  }
+  const prevDisabled=currentPage<=1?'disabled':'';
+  const nextDisabled=currentPage>=totalPages?'disabled':'';
+  paginationEl.innerHTML=
+    `<button id="page-prev" ${prevDisabled}>Prev</button>`+
+    `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`+
+    `<button id="page-next" ${nextDisabled}>Next</button>`;
+  const prevBtn=document.getElementById('page-prev');
+  const nextBtn=document.getElementById('page-next');
+  if(prevBtn && !prevDisabled){
+    prevBtn.addEventListener('click',()=>{
+      if(currentPage>1){
+        doSearch(lastQuery,currentPage-1);
+      }
+    });
+  }
+  if(nextBtn && !nextDisabled){
+    nextBtn.addEventListener('click',()=>{
+      if(currentPage<totalPages){
+        doSearch(lastQuery,currentPage+1);
+      }
+    });
+  }
+}
+async function doSearch(q,page){
   loading(true);
   resultsEl.setAttribute('aria-busy','true');
   resultsEl.innerHTML='';
   noResultsEl.style.display='none';
+  paginationEl.innerHTML='';
   resultsEl.appendChild(renderSkeleton(8));
   try{
-    const params=new URLSearchParams(q);
+    const query=Object.assign({},q);
+    if(page && page>1){
+      query.page=String(page);
+    }
+    lastQuery=query;
+    const params=new URLSearchParams(query);
     const r=await fetch(`/search?${params.toString()}`);
     const data=await r.json();
     const rows=data.items||[];
     lastResults=rows;
+    currentPage=data.page||1;
+    const perPage=data.per_page||rows.length||100;
+    const total=data.total||rows.length;
+    totalPages=perPage?Math.max(1,Math.ceil(total/perPage)):1;
     resultsEl.innerHTML='';
-    if(!rows.length){noResultsEl.style.display='block'}
-    rows.forEach(x=>resultsEl.appendChild(renderResult(x)))
+    if(!rows.length){
+      noResultsEl.style.display='block';
+    }
+    rows.forEach(x=>resultsEl.appendChild(renderResult(x)));
+    renderPagination();
   }catch(e){
     resultsEl.innerHTML='';
     noResultsEl.textContent='Something went wrong. Try again.';
     noResultsEl.style.display='block';
+    paginationEl.innerHTML='';
   }finally{
     resultsEl.setAttribute('aria-busy','false');
     loading(false);
@@ -549,7 +601,10 @@ document.getElementById('search-form').addEventListener('submit',e=>{
   const location=document.getElementById('location').value.trim();
   const isAll=/^all$/i.test(rawCat)||/^all categories$/i.test(rawCat);
   const category=isAll?'':rawCat;
-  doSearch({category,location});
+  currentPage=1;
+  totalPages=1;
+  lastQuery={};
+  doSearch({category,location},1);
 });
 if(location.hash==='#search'){showSearch()}
 const modal=document.getElementById('modal-preview');
