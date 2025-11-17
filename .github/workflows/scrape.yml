@@ -58,98 +58,98 @@ jobs:
           mapfile -t cities <<'EOF'
           # --- Egypt (governorate capitals / major cities) ---
           # --- Baghdad, Iraq
-          # --- Cairo, Egypt
-          # --- Alexandria, Egypt
-          # --- Giza, Egypt
+          Cairo, Egypt
+          Alexandria, Egypt
+          Giza, Egypt
           # --- Port Said, Egypt
           # --- Suez, Egypt
-          Ismailia, Egypt
-          Tanta, Egypt
-          Mansoura, Egypt
-          Zagazig, Egypt
-          Damietta, Egypt
-          Kafr El Sheikh, Egypt
-          Damanhur, Egypt
-          Shebin El Kom, Egypt
-          Banha, Egypt
-          Fayoum, Egypt
-          Beni Suef, Egypt
-          Minya, Egypt
-          Asyut, Egypt
-          Sohag, Egypt
-          Qena, Egypt
-          Luxor, Egypt
-          Aswan, Egypt
-          Hurghada, Egypt
-          Sharm El Sheikh, Egypt
-          Arish, Egypt
+          # --- Ismailia, Egypt
+          # --- Tanta, Egypt
+          # --- Mansoura, Egypt
+          # --- Zagazig, Egypt
+          # --- Damietta, Egypt
+          # --- Kafr El Sheikh, Egypt
+          # --- Damanhur, Egypt
+          # --- Shebin El Kom, Egypt
+          # --- Banha, Egypt
+          # --- Fayoum, Egypt
+          # --- Beni Suef, Egypt
+          # --- Minya, Egypt
+          # --- Asyut, Egypt
+          # --- Sohag, Egypt
+          # --- Qena, Egypt
+          # --- Luxor, Egypt
+          # --- Aswan, Egypt
+          # --- Hurghada, Egypt
+          # --- Sharm El Sheikh, Egypt
+          # --- Arish, Egypt
           # --- Arab capitals (de facto/admin where relevant) ---
-          Algiers, Algeria
-          Manama, Bahrain
-          Cairo, Egypt
-          Baghdad, Iraq
-          Amman, Jordan
-          Kuwait City, Kuwait
-          Beirut, Lebanon
-          Tripoli, Libya
-          Nouakchott, Mauritania
-          Rabat, Morocco
-          Muscat, Oman
-          Doha, Qatar
-          Riyadh, Saudi Arabia
-          Khartoum, Sudan
-          Damascus, Syria
-          Tunis, Tunisia
-          Abu Dhabi, United Arab Emirates
-          Sana'a, Yemen
-          Djibouti, Djibouti
-          Mogadishu, Somalia
-          Moroni, Comoros
-          Ramallah, Palestine
+          # --- Algiers, Algeria
+          # --- Manama, Bahrain
+          # --- Cairo, Egypt
+          # --- Baghdad, Iraq
+          # --- Amman, Jordan
+          # --- Kuwait City, Kuwait
+          # --- Beirut, Lebanon
+          # --- Tripoli, Libya
+          # --- Nouakchott, Mauritania
+          # --- Rabat, Morocco
+          # --- Muscat, Oman
+          # --- Doha, Qatar
+          # --- Riyadh, Saudi Arabia
+          # --- Khartoum, Sudan
+          # --- Damascus, Syria
+          # --- Tunis, Tunisia
+          # --- Abu Dhabi, United Arab Emirates
+          # --- Sana'a, Yemen
+          # --- Djibouti, Djibouti
+          # --- Mogadishu, Somalia
+          # --- Moroni, Comoros
+          # --- Ramallah, Palestine
           # --- International priority cities ---
-          Paris, France
-          London, United Kingdom
-          New York, USA
-          Los Angeles, USA
-          San Francisco, USA
-          Chicago, USA
-          Toronto, Canada
-          Vancouver, Canada
-          Berlin, Germany
-          Munich, Germany
-          Madrid, Spain
-          Barcelona, Spain
-          Rome, Italy
-          Milan, Italy
-          Istanbul, Türkiye
-          Athens, Greece
-          Amsterdam, Netherlands
-          Brussels, Belgium
-          Zurich, Switzerland
-          Vienna, Austria
-          Copenhagen, Denmark
-          Stockholm, Sweden
-          Oslo, Norway
-          Helsinki, Finland
-          Warsaw, Poland
-          Prague, Czechia
-          Budapest, Hungary
-          Lisbon, Portugal
-          Dublin, Ireland
-          Dubai, United Arab Emirates
-          Singapore, Singapore
-          Hong Kong
-          Tokyo, Japan
-          Osaka, Japan
-          Seoul, South Korea
-          Sydney, Australia
-          Melbourne, Australia
-          Auckland, New Zealand
-          Mexico City, Mexico
-          São Paulo, Brazil
-          Buenos Aires, Argentina
-          Johannesburg, South Africa
-          Casablanca, Morocco
+          # --- Paris, France
+          # --- London, United Kingdom
+          # --- New York, USA
+          # --- Los Angeles, USA
+          # --- San Francisco, USA
+          # --- Chicago, USA
+          # --- Toronto, Canada
+          # --- Vancouver, Canada
+          # --- Berlin, Germany
+          # --- Munich, Germany
+          # --- Madrid, Spain
+          # --- Barcelona, Spain
+          # --- Rome, Italy
+          # --- Milan, Italy
+          # --- Istanbul, Türkiye
+          # --- Athens, Greece
+          # --- Amsterdam, Netherlands
+          # --- Brussels, Belgium
+          # --- Zurich, Switzerland
+          # --- Vienna, Austria
+          # --- Copenhagen, Denmark
+          # --- Stockholm, Sweden
+          # --- Oslo, Norway
+          # --- Helsinki, Finland
+          # --- Warsaw, Poland
+          # --- Prague, Czechia
+          # --- Budapest, Hungary
+          # --- Lisbon, Portugal
+          # --- Dublin, Ireland
+          # --- Dubai, United Arab Emirates
+          # --- Singapore, Singapore
+          # --- Hong Kong
+          # --- Tokyo, Japan
+          # --- Osaka, Japan
+          # --- Seoul, South Korea
+          # --- Sydney, Australia
+          # --- Melbourne, Australia
+          # --- Auckland, New Zealand
+          # --- Mexico City, Mexico
+          # --- São Paulo, Brazil
+          # --- Buenos Aires, Argentina
+          # --- Johannesburg, South Africa
+          # --- Casablanca, Morocco
           EOF
 
           # Strip comments/blanks
@@ -203,7 +203,7 @@ jobs:
       - name: Run scraper (never fail even if scraper crashes at the end)
         run: |
           echo "Scraping city: $CITY"
-          python maps.py --categories-file categories.txt --location "$CITY" --max-places 100 --output TheResultss.csv --headless || true
+          python maps.py --categories-file categories.txt --location "$CITY" --max-places 20 --output TheResultss.csv --headless || true
 
       - name: Clean CSV
         run: |
