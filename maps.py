@@ -258,7 +258,7 @@ def extract_card_basic(driver, card) -> Dict[str, str]:
             name = safe_text(t)
         except Exception:
             pass
-    category_line = ""; address_line = ""; opening_hours = ""; phone = ""
+    category_line = ""; address_line = ""; opening_hours = ""
     try:
         rows = card.find_elements(By.CSS_SELECTOR, INFO_ROW_CSS)
         texts = [safe_text(r) for r in rows if safe_text(r)]
@@ -266,10 +266,6 @@ def extract_card_basic(driver, card) -> Dict[str, str]:
         for tx in texts:
             if not opening_hours and looks_like_hours(tx):
                 opening_hours = re.sub(r"\s+", " ", tx)
-            if not phone:
-                p = strong_phone_extract(tx)
-                if p:
-                    phone = p
         for tx in texts:
             if "·" in tx and not category_line and not address_line:
                 parts = [p.strip() for p in tx.split("·", 1)]
@@ -288,9 +284,10 @@ def extract_card_basic(driver, card) -> Dict[str, str]:
         "category_line": category_line,
         "address_line": address_line,
         "opening_hours": opening_hours,
-        "phone": phone,
+        "phone": "",          # deliberately empty: we do NOT trust card phones
         "website": "",
     }
+
 
 
 def open_card_detail(driver, card) -> None:
@@ -605,7 +602,7 @@ def harvest_category(driver, category: str, location: str, csv_path: str, seen: 
             address_line = detail.get("address") or basic.get("address_line") or ""
             address_line = re.sub(r'^\s*(Address|العنوان)\s*:\s*', '', address_line, flags=re.I)
             opening_hours = detail.get("opening_hours") or basic.get("opening_hours") or ""
-            phone = detail.get("phone") or basic.get("phone") or ""
+            phone = detail.get("phone") or ""  # only trust detail panel phone
             website = detail.get("website") or basic.get("website") or ""
             rating = detail.get("rating") or ""
             reviews_count = detail.get("reviews_count") or ""
