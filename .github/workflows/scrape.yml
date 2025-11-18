@@ -209,14 +209,19 @@ jobs:
         run: |
           python csv_cleaner.py --in TheResultss.csv --out Cleaned.csv
 
+      - name: Enrich phones from detail pages
+        run: |
+          python phone_enricher.py --in Cleaned.csv --out Enriched.csv --limit 1000
+
       - name: Push to Supabase
-        run: python supabase_push.py Cleaned.csv
+        run: python supabase_push.py Enriched.csv
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
 
-      - name: Upload cleaned CSV artifact
+      - name: Upload enriched CSV artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cleaned_csv_${{ env.CITY_SAFE }}
-          path: Cleaned.csv
+          name: enriched_csv_${{ env.CITY_SAFE }}
+          path: Enriched.csv
+
