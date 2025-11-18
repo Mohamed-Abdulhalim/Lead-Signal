@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse, csv, re, unicodedata, os, sys, json
 from datetime import datetime
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse, parse_qs
 
 CURRENCY_PATTERNS = [
     r"(?:EGP|ج(?:\.\s*)م|LE|L\.E\.|E\s*P|جنيه)\s*\d+[\d\s,\.]*\+?",
@@ -22,6 +22,69 @@ SOCIAL_HOSTS = ["facebook.com","fb.com","instagram.com","x.com","twitter.com","t
 
 BIDI_JUNK = dict.fromkeys(map(ord, "\u200c\u200d\u200e\u200f\u202a\u202b\u202c\u202d\u202e"), None)
 PLACE_SEG_RE = re.compile(r"/place/([^/]+)/")
+
+RID_ANY = re.compile("!\\d+s(ChIJ[0-9A-Za-z_-]+)")
+RID_QS = re.compile(r"(?i)(?:^|[?&])query_place_id=(ChIJ[0-9A-Za-z_-]+)")
+RID_Q = re.compile(r"(?i)q=place_id:(ChIJ[0-9A-Za-z_-]+)")
+COORDS = re.compile(r"/@-?\d{1,3}\.\d{1,8},-?\d{1,3}\.\d{1,8},\d{1,2}z")
+STRIP_QS = {"rclk", "entry", "g_ep", "hl", "ved", "authuser", "shorturl"}
+
+
+def strip_bidi(s):
+    return "".join(ch for ch in s if ch not in BIDI_JUNK)
+
+
+def find_place_id(u):
+    m = RID_ANY.search(u)
+    if m:
+        return m.group(1)
+    m = RID_QS.search(u)
+    if m:
+        return m.group(1)
+    m = RID_Q.search(u)
+    if m:
+        return m.group(1)
+    try:
+        q = parse_qs(urlparse(u).query)
+        v = q.get("query_place_id", [None])[0]
+        if v and v.startswith("ChIJ"):
+            return v
+        v = q.get("q", [None])[0]
+        if v and v.lower().startswith("place_id:"):
+            v = v.split(":", 1)[1]
+            if v.startswith("ChIJ"):
+                return v
+    except Exception:
+        pass
+    return None
+
+
+def normalize_gmaps(u):
+    if not u:
+        return ""
+    s = strip_bidi(unquote(str(u).strip()))
+    if not s:
+        return ""
+    if not s.startswith("http"):
+        s = "https://" + s
+    pid = find_place_id(s)
+    if pid:
+        return f"https://www.google.com/maps/place/?q=place_id:{pid}"
+    try:
+        p = urlparse(s)
+        if "google.com" not in p.netloc:
+            return s
+        path = COORDS.sub("", p.path)
+        q = parse_qs(p.query)
+        q = {k: v for k, v in q.items() if k not in STRIP_QS}
+        qs = "&".join(f"{k}={v[0]}" for k, v in q.items() if v and v[0])
+        base = f"{p.scheme}://{p.netloc}{path}"
+        if qs:
+            base += "?" + qs
+        return base
+    except Exception:
+        return s
+
 
 
 def nfc(s):
@@ -332,6 +395,9 @@ def process(in_path, out_path, drop_empty_name=False):
             row["correct_name"] = parsed_cn
         else:
             row["correct_name"] = existing_cn
+
+        if row.get("profile_url"):
+            row["profile_url"] = normalize_gmaps(row["profile_url"])
 
         k = dedupe_key(row)
         if k in seen:
