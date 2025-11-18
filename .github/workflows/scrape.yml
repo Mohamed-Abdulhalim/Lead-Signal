@@ -58,11 +58,11 @@ jobs:
           mapfile -t cities <<'EOF'
           # --- Egypt (governorate capitals / major cities) ---
           # --- Baghdad, Iraq
-          Cairo, Egypt
-          Alexandria, Egypt
-          Giza, Egypt
+          # --- Cairo, Egypt
+          # --- Alexandria, Egypt
+          # --- Giza, Egypt
           # --- Port Said, Egypt
-          # --- Suez, Egypt
+          Suez, Egypt
           # --- Ismailia, Egypt
           # --- Tanta, Egypt
           # --- Mansoura, Egypt
