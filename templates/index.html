@@ -789,7 +789,7 @@ btnPrev.onclick=()=>{
   lastResults.forEach(r=>{
     tbl.insertAdjacentHTML('beforeend','<tr>'+cols.map(c=>`<td>${(r[c]??'')}</td>`).join('')+'</tr>');
   });
-  const csv=[cols.join(','),...lastResults.map(r=>cols.map(c=>JSON.stringify(r[c]??'')).join(',')).join('\n')].join('\n');
+  const csv = [cols.join(','), ...lastResults.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   btnDownload.href=URL.createObjectURL(blob);
   btnDownload.download='leads.csv';
