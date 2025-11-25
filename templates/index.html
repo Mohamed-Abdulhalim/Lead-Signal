@@ -95,15 +95,36 @@ a{color:inherit;text-decoration:none}
 @media (max-width:860px){.search-form{grid-template-columns:1fr}}
 .input{display:grid;gap:8px}
 .input label{font-size:14px;color:var(--text-weak);font-weight:700;letter-spacing:.2px}
-.input input,.input select{background:var(--bg-3);border:1px solid rgba(255,255,255,.12);color:var(--text);padding:14px 14px;border-radius:12px;outline:none;font-size:15px}
+.input input,.input select{
+  background:var(--bg-3);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  padding:14px 14px;
+  border-radius:12px;
+  outline:none;
+  font-size:16px; /* 16px to avoid mobile auto-zoom */
+}
 .input input:focus,.input select:focus{box-shadow:var(--ring)}
 .ac-wrap{position:relative}
 .ac-wrap input{padding-right:34px}
 .ac-wrap::after{content:"▾";position:absolute;right:10px;top:36px;pointer-events:none;opacity:.6;font-size:14px}
-.ac-menu{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.14);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.4);max-height:280px;overflow:auto;display:none}
+.ac-menu{
+  position:absolute;
+  z-index:30;
+  left:0;
+  right:0;
+  top:calc(100% + 6px);
+  background:#050816;              /* solid dark background */
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+  max-height:280px;
+  overflow:auto;
+  display:none;
+}
 .ac-menu.show{display:block}
 .ac-item{padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text)}
-.ac-item:hover,.ac-item[aria-selected="true"]{background:rgba(107,121,255,.18)}
+.ac-item:hover,.ac-item[aria-selected="true"]{background:rgba(107,121,255,.35)}
 .ac-empty{padding:10px 12px;color:var(--muted)}
 .results{display:grid;gap:12px;margin-top:6px}
 .pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:14px;color:var(--muted-2)}
@@ -180,21 +201,19 @@ a{color:inherit;text-decoration:none}
   top:16px;
   left:16px;
   z-index:50;
-  width:36px;
-  height:32px;
+  width:40px;
+  height:40px;
   border-radius:999px;
-  border:1px solid rgba(148,163,255,.55);
-  background:rgba(15,23,42,.9);
+  border:none;
+  background:transparent;        /* transparent, embedded look */
   display:none;
   justify-content:center;
   align-items:center;
   gap:4px;
   cursor:pointer;
-  box-shadow:0 10px 25px rgba(15,23,42,.7);
-  backdrop-filter:blur(10px);
 }
 .nav-toggle span{
-  width:16px;
+  width:18px;
   height:2px;
   border-radius:999px;
   background:#e5e7ff;
