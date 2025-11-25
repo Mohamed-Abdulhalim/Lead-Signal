@@ -60,7 +60,7 @@ def normalize_phone_e164(s: str) -> str:
         return "+20" + digits
     return "+20" + digits
 
-def jitter(a=0.5, b=1.5):
+def jitter(a=0.2, b=0.6):
     time.sleep(random.uniform(a, b))
 
 def get_installed_chrome_major() -> Optional[int]:
@@ -99,7 +99,7 @@ def new_driver(headless: bool):
         pass
     return d
 
-def get_phone_from_page(driver, url: str, timeout: int = 25) -> str:
+def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
     if not url:
         return ""
     try:
@@ -107,14 +107,10 @@ def get_phone_from_page(driver, url: str, timeout: int = 25) -> str:
     except WebDriverException:
         return ""
     try:
-        WebDriverWait(driver, timeout).until(
-            EC.presence_of_all_elements_located((By.XPATH, DETAIL_PHONE_XP))
+        el = WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((By.XPATH, DETAIL_PHONE_XP))
         )
     except TimeoutException:
-        pass
-    try:
-        el = driver.find_element(By.XPATH, DETAIL_PHONE_XP)
-    except Exception:
         return ""
     raw = el.get_attribute("href") or el.text or ""
     raw = raw.strip()
@@ -151,11 +147,19 @@ def process(input_csv: str, output_csv: str, limit: Optional[int] = None, headle
         for idx, row in enumerate(rows):
             if limit is not None and idx >= limit:
                 break
+
+            if idx > 0 and idx % 200 == 0:
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
+                driver = new_driver(headless=headless)
+
             url = (row.get("profile_url") or "").strip()
             if not url:
                 continue
             phone = get_phone_from_page(driver, url)
-            jitter(0.7, 1.7)
+            jitter(0.2, 0.6)
             if not phone:
                 continue
             row["phone"] = phone
