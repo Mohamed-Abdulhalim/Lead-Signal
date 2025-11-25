@@ -441,16 +441,17 @@ function initAutocomplete(inputEl, source, menuEl){
     }
   });
 }
-const CATS=['All categories'
-{% for c in categories %}
-, {{ c|tojson }}
-{% endfor %}
-];
-const LOCS=[
-{% for loc in locations %}
-{{ loc|tojson }}{% if not loop.last %},{% endif %}
-{% endfor %}
-];
+let CATS = [];
+let LOCS = [];
+
+fetch("https://YOUR-APP.fly.dev/meta")
+  .then(r => r.json())
+  .then(data => {
+      CATS = data.categories;
+      LOCS = data.locations;
+      initAutocomplete(document.getElementById('category'), CATS, document.getElementById('ac-categories'));
+      initAutocomplete(document.getElementById('location'), LOCS, document.getElementById('ac-locations'));
+  });
 initAutocomplete(document.getElementById('category'),CATS,document.getElementById('ac-categories'));
 initAutocomplete(document.getElementById('location'),LOCS,document.getElementById('ac-locations'));
 function actionBtn(iconPath,label,href,copy){
