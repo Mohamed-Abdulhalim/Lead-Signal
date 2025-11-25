@@ -618,7 +618,7 @@ async function doSearch(q,page){
     }
     lastQuery=query;
     const params=new URLSearchParams(query);
-    const r = await fetch(`https://YOUR-APP.fly.dev/search?${params.toString()}`);
+    const r = await fetch(`/search?${params.toString()}`);
     const data=await r.json();
     const rows=data.items||[];
     lastResults=rows;
