@@ -784,12 +784,35 @@ const btnDownload=document.getElementById('btn-download');
 btnPrev.onclick=()=>{
   if(!lastResults.length){showToast('Run a search first');return}
   tbl.innerHTML='';
-  const cols=[...new Set(lastResults.flatMap(o=>Object.keys(o)))];
+  const cols=["place name","category","location","address","phone","maps link","website"];
   tbl.insertAdjacentHTML('beforeend','<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>');
   lastResults.forEach(r=>{
-    tbl.insertAdjacentHTML('beforeend','<tr>'+cols.map(c=>`<td>${(r[c]??'')}</td>`).join('')+'</tr>');
+    const rowValues=[
+      r.correct_name||r.name||"",
+      r.category||"",
+      r.query_location||"",
+      r.address_line||r.address||"",
+      r.phone_e164||r.phone||"",
+      r.profile_url||"",
+      r.website||r.website_fallback||""
+    ];
+    tbl.insertAdjacentHTML('beforeend','<tr>'+rowValues.map(v=>`<td>${v??''}</td>`).join('')+'</tr>');
   });
-  const csv = [cols.join(','), ...lastResults.map(r => cols.map(c => JSON.stringify(r[c] ?? '')).join(','))].join('\n');
+  const csv=[
+    cols.join(','),
+    ...lastResults.map(r=>{
+      const rowValues=[
+        r.correct_name||r.name||"",
+        r.category||"",
+        r.query_location||"",
+        r.address_line||r.address||"",
+        r.phone_e164||r.phone||"",
+        r.profile_url||"",
+        r.website||r.website_fallback||""
+      ];
+      return rowValues.map(v=>JSON.stringify(v??'')).join(',');
+    })
+  ].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   btnDownload.href=URL.createObjectURL(blob);
   btnDownload.download='leads.csv';
