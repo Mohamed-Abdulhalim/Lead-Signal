@@ -14,27 +14,39 @@ with open("categories.txt") as f:
     HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
 
 
-def _distinct(col: str, limit: int = 200):
-    res = (
-        sb
-        .table(LEADS_TABLE)
-        .select(col)
-        .order(col)
-        .limit(limit)
-        .execute()
-    )
-    rows = res.data or []
-
+def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
     seen = set()
     values = []
-    for r in rows:
-        v = (r.get(col) or "").strip()
-        if not v or v in seen:
-            continue
-        seen.add(v)
-        values.append(v)
+    offset = 0
+
+    for _ in range(max_batches):
+        res = (
+            sb
+            .table(LEADS_TABLE)
+            .select(col)
+            .order(col)
+            .range(offset, offset + batch - 1)
+            .execute()
+        )
+        rows = res.data or []
+        if not rows:
+            break
+
+        for r in rows:
+            v = (r.get(col) or "").strip()
+            if not v or v in seen:
+                continue
+            seen.add(v)
+            values.append(v)
+
+        # no more pages
+        if len(rows) < batch:
+            break
+
+        offset += batch
 
     return values
+
 
 
 def unique_categories():
