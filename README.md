@@ -1,4 +1,4 @@
-# Lead Finder – Automated Google Maps Scraper & Lead Pipeline
+# Lead Signal – Automated Google Maps Scraper & Lead Pipeline
 
 A production-grade pipeline that turns Google Maps into clean, structured business leads.  
 **Scrape → Clean → Enrich → Upsert → View in a live dashboard.**
