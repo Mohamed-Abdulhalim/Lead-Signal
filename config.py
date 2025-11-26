@@ -1,9 +1,3 @@
-# config.py
-# Centralized configuration for the Maps Scraper pipeline.
-
-# -----------------------------
-# Browser / Selenium Settings
-# -----------------------------
 PAGELOAD_TIMEOUT = 30
 SCRIPT_TIMEOUT = 20
 MAX_SCROLL_TRIES = 50
@@ -14,9 +8,6 @@ SCROLL_DELAY_MAX = 0.70
 HEADLESS_DEFAULT = True
 CHROME_VERSION_FALLBACK = 141
 
-# -----------------------------
-# Data / CSV Fields
-# -----------------------------
 CSV_FIELDS = [
     "category",
     "query_location",
@@ -35,31 +26,32 @@ CSV_FIELDS = [
     "timestamp",
 ]
 
-# -----------------------------
-# Limits and throttling
-# -----------------------------
 DEFAULT_MAX_PLACES = 500
 BROWSER_RESTART_EVERY = 1
-PHONE_ENRICH_LIMIT = None      # None = no limit
+PHONE_ENRICH_LIMIT = None
 PHONE_RESTART_EVERY = 200
 
-# -----------------------------
-# Supabase Settings
-# -----------------------------
 SUPABASE_TABLE_NAME = "production_maps"
 SUPABASE_BATCH_SIZE = 500
 
-# -----------------------------
-# Logging Settings
-# -----------------------------
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-LOG_LEVEL = "INFO"   # Default, CLI can override
+LOG_LEVEL = "INFO"
 
-# -----------------------------
-# Jitter settings (random sleeps)
-# -----------------------------
 SCRAPER_JITTER_MIN = 0.5
 SCRAPER_JITTER_MAX = 1.2
 
 ENRICH_JITTER_MIN = 0.2
 ENRICH_JITTER_MAX = 0.6
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+]
+
+ACCEPT_LANG = [
+    "en-US,en;q=0.9,ar;q=0.7",
+    "en-GB,en;q=0.9,ar;q=0.7",
+    "ar-EG,ar;q=0.9,en;q=0.6",
+]
