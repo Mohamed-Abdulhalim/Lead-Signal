@@ -21,7 +21,6 @@ def _distinct(col: str, limit: int = 200):
         .select(col)
         .not_.is_(col, None)
         .order(col)
-        .range(0, limit - 1)
         .execute()
         .data
         or []
@@ -31,12 +30,12 @@ def _distinct(col: str, limit: int = 200):
     values = []
     for r in rows:
         v = r.get(col)
-        if not v:
-            continue
-        if v in seen:
+        if not v or v in seen:
             continue
         seen.add(v)
         values.append(v)
+        if len(values) >= limit:
+            break
 
     return values
 
