@@ -202,7 +202,7 @@ jobs:
       - name: Run scraper (never fail even if scraper crashes at the end)
         run: |
           echo "Scraping city: $CITY"
-          python maps.py --categories-file categories.txt --location "$CITY" --max-places 50 --output TheResultss.csv --headless || true
+          python maps_scraper.py --categories-file categories.txt --location "$CITY" --max-places 50 --output TheResultss.csv --headless || true
 
       - name: Clean CSV
         run: |
