@@ -3,6 +3,13 @@
 import os, sys, csv, argparse, logging
 from typing import List, Dict, Any
 from supabase import create_client
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from config import LOG_FORMAT, LOG_LEVEL
 
 TABLE_NAME = os.environ.get("LEADS_TABLE", "production_maps")
 
@@ -72,13 +79,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("csv_path")
     ap.add_argument("--batch", type=int, default=500)
-    ap.add_argument("--log", type=str, default="INFO")
+    ap.add_argument("--log", type=str, default=LOG_LEVEL)
     args = ap.parse_args()
 
-    level = getattr(logging, args.log.upper(), logging.INFO)
+    level = getattr(logging, args.log.upper(), getattr(logging, LOG_LEVEL, logging.INFO))
     logging.basicConfig(
         level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
+        format=LOG_FORMAT,
         handlers=[
             logging.FileHandler("supabase_push.log", encoding="utf-8"),
             logging.StreamHandler(stream=sys.stdout),
