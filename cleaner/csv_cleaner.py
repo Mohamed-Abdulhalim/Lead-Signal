@@ -10,7 +10,6 @@ if str(ROOT_DIR) not in sys.path:
 
 from config import LOG_FORMAT, LOG_LEVEL
 
-
 CURRENCY_PATTERNS = [
     r"(?:EGP|ج(?:\.\s*)م|LE|L\.E\.|E\s*P|جنيه)\s*\d+[\d\s,\.]*\+?",
     r"\d+[\d\s,\.]*\s*(?:EGP|ج(?:\.\s*)م|LE|L\.E\.|E\s*P)\+?",
@@ -479,8 +478,12 @@ def main():
             logging.StreamHandler(stream=sys.stdout),
         ],
     )
-
-    logging.info("Starting CSV cleaning: in=%s out=%s drop_empty_name=%s", args.inp, args.out, args.drop_empty_name)
+    logging.info(
+        "Starting CSV cleaning: in=%s out=%s drop_empty_name=%s",
+        args.inp,
+        args.out,
+        args.drop_empty_name,
+    )
     process(args.inp, args.out, drop_empty_name=args.drop_empty_name)
 
 
