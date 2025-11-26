@@ -14,12 +14,24 @@ try:
 except Exception:
     winreg = None
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-]
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from config import (
+    USER_AGENTS,
+    CHROME_VERSION_FALLBACK,
+    PAGELOAD_TIMEOUT,
+    SCRIPT_TIMEOUT,
+    ENRICH_JITTER_MIN,
+    ENRICH_JITTER_MAX,
+    PHONE_RESTART_EVERY,
+    PHONE_ENRICH_LIMIT,
+    LOG_FORMAT,
+    LOG_LEVEL,
+)
 
 DETAIL_PHONE_XP = "//button[.//div[contains(text(),'Phone') or contains(text(),'الهاتف') or contains(text(),'اتصال')]] | //a[contains(@href,'tel:')]"
 
@@ -61,7 +73,7 @@ def normalize_phone_e164(s: str) -> str:
     return "+20" + digits
 
 
-def jitter(a=0.2, b=0.6):
+def jitter(a=ENRICH_JITTER_MIN, b=ENRICH_JITTER_MAX):
     time.sleep(random.uniform(a, b))
 
 
@@ -94,11 +106,11 @@ def new_driver(headless: bool):
     opts.add_argument("--user-agent=" + ua)
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--blink-settings=imagesEnabled=true")
-    major = get_installed_chrome_major() or 141
+    major = get_installed_chrome_major() or CHROME_VERSION_FALLBACK
     d = uc.Chrome(options=opts, version_main=major)
     try:
-        d.set_page_load_timeout(30)
-        d.set_script_timeout(20)
+        d.set_page_load_timeout(PAGELOAD_TIMEOUT)
+        d.set_script_timeout(SCRIPT_TIMEOUT)
     except Exception:
         pass
     return d
@@ -163,7 +175,7 @@ def process(input_csv: str, output_csv: str, limit: Optional[int] = None, headle
             if limit is not None and idx >= limit:
                 break
 
-            if idx > 0 and idx % 200 == 0:
+            if PHONE_RESTART_EVERY and idx > 0 and idx % PHONE_RESTART_EVERY == 0:
                 logging.info("Restarting browser after %d rows to stay fresh", idx)
                 try:
                     driver.quit()
@@ -178,7 +190,7 @@ def process(input_csv: str, output_csv: str, limit: Optional[int] = None, headle
                 continue
 
             phone = get_phone_from_page(driver, url)
-            jitter(0.2, 0.6)
+            jitter()
             if not phone:
                 continue
 
@@ -203,20 +215,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="inp", required=True)
     ap.add_argument("--out", dest="out", required=True)
-    ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--limit", type=int, default=PHONE_ENRICH_LIMIT)
     ap.add_argument("--no-headless", action="store_true")
-    ap.add_argument("--log", dest="log", default="INFO")
+    ap.add_argument("--log", dest="log", default=LOG_LEVEL)
     args = ap.parse_args()
 
-    level = getattr(logging, args.log.upper(), logging.INFO)
+    level = getattr(logging, args.log.upper(), getattr(logging, LOG_LEVEL, logging.INFO))
     logging.basicConfig(
         level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
+        format=LOG_FORMAT,
         handlers=[
             logging.FileHandler("phone_enricher.log", encoding="utf-8"),
             logging.StreamHandler(stream=sys.stdout),
         ],
     )
+
 
     logging.info(
         "CLI args: in=%s out=%s limit=%s no_headless=%s log=%s",
