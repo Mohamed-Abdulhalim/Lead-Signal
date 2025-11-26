@@ -15,27 +15,24 @@ with open("categories.txt") as f:
 
 
 def _distinct(col: str, limit: int = 200):
-    rows = (
+    res = (
         sb
         .table(LEADS_TABLE)
         .select(col)
-        .not_.is_(col, None)
         .order(col)
+        .limit(limit)
         .execute()
-        .data
-        or []
     )
+    rows = res.data or []
 
     seen = set()
     values = []
     for r in rows:
-        v = r.get(col)
+        v = (r.get(col) or "").strip()
         if not v or v in seen:
             continue
         seen.add(v)
         values.append(v)
-        if len(values) >= limit:
-            break
 
     return values
 
