@@ -102,15 +102,59 @@ def search():
     per_page = 100
     offset = (page - 1) * per_page
 
+    # new filter params
+    min_rating = request.args.get("min_rating", type=float)
+    has_phone = request.args.get("has_phone") == "1"
+    has_website = request.args.get("has_website") == "1"
+    address_contains = request.args.get("address_contains", type=str)
+    sort = (request.args.get("sort", type=str) or "").strip()
+
     q = sb.table(LEADS_TABLE).select("*", count="exact")
 
+    # category (exact, frontend handles "All categories")
     if category:
         q = q.eq("category", category)
 
+    # location prefix match
     if location:
         loc = location.strip()
         if loc:
             q = q.ilike("query_location", f"{loc}%")
+
+    # rating filter
+    if min_rating is not None:
+        q = q.gte("rating", min_rating)
+
+    # has phone: prefer normalized phone_e164
+    if has_phone:
+        q = (
+            q.not_.is_("phone_e164", None)
+             .neq("phone_e164", "")
+        )
+
+    # has website: raw website column only (fallback handled on frontend)
+    if has_website:
+        q = (
+            q.not_.is_("website", None)
+             .neq("website", "")
+        )
+
+    # address contains (substring match on normalized address_line)
+    if address_contains:
+        addr = address_contains.strip()
+        if addr:
+            q = q.ilike("address_line", f"%{addr}%")
+
+    # sorting
+    if sort == "rating_desc":
+        q = q.order("rating", desc=True)
+    elif sort == "reviews_desc":
+        q = q.order("reviews_count", desc=True)
+    elif sort == "name_asc":
+        q = q.order("name")
+    else:
+        # "best match" default: higher rating & reviews first
+        q = q.order("rating", desc=True).order("reviews_count", desc=True)
 
     q = q.range(offset, offset + per_page - 1)
 
