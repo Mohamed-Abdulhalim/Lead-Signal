@@ -128,8 +128,8 @@ def search():
     # has phone: prefer normalized phone_e164
     if has_phone:
         q = (
-            q.not_.is_("phone_e164", None)
-             .neq("phone_e164", "")
+            q.not_.is_("phone", None)
+             .neq("phone", "")
         )
 
     # has website: raw website column only (fallback handled on frontend)
