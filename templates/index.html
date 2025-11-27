@@ -95,15 +95,19 @@ a{color:inherit;text-decoration:none}
 @media (max-width:860px){.search-form{grid-template-columns:1fr}}
 .input{display:grid;gap:8px}
 .input label{font-size:14px;color:var(--text-weak);font-weight:700;letter-spacing:.2px}
-.input input,.input select{
-  background:var(--bg-3);
-  border:1px solid rgba(255,255,255,.12);
-  color:var(--text);
-  padding:14px 14px;
-  border-radius:12px;
-  outline:none;
-  font-size:16px; /* 16px to avoid mobile auto-zoom */
-}
+.input input,.input select{background:var(--bg-3);border:1px solid rgba(255,255,255,.12);color:var(--text);padding:14px 14px;border-radius:12px;outline:none;font-size:16px;}
+/* 🔽 NEW FILTER STYLES */
+.filters-bar{margin:8px 0 12px;padding:10px 12px;background:rgba(15,23,42,.86);border-radius:12px;border:1px solid rgba(255,255,255,.08);display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.filters-bar.hidden{display:none;}
+.filter-group{display:grid;gap:6px;min-width:150px;}
+.filter-group label{font-size:13px;color:var(--text-weak);font-weight:600;letter-spacing:.2px;}
+.filter-control{background:var(--bg-3);border:1px solid rgba(255,255,255,.12);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px;outline:none;}
+.filter-control:focus{box-shadow:var(--ring);}
+.filters-inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.filter-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.9);font-size:13px;cursor:pointer;color:var(--text-weak);}
+.filter-chip input{margin:0;}
+.filter-chip span{font-size:13px;}
+@media (max-width:860px){.filters-bar{padding:10px;}.filter-group{min-width:140px;}}
 .input input:focus,.input select:focus{box-shadow:var(--ring)}
 .ac-wrap{position:relative}
 .ac-wrap input{padding-right:34px}
@@ -363,6 +367,50 @@ body.nav-open .nav-backdrop{
           <button class="btn" id="btn-preview" type="button">Preview export</button>
         </div>
       </form>
+
+      <!-- 🔽 NEW FILTER BAR -->
+      <div id="filters-bar" class="filters-bar hidden" aria-label="Filters">
+        <div class="filter-group">
+          <label for="filter-rating">Rating</label>
+          <select id="filter-rating" class="filter-control">
+            <option value="">Any rating</option>
+            <option value="4.5">★ 4.5+ only</option>
+            <option value="4.0">★ 4.0+ and above</option>
+            <option value="3.5">★ 3.5+ and above</option>
+            <option value="3.0">★ 3.0+ and above</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Contact data</label>
+          <div class="filters-inline">
+            <label class="filter-chip">
+              <input type="checkbox" id="filter-has-phone">
+              <span>Has phone</span>
+            </label>
+            <label class="filter-chip">
+              <input type="checkbox" id="filter-has-website">
+              <span>Has website</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-address">Address contains</label>
+          <input id="filter-address" class="filter-control" placeholder="e.g. Nasr City, Maadi">
+        </div>
+
+        <div class="filter-group">
+          <label for="sort-by">Sort by</label>
+          <select id="sort-by" class="filter-control">
+            <option value="">Best match</option>
+            <option value="rating_desc">Rating (high → low)</option>
+            <option value="reviews_desc">Reviews count (high → low)</option>
+            <option value="name_asc">Name (A → Z)</option>
+          </select>
+        </div>
+      </div>
+
       <div id="no-results" class="no-results card">No results found. Try a different category or location.</div>
       <div id="results" class="results" aria-live="polite" aria-busy="false"></div>
       <div id="pagination" class="pagination" aria-live="polite"></div>
@@ -432,6 +480,16 @@ const toast=document.getElementById('toast');
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1200)}
 const loader=document.getElementById('loader');
 function loading(on){loader.classList.toggle('show',!!on)}
+
+/* 🔽 NEW: simple debounce helper */
+function debounce(fn, delay){
+  let t;
+  return function(...args){
+    clearTimeout(t);
+    t = setTimeout(()=>fn.apply(this,args), delay);
+  };
+}
+
 (function(){
   const wrap=document.getElementById('logo-follow');
   const icon=document.getElementById('logo-icon');
@@ -698,72 +756,13 @@ function renderResult(item){
 
   return card;
 }
-function renderPagination(){
-  if(!totalPages || totalPages<=1){
-    paginationEl.innerHTML='';
-    return;
-  }
-  const prevDisabled=currentPage<=1?'disabled':'';
-  const nextDisabled=currentPage>=totalPages?'disabled':'';
-  paginationEl.innerHTML=
-    `<button id="page-prev" ${prevDisabled}>Prev</button>`+
-    `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`+
-    `<button id="page-next" ${nextDisabled}>Next</button>`;
-  const prevBtn=document.getElementById('page-prev');
-  const nextBtn=document.getElementById('page-next');
-  if(prevBtn && !prevDisabled){
-    prevBtn.addEventListener('click',()=>{
-      if(currentPage>1){
-        doSearch(lastQuery,currentPage-1);
-      }
-    });
-  }
-  if(nextBtn && !nextDisabled){
-    nextBtn.addEventListener('click',()=>{
-      if(currentPage<totalPages){
-        doSearch(lastQuery,currentPage+1);
-      }
-    });
-  }
-}
-async function doSearch(q,page){
-  loading(true);
-  resultsEl.setAttribute('aria-busy','true');
-  resultsEl.innerHTML='';
-  noResultsEl.style.display='none';
-  paginationEl.innerHTML='';
-  resultsEl.appendChild(renderSkeleton(8));
-  try{
-    const query=Object.assign({},q);
-    if(page && page>1){
-      query.page=String(page);
-    }
-    lastQuery=query;
-    const params=new URLSearchParams(query);
-    const r = await fetch(`/search?${params.toString()}`);
-    const data=await r.json();
-    const rows=data.items||[];
-    lastResults=rows;
-    currentPage=data.page||1;
-    const perPage=data.per_page||rows.length||100;
-    const total=data.total||rows.length;
-    totalPages=perPage?Math.max(1,Math.ceil(total/perPage)):1;
-    resultsEl.innerHTML='';
-    if(!rows.length){
-      noResultsEl.style.display='block';
-    }
-    rows.forEach(x=>resultsEl.appendChild(renderResult(x)));
-    renderPagination();
-  }catch(e){
-    resultsEl.innerHTML='';
-    noResultsEl.textContent='Something went wrong. Try again.';
-    noResultsEl.style.display='block';
-    paginationEl.innerHTML='';
-  }finally{
-    resultsEl.setAttribute('aria-busy','false');
-    loading(false);
-  }
-}
+function renderPagination(){if(!totalPages || totalPages<=1){paginationEl.innerHTML='';return;}const prevDisabled=currentPage<=1?'disabled':'';const nextDisabled=currentPage>=totalPages?'disabled':'';paginationEl.innerHTML=`<button id="page-prev" ${prevDisabled}>Prev</button>`+`<span class="page-info">Page ${currentPage} of ${totalPages}</span>`+`<button id="page-next" ${nextDisabled}>Next</button>`;
+const prevBtn=document.getElementById('page-prev');
+const nextBtn=document.getElementById('page-next');/* click handlers patched below */}
+/* 🔽 NEW: build query object from search + filters */
+function buildQuery(page){const rawCat = document.getElementById('category').value.trim();const location = document.getElementById('location').value.trim();const isAll = /^all$/i.test(rawCat) || /^all categories$/i.test(rawCat);const category = isAll ? '' : rawCat;const ratingEl = document.getElementById('filter-rating');const hasPhoneEl = document.getElementById('filter-has-phone');const hasWebsiteEl = document.getElementById('filter-has-website');const sortEl = document.getElementById('sort-by');const addrEl = document.getElementById('filter-address');const rating = ratingEl ? ratingEl.value : '';const hasPhone = hasPhoneEl && hasPhoneEl.checked;const hasWebsite = hasWebsiteEl && hasWebsiteEl.checked;const sortBy = sortEl ? sortEl.value : '';const addressContains = addrEl ? addrEl.value.trim() : '';const query = {};if(category) query.category = category;if(location) query.location = location;if(rating) query.min_rating = rating;if(hasPhone) query.has_phone = '1';if(hasWebsite) query.has_website = '1';if(sortBy) query.sort = sortBy;if(addressContains) query.address_contains = addressContains;if(page && page>1) query.page = String(page);return query;}
+/* 🔽 REPLACED: doSearch now only takes page */
+async function doSearch(page){loading(true);resultsEl.setAttribute('aria-busy','true');resultsEl.innerHTML='';noResultsEl.style.display='none';paginationEl.innerHTML='';resultsEl.appendChild(renderSkeleton(8));try{const query = buildQuery(page || 1);lastQuery = query;const params = new URLSearchParams(query);const r = await fetch(`/search?${params.toString()}`);const data = await r.json();const rows = data.items || [];lastResults = rows;currentPage = data.page || 1;const perPage = data.per_page || rows.length || 100;const total = data.total || rows.length;totalPages = perPage ? Math.max(1, Math.ceil(total / perPage)) : 1;resultsEl.innerHTML='';if(!rows.length){noResultsEl.style.display='block';}rows.forEach(x=>resultsEl.appendChild(renderResult(x)));renderPagination();const fb = document.getElementById('filters-bar');if(fb) fb.classList.remove('hidden');}catch(e){resultsEl.innerHTML='';noResultsEl.textContent='Something went wrong. Try again.';noResultsEl.style.display='block';paginationEl.innerHTML='';}finally{resultsEl.setAttribute('aria-busy','false');loading(false);}}
 document.getElementById('search-form').addEventListener('submit',e=>{
   e.preventDefault();
   const rawCat=document.getElementById('category').value.trim();
