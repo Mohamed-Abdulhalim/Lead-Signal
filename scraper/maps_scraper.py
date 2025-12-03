@@ -52,6 +52,7 @@ from config import (
     SCROLL_DELAY_MIN,
     SCROLL_DELAY_MAX,
 )
+from browser_utils import get_installed_chrome_major
 
 def canonicalize_maps_url(u: str) -> str:
     if not u:
@@ -179,15 +180,12 @@ def new_driver(headless: bool, proxy: Optional[str]):
     if proxy:
         opts.add_argument(f"--proxy-server={proxy}")
         logging.info("Using proxy: %s", proxy)
-
     major = get_installed_chrome_major()
-
     if major:
-        # On Windows: match installed Chrome major
         driver = uc.Chrome(options=opts, version_main=major)
     else:
-        # On GitHub Actions / Linux: let uc auto-detect the correct driver
         driver = uc.Chrome(options=opts)
+
 
     try:
         driver.set_page_load_timeout(PAGELOAD_TIMEOUT)
