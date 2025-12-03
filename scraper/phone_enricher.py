@@ -9,6 +9,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
+try:
+    import winreg
+except Exception:
+    winreg = None
+
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -17,6 +22,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from config import (
     USER_AGENTS,
+    CHROME_VERSION_FALLBACK,
     PAGELOAD_TIMEOUT,
     SCRIPT_TIMEOUT,
     ENRICH_JITTER_MIN,
@@ -26,7 +32,7 @@ from config import (
     LOG_FORMAT,
     LOG_LEVEL,
 )
-from browser_utils import get_installed_chrome_major
+
 DETAIL_PHONE_XP = "//button[.//div[contains(text(),'Phone') or contains(text(),'الهاتف') or contains(text(),'اتصال')]] | //a[contains(@href,'tel:')]"
 
 PHONE_RE = re.compile(r"(?:\+?20)?0?\d{8,11}")
@@ -71,6 +77,22 @@ def jitter(a=ENRICH_JITTER_MIN, b=ENRICH_JITTER_MAX):
     time.sleep(random.uniform(a, b))
 
 
+def get_installed_chrome_major() -> Optional[int]:
+    try:
+        if platform.system().lower() != "windows" or winreg is None:
+            return None
+        for root in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+            try:
+                k = winreg.OpenKey(root, r"Software\\Google\\Chrome\\BLBeacon")
+                v, _ = winreg.QueryValueEx(k, "version")
+                return int(str(v).split(".")[0])
+            except OSError:
+                pass
+    except Exception:
+        return None
+    return None
+
+
 def new_driver(headless: bool):
     ua = random.choice(USER_AGENTS)
     logging.info("Launching phone-enricher browser: UA=%s | headless=%s", ua, headless)
@@ -84,13 +106,8 @@ def new_driver(headless: bool):
     opts.add_argument("--user-agent=" + ua)
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--blink-settings=imagesEnabled=true")
-
-    major = get_installed_chrome_major() or 142  # This line is fine
-    logging.info(f"Detected Chrome major version: {major}")
-    
-    # Force uc to use that version
-    d = uc.Chrome(options=opts, version_main=major, driver_executable_path=None)  # 👈 this is important
-
+    major = get_installed_chrome_major() or CHROME_VERSION_FALLBACK
+    d = uc.Chrome(options=opts, version_main=major)
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
         d.set_script_timeout(SCRIPT_TIMEOUT)
