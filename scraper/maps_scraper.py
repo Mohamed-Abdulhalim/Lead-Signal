@@ -179,11 +179,9 @@ def new_driver(headless: bool, proxy: Optional[str]):
     if proxy:
         opts.add_argument(f"--proxy-server={proxy}")
         logging.info("Using proxy: %s", proxy)
-    major = get_installed_chrome_major()
-    if major:
-        driver = uc.Chrome(options=opts, version_main=major)
-    else:
-        driver = uc.Chrome(options=opts)
+    major = get_installed_chrome_major() or 142
+    driver = uc.Chrome(options=opts, version_main=major)
+
 
 
     try:
