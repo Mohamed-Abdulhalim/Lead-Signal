@@ -56,32 +56,61 @@ jobs:
           state_file=".github/rotation_index.txt"
 
           mapfile -t cities <<'EOF'
-          # --- Egypt (governorate capitals / major cities) ---
-          Alexandria, Egypt
-          Giza, Egypt
-          Port Said, Egypt
-          Suez, Egypt
-          Ismailia, Egypt
-          Tanta, Egypt
-          Mansoura, Egypt
-          Cairo, Egypt
-          Zagazig, Egypt
-          Damietta, Egypt
-          Kafr El Sheikh, Egypt
-          Damanhur, Egypt
-          Shebin El Kom, Egypt
-          Banha, Egypt
-          Fayoum, Egypt
-          Beni Suef, Egypt
-          Minya, Egypt
-          Asyut, Egypt
-          Sohag, Egypt
-          Qena, Egypt
-          Luxor, Egypt
-          Aswan, Egypt
-          Hurghada, Egypt
-          Sharm El Sheikh, Egypt
-          Arish, Egypt
+          Toronto, Canada  
+          Montreal, Canada  
+          Vancouver, Canada  
+          Calgary, Canada  
+          Edmonton, Canada  
+          Ottawa, Canada  
+          Winnipeg, Canada  
+          Quebec City, Canada  
+          Hamilton, Canada  
+          Kitchener, Canada  
+          London, Canada  
+          Mississauga, Canada  
+          Brampton, Canada  
+          Surrey, Canada  
+          Halifax, Canada  
+          Victoria, Canada  
+          Saskatoon, Canada  
+          Regina, Canada  
+          St. John's, Canada  
+          Laval, Canada  
+          Gatineau, Canada  
+          Longueuil, Canada  
+          Windsor, Canada  
+          Burnaby, Canada  
+          Markham, Canada  
+          Vaughan, Canada  
+          Oakville, Canada  
+          Richmond, Canada  
+          Richmond Hill, Canada  
+          Burlington, Canada  
+          Barrie, Canada  
+          Kelowna, Canada  
+          Sherbrooke, Canada  
+          Trois-Rivières, Canada  
+          Red Deer, Canada  
+          Lethbridge, Canada  
+          St. Albert, Canada  
+          Medicine Hat, Canada  
+          Greater Sudbury, Canada  
+          Thunder Bay, Canada  
+          Whitehorse, Canada  
+          Yellowknife, Canada  
+          Charlottetown, Canada  
+          Fredericton, Canada  
+          Saint John, Canada  
+          Moncton, Canada  
+          Bathurst, Canada  
+          Corner Brook, Canada  
+          Prince Albert, Canada  
+          Moose Jaw, Canada  
+          Steinbach, Canada  
+          Thompson, Canada  
+          Brandon, Canada  
+          Summerside, Canada  
+          Iqaluit, Canada  
           # ... rest commented cities ...
           EOF
 
