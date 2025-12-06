@@ -4,14 +4,38 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="google-site-verification" content="Yt-UMsZiJfRKA6VPCwN3otcxJpQdhK0Nl33syHrbMmQ" />
-<title>LeadSignal — Google Maps Leads Scraper for Egypt</title>
-<meta name="description" content="LeadSignal lets you search, clean, and export business leads from Google Maps across all Egyptian cities. Filter by category, rating, contact data, and download ready-to-use CSV files.">
+<title>LeadSignal – Egypt Business Leads Finder | Google Maps Scraper & CSV Export</title>
+<meta name="description" content="Find Egyptian business leads by category and location. LeadSignal searches Google Maps, cleans phones and websites, and exports ready-to-use CSV files for marketers, recruiters, and agencies.">
 <meta name="robots" content="index,follow">
-<link rel="canonical" href="https://lead-signal.vercel.app/">
-<meta property="og:title" content="LeadSignal — Google Maps Leads Scraper for Egypt">
-<meta property="og:description" content="Search and export high-quality business leads from Google Maps in Egypt with cleaned phones, websites, and addresses in CSV format.">
-<meta property="og:url" content="https://lead-signal.vercel.app/">
+<link rel="canonical" href="https://maps-scraper-gray.vercel.app/">
+
+<meta property="og:title" content="LeadSignal – Egypt Business Leads Finder">
+<meta property="og:description" content="Search real Egyptian businesses by category and location, then export cleaned CSV leads with phones, websites, and Google Maps links.">
+<meta property="og:url" content="https://maps-scraper-gray.vercel.app/">
+<meta property="og:image" content="https://maps-scraper-gray.vercel.app/og-image.png">
+<meta property="og:image:alt" content="LeadSignal – Egypt business leads finder">
 <meta property="og:type" content="website">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "LeadSignal",
+  "url": "https://maps-scraper-gray.vercel.app/",
+  "description": "LeadSignal is an Egypt-focused business leads finder. It searches Google Maps, cleans contact details, and exports CSV files for marketing and recruiting.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "All",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://maps-scraper-gray.vercel.app/?category={category}&location={location}",
+    "query-input": [
+      "required name=category",
+      "optional name=location"
+    ]
+  }
+}
+</script>
+
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='ls-grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2360a5ff'/%3E%3Cstop offset='50%25' stop-color='%233a8bff'/%3E%3Cstop offset='100%25' stop-color='%231d4ed8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='url(%23ls-grad)' stroke-width='4' opacity='.35'/%3E%3Cpath d='M32 16a16 16 0 1 1 0 32' fill='none' stroke='url(%23ls-grad)' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M32 22a10 10 0 1 1 0 20' fill='none' stroke='url(%23ls-grad)' stroke-width='6' stroke-linecap='round' opacity='.85'/%3E%3Ccircle cx='32' cy='32' r='4' fill='url(%23ls-grad)'/%3E%3C/svg%3E"/>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -203,7 +227,7 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
   <main class="main">
     <section id="panel-home" class="panel card">
       <div class="hero">
-        <h1 class="h1">Find real businesses. Contact them today.</h1>
+        <h1 class="h1">Find real Egyptian businesses from Google Maps. Contact them today.</h1>
         <p class="sub">Scrape, clean, and export verified local leads from Google Maps across Egypt. Phones, websites, socials, and maps links ready for recruiters, agencies, and scrapers who care about quality.</p>
         <div class="hero-cta"><a href="#search" class="btn btn-primary" id="cta-start">Find leads</a></div>
         <div class="kpis grid-3" style="grid-template-columns:repeat(4,1fr)">
