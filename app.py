@@ -187,7 +187,7 @@ def robots_txt():
         "User-agent: *\n"
         "Disallow:\n"
         "\n"
-        "Sitemap: https://lead-signal.vercel.app/sitemap.xml\n"
+        "Sitemap: https://maps-scraper-gray.vercel.app/sitemap.xml\n"
     )
     return Response(body, mimetype="text/plain")
 
@@ -197,11 +197,11 @@ def sitemap_xml():
     body = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lead-signal.vercel.app/</loc>
+    <loc>https://maps-scraper-gray.vercel.app/</loc>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://lead-signal.vercel.app/#search</loc>
+    <loc>https://maps-scraper-gray.vercel.app/#search</loc>
     <priority>0.9</priority>
   </url>
 </urlset>
@@ -211,10 +211,6 @@ def sitemap_xml():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
-
-
-
 
 
 
