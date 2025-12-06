@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 from supabase import create_client
 import os
 
@@ -69,7 +69,6 @@ def unique_locations():
     return values
 
 
-
 @app.route("/", methods=["GET", "HEAD"])
 def index():
     if request.method == "HEAD":
@@ -102,7 +101,6 @@ def search():
     per_page = 100
     offset = (page - 1) * per_page
 
-    # new filter params
     min_rating = request.args.get("min_rating", type=float)
     has_phone = request.args.get("has_phone") == "1"
     has_website = request.args.get("has_website") == "1"
@@ -111,47 +109,39 @@ def search():
 
     q = sb.table(LEADS_TABLE).select("*", count="exact")
 
-    # category (exact, frontend handles "All categories")
     if category:
         q = q.eq("category", category)
 
-    # location prefix match
     if location:
         loc = location.strip()
         if loc:
             q = q.ilike("query_location", f"{loc}%")
 
-    # rating filter
     if min_rating is not None:
         q = q.gte("rating", min_rating)
 
-    # has phone: prefer normalized phone_e164
     if has_phone:
         q = (
             q.not_.is_("phone", None)
              .neq("phone", "")
         )
 
-    # has website: raw website column only (fallback handled on frontend)
     if has_website:
         q = (
             q.not_.is_("website", None)
              .neq("website", "")
         )
 
-    # address contains (substring match on normalized address_line)
     if address_contains:
         addr = address_contains.strip()
         if addr:
             q = q.ilike("address_line", f"%{addr}%")
 
-    # sorting (no reviews_count column involved)
     if sort == "rating_desc":
         q = q.order("rating", desc=True)
     elif sort == "name_asc":
         q = q.order("name")
     else:
-        # default "best match": highest rating first
         q = q.order("rating", desc=True)
 
     q = q.range(offset, offset + per_page - 1)
@@ -191,8 +181,37 @@ def search():
     )
 
 
+@app.route("/robots.txt")
+def robots_txt():
+    body = (
+        "User-agent: *\n"
+        "Disallow:\n"
+        "\n"
+        "Sitemap: https://lead-signal.vercel.app/sitemap.xml\n"
+    )
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    body = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://lead-signal.vercel.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://lead-signal.vercel.app/#search</loc>
+    <priority>0.9</priority>
+  </url>
+</urlset>
+"""
+    return Response(body, mimetype="application/xml")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
 
 
 
