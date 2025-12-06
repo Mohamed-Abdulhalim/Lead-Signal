@@ -201,7 +201,7 @@ def sitemap_xml():
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://maps-scraper-gray.vercel.app/#search</loc>
+    <loc>https://maps-scraper-gray.vercel.app/</loc>
     <priority>0.9</priority>
   </url>
 </urlset>
