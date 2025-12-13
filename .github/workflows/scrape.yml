@@ -56,61 +56,56 @@ jobs:
           state_file=".github/rotation_index.txt"
 
           mapfile -t cities <<'EOF'
-          Toronto, Canada  
-          Montreal, Canada  
-          Vancouver, Canada  
-          Calgary, Canada  
-          Edmonton, Canada  
-          Ottawa, Canada  
-          Winnipeg, Canada  
-          Quebec City, Canada  
-          Hamilton, Canada  
-          Kitchener, Canada  
-          London, Canada  
-          Mississauga, Canada  
-          Brampton, Canada  
-          Surrey, Canada  
-          Halifax, Canada  
-          Victoria, Canada  
-          Saskatoon, Canada  
-          Regina, Canada  
-          St. John's, Canada  
-          Laval, Canada  
-          Gatineau, Canada  
-          Longueuil, Canada  
-          Windsor, Canada  
-          Burnaby, Canada  
-          Markham, Canada  
-          Vaughan, Canada  
-          Oakville, Canada  
-          Richmond, Canada  
-          Richmond Hill, Canada  
-          Burlington, Canada  
-          Barrie, Canada  
-          Kelowna, Canada  
-          Sherbrooke, Canada  
-          Trois-Rivières, Canada  
-          Red Deer, Canada  
-          Lethbridge, Canada  
-          St. Albert, Canada  
-          Medicine Hat, Canada  
-          Greater Sudbury, Canada  
-          Thunder Bay, Canada  
-          Whitehorse, Canada  
-          Yellowknife, Canada  
-          Charlottetown, Canada  
-          Fredericton, Canada  
-          Saint John, Canada  
-          Moncton, Canada  
-          Bathurst, Canada  
-          Corner Brook, Canada  
-          Prince Albert, Canada  
-          Moose Jaw, Canada  
-          Steinbach, Canada  
-          Thompson, Canada  
-          Brandon, Canada  
-          Summerside, Canada  
-          Iqaluit, Canada  
+          Alabama, USA
+          Alaska, USA
+          Arizona, USA
+          Arkansas, USA
+          California, USA
+          Colorado, USA
+          Connecticut, USA
+          Delaware, USA
+          Florida, USA
+          Georgia, USA
+          Hawaii, USA
+          Idaho, USA
+          Illinois, USA
+          Indiana, USA
+          Iowa, USA
+          Kansas, USA
+          Kentucky, USA
+          Louisiana, USA
+          Maine, USA
+          Maryland, USA
+          Massachusetts, USA
+          Michigan, USA
+          Minnesota, USA
+          Mississippi, USA
+          Missouri, USA
+          Montana, USA
+          Nebraska, USA
+          Nevada, USA
+          New Hampshire, USA
+          New Jersey, USA
+          New Mexico, USA
+          New York, USA
+          North Carolina, USA
+          North Dakota, USA
+          Ohio, USA
+          Oklahoma, USA
+          Oregon, USA
+          Pennsylvania, USA
+          Rhode Island, USA
+          South Carolina, USA
+          South Dakota, USA
+          Tennessee, USA
+          Texas, USA
+          Utah, USA
+          Vermont, USA
+          Virginia, USA
+          Washington, USA
+          West Virginia, USA
+          Wisconsin, USA
+          Wyoming, USA
           # ... rest commented cities ...
           EOF
 
