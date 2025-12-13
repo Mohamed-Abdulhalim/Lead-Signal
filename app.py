@@ -4,14 +4,17 @@ import os
 
 app = Flask(__name__)
 
+@app.get("/health")
+def health():
+    return "ok", 200
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps"
 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-with open("categories.txt") as f:
-    HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
+HARDCODED_CATEGORIES = None
 
 
 def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
@@ -48,25 +51,30 @@ def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
 
 
 def unique_categories():
+    global HARDCODED_CATEGORIES
+    if HARDCODED_CATEGORIES is None:
+        with open("categories.txt") as f:
+            HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
     return HARDCODED_CATEGORIES
 
 
 def unique_locations():
-    res = (
-        sb.table("distinct_query_locations")
-        .select("query_location")
-        .order("query_location")
-        .execute()
-    )
-
-    rows = res.data or []
-    values = []
-    for r in rows:
-        v = (r.get("query_location") or "").strip()
-        if v:
-            values.append(v)
-
-    return values
+    try:
+        res = (
+            sb.table("distinct_query_locations")
+            .select("query_location")
+            .order("query_location")
+            .execute()
+        )
+        rows = res.data or []
+        values = []
+        for r in rows:
+            v = (r.get("query_location") or "").strip()
+            if v:
+                values.append(v)
+        return values
+    except Exception:
+        return []
 
 
 @app.route("/", methods=["GET", "HEAD"])
@@ -198,11 +206,12 @@ def sitemap_xml():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://maps-scraper-gray.vercel.app/</loc>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 </urlset>
 """
-    return Response(body, mimetype="application/xml")
+    return Response(body, mimetype="application/xml; charset=utf-8")
 
 
 if __name__ == "__main__":
