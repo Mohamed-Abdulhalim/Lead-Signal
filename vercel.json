@@ -1,6 +1,8 @@
 {
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" }
+  ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "app.py" }
+    { "src": "/api/(.*)", "dest": "/api/index.py" }
   ]
 }
