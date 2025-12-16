@@ -4,17 +4,14 @@ import os
 
 app = Flask(__name__)
 
-@app.get("/health")
-def health():
-    return "ok", 200
-
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps"
 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-HARDCODED_CATEGORIES = None
+with open("categories.txt") as f:
+    HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
 
 
 def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
@@ -51,20 +48,25 @@ def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
 
 
 def unique_categories():
-    global HARDCODED_CATEGORIES
-    if HARDCODED_CATEGORIES is None:
-        with open("categories.txt") as f:
-            HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
     return HARDCODED_CATEGORIES
 
-HARDCODED_LOCATIONS = None
 
 def unique_locations():
-    global HARDCODED_LOCATIONS
-    if HARDCODED_LOCATIONS is None:
-        HARDCODED_LOCATIONS = _distinct("query_location")
-    return HARDCODED_LOCATIONS
+    res = (
+        sb.table("distinct_query_locations")
+        .select("query_location")
+        .order("query_location")
+        .execute()
+    )
 
+    rows = res.data or []
+    values = []
+    for r in rows:
+        v = (r.get("query_location") or "").strip()
+        if v:
+            values.append(v)
+
+    return values
 
 
 @app.route("/", methods=["GET", "HEAD"])
@@ -144,10 +146,7 @@ def search():
 
     q = q.range(offset, offset + per_page - 1)
 
-    try:
-        res = q.execute()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    res = q.execute()
     rows = res.data or []
     total = res.count or len(rows)
 
@@ -199,16 +198,16 @@ def sitemap_xml():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://maps-scraper-gray.vercel.app/</loc>
-    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 </urlset>
 """
-    return Response(body, mimetype="application/xml; charset=utf-8")
+    return Response(body, mimetype="application/xml")
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
 
 
 
