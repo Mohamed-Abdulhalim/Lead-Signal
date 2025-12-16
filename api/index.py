@@ -2,7 +2,13 @@ from flask import Flask, jsonify, request, render_template, Response
 from supabase import create_client
 import os
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+)
 
 @app.get("/health")
 def health():
@@ -53,7 +59,7 @@ def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
 def unique_categories():
     global HARDCODED_CATEGORIES
     if HARDCODED_CATEGORIES is None:
-        with open("categories.txt") as f:
+        with open(os.path.join(BASE_DIR, "categories.txt")) as f:
             HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
     return HARDCODED_CATEGORIES
 
@@ -206,6 +212,3 @@ def sitemap_xml():
 """
     return Response(body, mimetype="application/xml; charset=utf-8")
 
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
