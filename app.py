@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, request, render_template, Response
+from flask import Flask, jsonify, request, send_from_directory, Response
 from supabase import create_client
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')
 
 @app.get("/health")
 def health():
@@ -18,168 +18,209 @@ HARDCODED_CATEGORIES = None
 
 
 def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
+    """Fetch distinct values from a column in batches"""
     seen = set()
     values = []
     offset = 0
 
     for _ in range(max_batches):
-        res = (
-            sb
-            .table(LEADS_TABLE)
-            .select(col)
-            .order(col)
-            .range(offset, offset + batch - 1)
-            .execute()
-        )
-        rows = res.data or []
-        if not rows:
+        try:
+            res = (
+                sb
+                .table(LEADS_TABLE)
+                .select(col)
+                .order(col)
+                .range(offset, offset + batch - 1)
+                .execute()
+            )
+            rows = res.data or []
+            if not rows:
+                break
+
+            for r in rows:
+                v = (r.get(col) or "").strip()
+                if not v or v in seen:
+                    continue
+                seen.add(v)
+                values.append(v)
+
+            if len(rows) < batch:
+                break
+
+            offset += batch
+        except Exception as e:
+            print(f"Error fetching distinct {col}: {e}")
             break
 
-        for r in rows:
-            v = (r.get(col) or "").strip()
-            if not v or v in seen:
-                continue
-            seen.add(v)
-            values.append(v)
-
-        if len(rows) < batch:
-            break
-
-        offset += batch
-
-    return values
+    return sorted(values)
 
 
 def unique_categories():
+    """Get unique categories from categories.txt or database"""
     global HARDCODED_CATEGORIES
     if HARDCODED_CATEGORIES is None:
-        with open("categories.txt") as f:
-            HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
+        # Try to read from categories.txt first
+        if os.path.exists("categories.txt"):
+            try:
+                with open("categories.txt") as f:
+                    HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
+                    print(f"Loaded {len(HARDCODED_CATEGORIES)} categories from file")
+            except Exception as e:
+                print(f"Error reading categories.txt: {e}")
+                HARDCODED_CATEGORIES = []
+        else:
+            # Fallback to database if file doesn't exist
+            print("categories.txt not found, fetching from database...")
+            HARDCODED_CATEGORIES = _distinct("category")
+            print(f"Loaded {len(HARDCODED_CATEGORIES)} categories from database")
+    
     return HARDCODED_CATEGORIES
+
 
 HARDCODED_LOCATIONS = None
 
 def unique_locations():
+    """Get unique locations from query_location column"""
     global HARDCODED_LOCATIONS
     if HARDCODED_LOCATIONS is None:
+        print("Fetching unique locations from database...")
         HARDCODED_LOCATIONS = _distinct("query_location")
+        print(f"Loaded {len(HARDCODED_LOCATIONS)} locations from database")
     return HARDCODED_LOCATIONS
-
 
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
+    """Serve the main HTML file"""
     if request.method == "HEAD":
         return "", 200
-
-    return render_template(
-        "index.html",
-        categories=unique_categories(),
-        locations=unique_locations(),
-    )
+    
+    # Serve the static index.html file
+    return send_from_directory('.', 'index.html')
 
 
 @app.get("/meta")
 def meta():
-    return jsonify(
-        {
-            "categories": unique_categories(),
-            "locations": unique_locations(),
-        }
-    )
+    """Return categories and locations for autocomplete"""
+    try:
+        categories = unique_categories()
+        locations = unique_locations()
+        
+        print(f"Returning {len(categories)} categories and {len(locations)} locations")
+        
+        return jsonify({
+            "categories": categories,
+            "locations": locations,
+        })
+    except Exception as e:
+        print(f"Error in /meta endpoint: {e}")
+        return jsonify({
+            "error": str(e),
+            "categories": [],
+            "locations": []
+        }), 500
 
 
 @app.get("/search")
 def search():
-    category = request.args.get("category", type=str)
-    location = request.args.get("location", type=str)
-    page = request.args.get("page", default=1, type=int)
-    if page < 1:
-        page = 1
-    per_page = 100
-    offset = (page - 1) * per_page
-
-    min_rating = request.args.get("min_rating", type=float)
-    has_phone = request.args.get("has_phone") == "1"
-    has_website = request.args.get("has_website") == "1"
-    address_contains = request.args.get("address_contains", type=str)
-    sort = (request.args.get("sort", type=str) or "").strip()
-
-    q = sb.table(LEADS_TABLE).select("*", count="exact")
-
-    if category:
-        q = q.eq("category", category)
-
-    if location:
-        loc = location.strip()
-        if loc:
-            q = q.ilike("query_location", f"{loc}%")
-
-    if min_rating is not None:
-        q = q.gte("rating", min_rating)
-
-    if has_phone:
-        q = (
-            q.not_.is_("phone", None)
-             .neq("phone", "")
-        )
-
-    if has_website:
-        q = (
-            q.not_.is_("website", None)
-             .neq("website", "")
-        )
-
-    if address_contains:
-        addr = address_contains.strip()
-        if addr:
-            q = q.ilike("address_line", f"%{addr}%")
-
-    if sort == "rating_desc":
-        q = q.order("rating", desc=True)
-    elif sort == "name_asc":
-        q = q.order("name")
-    else:
-        q = q.order("rating", desc=True)
-
-    q = q.range(offset, offset + per_page - 1)
-
+    """Search businesses based on filters"""
     try:
+        category = request.args.get("category", type=str)
+        location = request.args.get("location", type=str)
+        page = request.args.get("page", default=1, type=int)
+        if page < 1:
+            page = 1
+        per_page = 100
+        offset = (page - 1) * per_page
+
+        min_rating = request.args.get("min_rating", type=float)
+        has_phone = request.args.get("has_phone") == "1"
+        has_website = request.args.get("has_website") == "1"
+        address_contains = request.args.get("address_contains", type=str)
+        sort = (request.args.get("sort", type=str) or "").strip()
+
+        print(f"Search params: category={category}, location={location}, page={page}")
+
+        q = sb.table(LEADS_TABLE).select("*", count="exact")
+
+        if category:
+            q = q.eq("category", category)
+
+        if location:
+            loc = location.strip()
+            if loc:
+                q = q.ilike("query_location", f"{loc}%")
+
+        if min_rating is not None:
+            q = q.gte("rating", min_rating)
+
+        if has_phone:
+            q = (
+                q.not_.is_("phone", "null")
+                 .neq("phone", "")
+            )
+
+        if has_website:
+            q = (
+                q.not_.is_("website", "null")
+                 .neq("website", "")
+            )
+
+        if address_contains:
+            addr = address_contains.strip()
+            if addr:
+                q = q.ilike("address_line", f"%{addr}%")
+
+        if sort == "rating_desc":
+            q = q.order("rating", desc=True)
+        elif sort == "reviews_desc":
+            q = q.order("reviews_count", desc=True)
+        elif sort == "name_asc":
+            q = q.order("name")
+        else:
+            q = q.order("rating", desc=True)
+
+        q = q.range(offset, offset + per_page - 1)
+
         res = q.execute()
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    rows = res.data or []
-    total = res.count or len(rows)
+        rows = res.data or []
+        total = res.count or len(rows)
 
-    items = []
-    for row in rows:
-        row = {k: ("" if v is None else v) for k, v in row.items()}
+        print(f"Found {len(rows)} results, total: {total}")
 
-        raw = (row.get("photo_urls") or "").strip()
-        photos = [
-            u.strip()
-            for u in raw.split(",")
-            if u.strip().startswith("http")
-        ]
+        items = []
+        for row in rows:
+            row = {k: ("" if v is None else v) for k, v in row.items()}
 
-        if not row.get("main_photo_url") and photos:
-            row["main_photo_url"] = photos[0]
+            raw = (row.get("photo_urls") or "").strip()
+            photos = [
+                u.strip()
+                for u in raw.split(",")
+                if u.strip().startswith("http")
+            ]
 
-        row["photos"] = photos
+            if not row.get("main_photo_url") and photos:
+                row["main_photo_url"] = photos[0]
 
-        if row.get("correct_name"):
-            row["name"] = row["correct_name"]
+            row["photos"] = photos
 
-        items.append(row)
+            if row.get("correct_name"):
+                row["name"] = row["correct_name"]
 
-    return jsonify(
-        {
+            items.append(row)
+
+        return jsonify({
             "items": items,
             "page": page,
             "per_page": per_page,
             "total": total,
-        }
-    )
+        })
+
+    except Exception as e:
+        print(f"Error in /search endpoint: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/robots.txt")
@@ -208,7 +249,7 @@ def sitemap_xml():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
 
