@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, Response
+from flask import Flask, jsonify, request, render_template
 from supabase import create_client
 import os
 
@@ -187,31 +187,6 @@ def search():
             "total": total,
         }
     )
-
-
-@app.route("/robots.txt")
-def robots_txt():
-    body = (
-        "User-agent: *\n"
-        "Disallow:\n"
-        "\n"
-        "Sitemap: https://maps-scraper-gray.vercel.app/sitemap.xml\n"
-    )
-    return Response(body, mimetype="text/plain")
-
-
-@app.route("/sitemap.xml")
-def sitemap_xml():
-    body = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://maps-scraper-gray.vercel.app/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>
-"""
-    return Response(body, mimetype="application/xml; charset=utf-8")
 
 
 if __name__ == "__main__":
