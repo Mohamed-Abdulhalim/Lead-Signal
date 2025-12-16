@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 from supabase import create_client
 import os
 
@@ -15,6 +15,7 @@ LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") 
 sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 HARDCODED_CATEGORIES = None
+
 
 def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
     seen = set()
@@ -48,28 +49,14 @@ def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
 
     return values
 
+
 def unique_categories():
     global HARDCODED_CATEGORIES
-    if HARDCODED_CATEGORIES is not None:
-        return HARDCODED_CATEGORIES
-
-    path = os.path.join(app.root_path, "categories.txt")
-    cats = []
-
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            cats = sorted({line.strip() for line in f if line.strip()})
-    except Exception:
-        cats = []
-
-    if not cats:
-        try:
-            cats = _distinct("category")
-        except Exception:
-            cats = []
-
-    HARDCODED_CATEGORIES = cats
+    if HARDCODED_CATEGORIES is None:
+        with open("categories.txt") as f:
+            HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
     return HARDCODED_CATEGORIES
+
 
 def unique_locations():
     try:
@@ -85,15 +72,10 @@ def unique_locations():
             v = (r.get("query_location") or "").strip()
             if v:
                 values.append(v)
-        if values:
-            return values
-    except Exception:
-        pass
-
-    try:
-        return _distinct("query_location")
+        return values
     except Exception:
         return []
+
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
@@ -106,6 +88,7 @@ def index():
         locations=unique_locations(),
     )
 
+
 @app.get("/meta")
 def meta():
     return jsonify(
@@ -114,6 +97,7 @@ def meta():
             "locations": unique_locations(),
         }
     )
+
 
 @app.get("/search")
 def search():
@@ -179,7 +163,11 @@ def search():
         row = {k: ("" if v is None else v) for k, v in row.items()}
 
         raw = (row.get("photo_urls") or "").strip()
-        photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
+        photos = [
+            u.strip()
+            for u in raw.split(",")
+            if u.strip().startswith("http")
+        ]
 
         if not row.get("main_photo_url") and photos:
             row["main_photo_url"] = photos[0]
@@ -200,8 +188,36 @@ def search():
         }
     )
 
+
+@app.route("/robots.txt")
+def robots_txt():
+    body = (
+        "User-agent: *\n"
+        "Disallow:\n"
+        "\n"
+        "Sitemap: https://maps-scraper-gray.vercel.app/sitemap.xml\n"
+    )
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    body = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://maps-scraper-gray.vercel.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
+    return Response(body, mimetype="application/xml; charset=utf-8")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
+
 
 
 
