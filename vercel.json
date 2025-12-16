@@ -1,6 +1,6 @@
 {
   "routes": [
-    { "src": "/sitemap\\.xml", "dest": "/static/sitemap.xml" },
-    { "src": "/robots\\.txt", "dest": "/static/robots.txt" }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "app.py" }
   ]
 }
