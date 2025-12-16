@@ -16,7 +16,6 @@ sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 HARDCODED_CATEGORIES = None
 
-
 def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
     seen = set()
     values = []
@@ -49,14 +48,28 @@ def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
 
     return values
 
-
 def unique_categories():
     global HARDCODED_CATEGORIES
-    if HARDCODED_CATEGORIES is None:
-        with open("categories.txt") as f:
-            HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
-    return HARDCODED_CATEGORIES
+    if HARDCODED_CATEGORIES is not None:
+        return HARDCODED_CATEGORIES
 
+    path = os.path.join(app.root_path, "categories.txt")
+    cats = []
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            cats = sorted({line.strip() for line in f if line.strip()})
+    except Exception:
+        cats = []
+
+    if not cats:
+        try:
+            cats = _distinct("category")
+        except Exception:
+            cats = []
+
+    HARDCODED_CATEGORIES = cats
+    return HARDCODED_CATEGORIES
 
 def unique_locations():
     try:
@@ -72,10 +85,15 @@ def unique_locations():
             v = (r.get("query_location") or "").strip()
             if v:
                 values.append(v)
-        return values
+        if values:
+            return values
+    except Exception:
+        pass
+
+    try:
+        return _distinct("query_location")
     except Exception:
         return []
-
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
@@ -88,7 +106,6 @@ def index():
         locations=unique_locations(),
     )
 
-
 @app.get("/meta")
 def meta():
     return jsonify(
@@ -97,7 +114,6 @@ def meta():
             "locations": unique_locations(),
         }
     )
-
 
 @app.get("/search")
 def search():
@@ -163,11 +179,7 @@ def search():
         row = {k: ("" if v is None else v) for k, v in row.items()}
 
         raw = (row.get("photo_urls") or "").strip()
-        photos = [
-            u.strip()
-            for u in raw.split(",")
-            if u.strip().startswith("http")
-        ]
+        photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
 
         if not row.get("main_photo_url") and photos:
             row["main_photo_url"] = photos[0]
@@ -188,11 +200,8 @@ def search():
         }
     )
 
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
-
 
 
 
