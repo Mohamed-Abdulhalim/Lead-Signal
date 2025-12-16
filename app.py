@@ -57,24 +57,14 @@ def unique_categories():
             HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
     return HARDCODED_CATEGORIES
 
+HARDCODED_LOCATIONS = None
 
 def unique_locations():
-    try:
-        res = (
-            sb.table("distinct_query_locations")
-            .select("query_location")
-            .order("query_location")
-            .execute()
-        )
-        rows = res.data or []
-        values = []
-        for r in rows:
-            v = (r.get("query_location") or "").strip()
-            if v:
-                values.append(v)
-        return values
-    except Exception:
-        return []
+    global HARDCODED_LOCATIONS
+    if HARDCODED_LOCATIONS is None:
+        HARDCODED_LOCATIONS = _distinct("query_location")
+    return HARDCODED_LOCATIONS
+
 
 
 @app.route("/", methods=["GET", "HEAD"])
@@ -154,7 +144,10 @@ def search():
 
     q = q.range(offset, offset + per_page - 1)
 
-    res = q.execute()
+    try:
+        res = q.execute()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     rows = res.data or []
     total = res.count or len(rows)
 
