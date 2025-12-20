@@ -40,11 +40,7 @@
 </script>
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='ls-grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2360a5ff'/%3E%3Cstop offset='50%25' stop-color='%233a8bff'/%3E%3Cstop offset='100%25' stop-color='%231d4ed8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='url(%23ls-grad)' stroke-width='4' opacity='.35'/%3E%3Cpath d='M32 16a16 16 0 1 1 0 32' fill='none' stroke='url(%23ls-grad)' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M32 22a10 10 0 1 1 0 20' fill='none' stroke='url(%23ls-grad)' stroke-width='6' stroke-linecap='round' opacity='.85'/%3E%3Ccircle cx='32' cy='32' r='4' fill='url(%23ls-grad)'/%3E%3C/svg%3E"/>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
 :root{--bg-0:#0b1020;--bg-1:#0e1428;--bg-2:#121937;--bg-3:#11162f;--surface:#182040;--card:#141c3a;--muted:#9aa3c0;--muted-2:#a7b6ff;--text:#e7ebff;--text-weak:#bfc7e6;--primary:#6b79ff;--primary-2:#9aa0ff;--accent:#7aebff;--danger:#ff6b8a;--ok:#59ffb7;--ring:0 0 0 3px rgba(107,121,255,.35);--answer-text:#DAE2FF}
 *{box-sizing:border-box}
@@ -88,6 +84,12 @@ a{color:inherit;text-decoration:none}
 .kpi .big{font-size:22px;font-weight:900}
 .kpi .muted{font-size:12px;color:var(--muted-2)}
 @media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+
+.trust-strip{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(15,23,42,.72)}
+.trust-chip{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#dbe2ff;font-size:13px}
+.trust-chip svg{width:16px;height:16px;opacity:.95}
+.trust-note{color:var(--muted-2);font-size:13px}
+
 .hero-showcase{display:flex;justify-content:center;align-items:center;padding:0 0 18px;margin-top:-8px}
 .floating-card{width:min(560px,92%);padding:0;background:transparent;border:0;box-shadow:none}
 .logo3d{position:relative;display:flex;align-items:center;gap:18px;padding:10px 0;border-radius:999px;transition:transform .12s ease}
@@ -103,6 +105,7 @@ a{color:inherit;text-decoration:none}
 @keyframes spinCW{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes spinCCW{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
 @media (prefers-reduced-motion:reduce){.arc--cw,.arc--ccw{animation:none}.logo3d,.h1{animation:none}}
+
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media (max-width:1000px){.grid-3{grid-template-columns:1fr}}
 .section-title{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
@@ -110,12 +113,16 @@ a{color:inherit;text-decoration:none}
 .feature{padding:16px;display:grid;gap:10px}
 .feature .title{font-weight:700;display:flex;gap:8px;align-items:center}
 .feature .muted{color:var(--muted-2)}
-.search-form{display:grid;grid-template-columns:1.2fr 1fr auto;gap:10px;align-items:end;margin-bottom:18px}
+.search-form{display:grid;grid-template-columns:1.2fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px}
 @media (max-width:860px){.search-form{grid-template-columns:1fr}}
 .input{display:grid;gap:8px}
 .input label{font-size:14px;color:var(--text-weak);font-weight:700;letter-spacing:.2px}
 .input input,.input select{background:var(--bg-3);border:1px solid rgba(255,255,255,.12);color:var(--text);padding:14px 14px;border-radius:12px;outline:none;font-size:16px}
 .input input:focus,.input select:focus{box-shadow:var(--ring)}
+.search-trust{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0 14px;color:var(--muted-2);font-size:13px}
+.search-trust .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03)}
+.search-trust svg{width:16px;height:16px}
+
 .filters-bar{margin:8px 0 12px;padding:10px 12px;background:rgba(15,23,42,.86);border-radius:12px;border:1px solid rgba(255,255,255,.08);display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
 .filters-bar.hidden{display:none}
 .filter-group{display:grid;gap:6px;min-width:150px}
@@ -127,6 +134,7 @@ a{color:inherit;text-decoration:none}
 .filter-chip input{margin:0}
 .filter-chip span{font-size:13px}
 @media (max-width:860px){.filters-bar{padding:10px}.filter-group{min-width:140px}}
+
 .ac-wrap{position:relative}
 .ac-wrap input{padding-right:34px}
 .ac-wrap::after{content:"▾";position:absolute;right:10px;top:36px;pointer-events:none;opacity:.6;font-size:14px}
@@ -135,11 +143,16 @@ a{color:inherit;text-decoration:none}
 .ac-item{padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text)}
 .ac-item:hover,.ac-item[aria-selected="true"]{background:rgba(107,121,255,.35)}
 .ac-empty{padding:10px 12px;color:var(--muted)}
+
 .results{display:grid;gap:12px;margin-top:6px}
-.pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;font-size:14px;color:var(--muted-2)}
+.pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:14px;color:var(--muted-2);flex-wrap:wrap}
+.pagination .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pagination .right{display:flex;gap:8px;align-items:center}
 .pagination button{background:var(--bg-3);border:1px solid rgba(255,255,255,.18);color:var(--text);border-radius:999px;padding:6px 10px;font-size:13px;cursor:pointer}
 .pagination button[disabled]{opacity:.4;cursor:default}
-.pagination .page-info{margin:0 6px}
+.pagination .page-info{margin:0}
+.pagination .total-info{opacity:.9}
+
 .result-card{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:14px}
 .result-thumb{width:78px;height:78px;border-radius:10px;background:var(--bg-3);object-fit:cover}
 .result-thumb--empty{background:linear-gradient(135deg,#0f172a,#020617)}
@@ -150,6 +163,7 @@ a{color:inherit;text-decoration:none}
 .action{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.14);background:var(--bg-3);border-radius:10px;padding:8px 10px;cursor:pointer}
 .action:focus-visible{outline:none;box-shadow:var(--ring)}
 .action .icon{width:16px;height:16px}
+
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid rgba(255,255,255,.12);padding:10px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .18s ease}
 .toast.show{opacity:1}
 .loader{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
@@ -161,12 +175,14 @@ a{color:inherit;text-decoration:none}
 .footer a{color:var(--primary)}
 .hr{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
 .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45)}
 .modal.show{display:grid}
 .modal-card{width:min(900px,92%);max-height:84vh;overflow:auto;background:var(--surface);border:1px solid rgba(255,255,255,.12);border-radius:14px}
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{border-bottom:1px solid rgba(255,255,255,.12);padding:10px 12px;text-align:left;font-size:14px}
 .table tbody tr:nth-child(odd){background:rgba(255,255,255,.02)}
+
 .faq details{position:relative;overflow:hidden;border-radius:12px}
 .faq details::before{content:"";position:absolute;inset:0;border-radius:12px;padding:1px;background:conic-gradient(from var(--a), #4dd2ff, #ff4d6d, #4dd2ff);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;pointer-events:none;backface-visibility:hidden}
 .faq{--faq-px:18px;--faq-gap:10px;--caret-size:10px}
@@ -183,16 +199,19 @@ a{color:inherit;text-decoration:none}
 @property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
 .faq details:hover::before{opacity:1;animation:spinBorder 3s linear infinite}
 @keyframes spinBorder{to{--a:360deg}}
+
 .social{display:flex;gap:10px;margin:6px 0 10px}
 .btn-social{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:10px}
 .btn-social:hover{background:rgba(255,255,255,.07)}
 .btn-social svg{width:16px;height:16px}
 .btn-social .label{color:#cdd5ff}
+
 .skel{opacity:.7}
 .skel .block{height:12px;border-radius:6px;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:shimmer 1.2s linear infinite}
 .skel .thumb{width:78px;height:78px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06));background-size:200% 100%;animation:shimmer 1.2s linear infinite}
 @keyframes shimmer{to{background-position:200% 0}}
 @media (prefers-reduced-motion:reduce){.faq details::before{animation:none}.faq .answer{transition:none;transform:none}.skel .block,.skel .thumb{animation:none}}
+
 .feature svg{width:120px;height:120px}
 .fx-search.do-anim .glass{animation:searchOrbit 2.2s ease-out 1 both}
 @keyframes searchOrbit{0%{transform:rotate(0) translate(0,0)}20%{transform:rotate(10deg) translate(2px,-2px)}40%{transform:rotate(-8deg) translate(-2px,2px)}60%{transform:rotate(6deg) translate(1px,-1px)}80%{transform:rotate(-4deg) translate(-1px,1px)}100%{transform:rotate(0) translate(0,0)}}
@@ -200,11 +219,13 @@ a{color:inherit;text-decoration:none}
 @keyframes cleanNudge{0%{transform:translateY(0)}25%{transform:translateY(-6px)}50%{transform:translateY(0)}75%{transform:translateY(-3px)}100%{transform:translateY(0)}}
 .fx-export.do-anim .arrow{animation:dropLift 2s ease-out 1 both}
 @keyframes dropLift{0%{transform:translateY(-2px)}30%{transform:translateY(10px)}60%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+
 .search-cta{display:flex;gap:10px;align-items:flex-end}
 .search-cta .btn-primary{padding:14px 16px}
 #btn-search{display:inline-grid;grid-auto-flow:column;align-items:center;gap:8px;border-radius:12px}
 #btn-preview{border:1px solid rgba(107,121,255,.35);background:transparent;color:#cfd5ff;border-radius:12px;padding:10px 12px}
 #btn-preview:hover{background:rgba(255,255,255,.06)}
+
 .nav-toggle{position:fixed;top:16px;left:16px;z-index:50;width:40px;height:40px;border-radius:999px;border:none;background:transparent;display:none;justify-content:center;align-items:center;gap:4px;cursor:pointer}
 .nav-toggle span{width:18px;height:2px;border-radius:999px;background:#e5e7ff;transition:transform .2s ease,opacity .2s ease}
 body.nav-open .nav-toggle span:nth-child(1){transform:translateY(4px) rotate(45deg)}
@@ -216,10 +237,10 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
-<button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-controls="sidebar" aria-expanded="false"><span></span><span></span><span></span></button>
+<button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
 <div class="nav-backdrop" id="nav-backdrop"></div>
 <div class="container">
-  <aside class="sidebar card" id="sidebar">
+  <aside class="sidebar card">
     <div class="brand">
       <div class="brand-logo" aria-label="LeadSignal logo">
         <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><defs><linearGradient id="ls-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60a5ff"/><stop offset="50%" stop-color="#3a8bff"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#ls-grad)" stroke-width="4" opacity=".35"/><path d="M32 16a16 16 0 1 1 0 32" fill="none" stroke="url(#ls-grad)" stroke-width="6" stroke-linecap="round"/><path d="M32 22a10 10 0 1 1 0 20" fill="none" stroke="url(#ls-grad)" stroke-width="6" stroke-linecap="round" opacity=".85"/><circle cx="32" cy="32" r="4" fill="url(#ls-grad)"/></svg>
@@ -236,6 +257,14 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
       <div class="hero">
         <h1 class="h1">Find real businesses from Google Maps. Contact them today.</h1>
         <p class="sub">Scrape, clean, and export verified local leads from Google Maps across the whole world. Phones, websites, socials, and maps links ready for recruiters, agencies, and scrapers who care about quality.</p>
+
+        <div class="trust-strip" aria-label="Trust">
+          <span class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>No signup</span>
+          <span class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>No email</span>
+          <span class="trust-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"/><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 7.5a11.56 11.56 0 0 1-2.07 3.34"/><path d="M6.61 6.61A11.03 11.03 0 0 0 1 11.5c.73 1.86 1.9 3.5 3.39 4.77A11.08 11.08 0 0 0 12 19c1.03 0 2.03-.14 3-.4"/></svg>No creepy tracking</span>
+          <span class="trust-note">Run a search and export. That’s it. Boring and trustworthy.</span>
+        </div>
+
         <div class="hero-cta"><a href="#search" class="btn btn-primary" id="cta-start">Find leads</a></div>
         <div class="kpis grid-3" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi card"><div class="big" data-count="200000">0</div><div class="muted">rows processed</div></div>
@@ -244,12 +273,15 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
           <div class="kpi card"><div class="big">CSV</div><div class="muted">clean export</div></div>
         </div>
       </div>
+
       <div class="hero-showcase"><div class="floating-card" aria-hidden="true"><div class="logo3d" id="logo-follow"><div class="icon" aria-hidden="true" id="logo-icon"><svg viewBox="0 0 120 120" width="120" height="120" role="img"><defs><linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60a5ff"/><stop offset="50%" stop-color="#3a8bff"/><stop offset="100%" stop-color="#1d4ed8"/></linearGradient></defs><circle cx="60" cy="60" r="44" fill="none" stroke="url(#lg)" stroke-width="6" opacity="0.35"/><path class="arc arc--cw" d="M60 30a30 30 0 0 1 0 60" fill="none" stroke="url(#lg)" stroke-width="8" stroke-linecap="round"/><path class="arc arc--ccw" d="M60 40a20 20 0 0 1 0 40" fill="none" stroke="url(#lg)" stroke-width="8" stroke-linecap="round" opacity="0.8"/><path class="arc arc--cw" d="M60 50a10 10 0 0 1 0 20" fill="none" stroke="url(#lg)" stroke-width="8" stroke-linecap="round"/><circle cx="60" cy="60" r="5" fill="url(#lg)"/></svg></div><div class="word" id="logo-word">LeadSignal</div></div></div></div>
+
       <div class="hr"></div>
       <div id="about" style="padding:22px;display:grid;gap:12px">
         <div class="section-title"><span class="dot"></span><span>What is LeadSignal?</span></div>
         <p class="sub">LeadSignal is a Google Maps leads scraper built for professionals. It helps you find real businesses by category and city, then exports cleaned data including phones, websites, ratings, and addresses into a CSV you can plug into any CRM or dialer. Instead of manually copying from Google Maps, you get structured, ready-to-use leads in a few clicks.</p>
       </div>
+
       <div class="hr"></div>
       <div id="how" style="padding:22px;display:grid;gap:16px">
         <div class="section-title"><span class="dot"></span><span>How it works</span></div>
@@ -271,6 +303,7 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
           </div>
         </div>
       </div>
+
       <div class="hr"></div>
       <div id="faq" class="faq" style="padding:22px;display:grid;gap:12px">
         <div class="section-title"><span class="dot"></span><span>FAQ</span></div>
@@ -282,7 +315,12 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
           <summary><span class="caret"></span><span>How clean is the output?</span></summary>
           <div class="answer"><div class="muted">Phones normalized, websites un-shortened, social links parsed, photos deduped per row. CSV is ready for CRM or dialer import.</div></div>
         </details>
+        <details class="card" style="padding:0">
+          <summary><span class="caret"></span><span>Do I need to sign up or add an email?</span></summary>
+          <div class="answer"><div class="muted">No. LeadSignal doesn’t require accounts, emails, or logins. Search, preview, export, done.</div></div>
+        </details>
       </div>
+
       <div class="hr"></div>
       <footer class="footer" style="padding:0 22px 22px">
         <div class="social">
@@ -320,6 +358,12 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
           <button class="btn" id="btn-preview" type="button">Preview export</button>
         </div>
       </form>
+
+      <div class="search-trust" aria-label="No signup trust">
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> No signup</span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> No email</span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"/><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 7.5a11.56 11.56 0 0 1-2.07 3.34"/><path d="M6.61 6.61A11.03 11.03 0 0 0 1 11.5c.73 1.86 1.9 3.5 3.39 4.77A11.08 11.08 0 0 0 12 19c1.03 0 2.03-.14 3-.4"/></svg> No creepy tracking</span>
+      </div>
 
       <div id="filters-bar" class="filters-bar hidden" aria-label="Filters">
         <div class="filter-group">
@@ -362,12 +406,12 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
 </div>
 
 <div class="modal" id="modal-preview" aria-hidden="true">
-  <div class="modal-card card" role="dialog" aria-modal="true" aria-label="Export preview">
+  <div class="modal-card card">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.12)">
       <strong>Export preview</strong>
       <div style="display:flex;gap:8px">
         <a id="btn-download" class="btn btn-primary" href="#">Download CSV</a>
-        <button id="btn-close" class="btn btn-ghost" type="button">Close</button>
+        <button id="btn-close" class="btn btn-ghost">Close</button>
       </div>
     </div>
     <div style="padding:12px;overflow:auto">
@@ -381,25 +425,13 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
 
 <script>
 const panelHome=document.getElementById('panel-home'),panelSearch=document.getElementById('panel-search'),navHome=document.getElementById('nav-home'),navSearch=document.getElementById('nav-search'),ctaStart=document.getElementById('cta-start'),navToggle=document.getElementById('nav-toggle'),navBackdrop=document.getElementById('nav-backdrop');
-
-function setNavOpen(open){
-  document.body.classList.toggle('nav-open', !!open);
-  navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-}
-function showHome(){panelHome.hidden=false;panelSearch.hidden=true;navHome.setAttribute('aria-current','page');navSearch.removeAttribute('aria-current');setNavOpen(false)}
-function showSearch(){panelHome.hidden=true;panelSearch.hidden=false;navSearch.setAttribute('aria-current','page');navHome.removeAttribute('aria-current');setNavOpen(false)}
-
+function showHome(){panelHome.hidden=false;panelSearch.hidden=true;navHome.setAttribute('aria-current','page');navSearch.removeAttribute('aria-current');document.body.classList.remove('nav-open')}
+function showSearch(){panelHome.hidden=true;panelSearch.hidden=false;navSearch.setAttribute('aria-current','page');navHome.removeAttribute('aria-current');document.body.classList.remove('nav-open')}
 navHome.addEventListener('click',()=>showHome());
 navSearch.addEventListener('click',()=>showSearch());
 ctaStart.addEventListener('click',e=>{e.preventDefault();showSearch();document.getElementById('category').focus()});
-
-navToggle.addEventListener('click',()=>{setNavOpen(!document.body.classList.contains('nav-open'))});
-navBackdrop.addEventListener('click',()=>{setNavOpen(false)});
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape' && document.body.classList.contains('nav-open')) setNavOpen(false);
-});
-
+navToggle.addEventListener('click',()=>{document.body.classList.toggle('nav-open')});
+navBackdrop.addEventListener('click',()=>{document.body.classList.remove('nav-open')});
 document.getElementById('year').textContent=new Date().getFullYear();
 document.getElementById('to-top').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})});
 
@@ -409,140 +441,61 @@ const loader=document.getElementById('loader');
 function loading(on){loader.classList.toggle('show',!!on)}
 function debounce(fn,delay){let t;return function(...args){clearTimeout(t);t=setTimeout(()=>fn.apply(this,args),delay)}}
 
-;(function(){
-  const wrap=document.getElementById('logo-follow'),icon=document.getElementById('logo-icon'),word=document.getElementById('logo-word'),maxTilt=8,parallaxIcon=6,parallaxWord=-3;
-  function onMove(e){
-    const w=window.innerWidth,h=window.innerHeight,rx=((e.clientY/h)-0.5)*-2*maxTilt,ry=((e.clientX/w)-0.5)*2*maxTilt;
-    wrap.style.transform=`perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-    icon.style.transform=`translate3d(${(e.clientX/w-0.5)*2*parallaxIcon}px, ${(e.clientY/h-0.5)*2*parallaxIcon}px, 0)`;
-    word.style.transform=`translate3d(${(e.clientX/w-0.5)*2*parallaxWord}px, ${(e.clientY/h-0.5)*2*parallaxWord}px, 0)`;
-  }
-  window.addEventListener('mousemove',onMove);
-})();
+;(function(){const wrap=document.getElementById('logo-follow'),icon=document.getElementById('logo-icon'),word=document.getElementById('logo-word'),maxTilt=8,parallaxIcon=6,parallaxWord=-3;
+function onMove(e){const w=window.innerWidth,h=window.innerHeight,rx=((e.clientY/h)-0.5)*-2*maxTilt,ry=((e.clientX/w)-0.5)*2*maxTilt;
+wrap.style.transform=`perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+icon.style.transform=`translate3d(${(e.clientX/w-0.5)*2*parallaxIcon}px, ${(e.clientY/h-0.5)*2*parallaxIcon}px, 0)`;
+word.style.transform=`translate3d(${(e.clientX/w-0.5)*2*parallaxWord}px, ${(e.clientY/h-0.5)*2*parallaxWord}px, 0)`}
+window.addEventListener('mousemove',onMove)})();
 
-const countEls=[...document.querySelectorAll('[data-count]')];
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach(en=>{
-    if(!en.isIntersecting)return;
-    const el=en.target,target=+el.dataset.count;
-    let v=0;
-    const isPercent=el.textContent.includes('%');
-    const step=Math.max(1,Math.round(target/60));
-    const t=setInterval(()=>{
-      v+=step;
-      if(v>=target){v=target;clearInterval(t)}
-      el.textContent=isPercent?`${v}%`:v.toLocaleString();
-    },16);
-    obs.unobserve(el);
-  });
-},{threshold:.6});
+const countEls=[...document.querySelectorAll('[data-count]')],obs=new IntersectionObserver(entries=>{entries.forEach(en=>{if(!en.isIntersecting)return;const el=en.target,target=+el.dataset.count;let v=0;const isPercent=el.textContent.includes('%'),step=Math.max(1,Math.round(target/60)),t=setInterval(()=>{v+=step;if(v>=target){v=target;clearInterval(t)}el.textContent=isPercent?`${v}%`:v.toLocaleString()},16);obs.unobserve(el)})},{threshold:.6});
 countEls.forEach(el=>obs.observe(el));
 
 function initAutocomplete(inputEl,source,menuEl){
   let idx=-1;
-
-  const render=(items)=>{
+  const render=items=>{
     menuEl.innerHTML="";
-    if(!items.length){
-      menuEl.innerHTML='<div class="ac-empty">No matches</div>';
-      return;
-    }
+    if(!items.length){menuEl.innerHTML='<div class="ac-empty">No matches</div>';return}
     items.forEach((v,i)=>{
       const div=document.createElement('div');
       div.className='ac-item';
       div.setAttribute('role','option');
       div.setAttribute('aria-selected',i===idx?'true':'false');
       div.textContent=v;
-      div.onclick=()=>{
-        inputEl.value=v;
-        menuEl.classList.remove('show');
-        idx=-1;
-      };
-      menuEl.appendChild(div);
-    });
+      div.onclick=()=>{inputEl.value=v;menuEl.classList.remove('show')};
+      menuEl.appendChild(div)
+    })
   };
-
-  const filter=(q)=>source.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,50);
+  const filter=q=>source.filter(s=>s.toLowerCase().includes(q.toLowerCase())).slice(0,50);
   const renderAll=()=>render(source.slice(0,200));
-
-  inputEl.addEventListener('input',()=>{
-    idx=-1;
-    render(filter(inputEl.value.trim()));
-    menuEl.classList.add('show');
-  });
-
-  inputEl.addEventListener('focus',()=>{
-    idx=-1;
-    renderAll();
-    menuEl.classList.add('show');
-  });
-
-  inputEl.addEventListener('click',()=>{
-    if(menuEl.classList.contains('show')){
-      menuEl.classList.remove('show');
-      return;
-    }
-    idx=-1;
-    renderAll();
-    menuEl.classList.add('show');
-  });
-
+  inputEl.addEventListener('input',()=>{idx=-1;render(filter(inputEl.value.trim()));menuEl.classList.add('show')});
+  inputEl.addEventListener('focus',()=>{idx=-1;renderAll();menuEl.classList.add('show')});
+  inputEl.addEventListener('click',()=>{if(menuEl.classList.contains('show')){menuEl.classList.remove('show');return}idx=-1;renderAll();menuEl.classList.add('show')});
   inputEl.addEventListener('keydown',e=>{
-    if(e.key==='ArrowDown'&&!menuEl.classList.contains('show')){
-      e.preventDefault();
-      idx=-1;
-      renderAll();
-      menuEl.classList.add('show');
-      return;
-    }
-
-    const items=[...menuEl.querySelectorAll('.ac-item')].map(i=>i.textContent);
+    if(e.key==='ArrowDown'&&!menuEl.classList.contains('show')){e.preventDefault();idx=-1;renderAll();menuEl.classList.add('show');return}
+    const items=[...menuEl.querySelectorAll('.ac-item')];
     if(!items.length)return;
-
-    if(e.key==='ArrowDown'){
-      e.preventDefault();
-      idx=Math.min(idx+1,items.length-1);
-      render(items);
-      menuEl.classList.add('show');
-    }
-    if(e.key==='ArrowUp'){
-      e.preventDefault();
-      idx=Math.max(idx-1,0);
-      render(items);
-    }
-    if(e.key==='Enter'&&idx>=0){
-      e.preventDefault();
-      inputEl.value=items[idx];
-      menuEl.classList.remove('show');
-      idx=-1;
-    }
-    if(e.key==='Escape'){
-      menuEl.classList.remove('show');
-      idx=-1;
-    }
+    if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1);render(items.map(i=>i.textContent));menuEl.classList.add('show')}
+    if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0);render(items.map(i=>i.textContent))}
+    if(e.key==='Enter'&&idx>=0){e.preventDefault();inputEl.value=items[idx].textContent;menuEl.classList.remove('show')}
+    if(e.key==='Escape')menuEl.classList.remove('show')
   });
-
-  document.addEventListener('click',e=>{
-    if(!menuEl.contains(e.target)&&e.target!==inputEl){
-      menuEl.classList.remove('show');
-      idx=-1;
-    }
-  });
+  document.addEventListener('click',e=>{if(!menuEl.contains(e.target)&&e.target!==inputEl)menuEl.classList.remove('show')})
 }
 
 let CATS=[],LOCS=[];
 function wireAutocomplete(){
-  const catInput=document.getElementById('category'),locInput=document.getElementById('location'),catMenu=document.getElementById('ac-categories'),locMenu=document.getElementById('ac-locations');
+  const catInput=document.getElementById('category'),locInput=document.getElementById('location'),
+        catMenu=document.getElementById('ac-categories'),locMenu=document.getElementById('ac-locations');
   if(!CATS.length)CATS=['All categories'];
   else if(CATS[0]!=='All categories')CATS=['All categories',...CATS];
   initAutocomplete(catInput,CATS,catMenu);
-  initAutocomplete(locInput,LOCS,locMenu);
+  initAutocomplete(locInput,LOCS,locMenu)
 }
-
 fetch('/meta').then(r=>r.json()).then(data=>{
   CATS=Array.isArray(data.categories)?data.categories.filter(Boolean):[];
   LOCS=Array.isArray(data.locations)?data.locations.filter(Boolean):[];
-  wireAutocomplete();
+  wireAutocomplete()
 }).catch(()=>wireAutocomplete());
 
 function actionBtn(iconPath,label,href,copy){
@@ -553,14 +506,8 @@ function actionBtn(iconPath,label,href,copy){
   if(href)a.href=href;
   a.setAttribute('role','button');
   a.innerHTML=`<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${iconPath}</svg><span>${label}</span>`;
-  if(copy)a.addEventListener('click',async e=>{
-    e.preventDefault();
-    try{
-      await navigator.clipboard.writeText(copy);
-      showToast('Copied phone');
-    }catch{}
-  });
-  return a;
+  if(copy)a.addEventListener('click',async e=>{e.preventDefault();try{await navigator.clipboard.writeText(copy);showToast('Copied phone')}catch{}});
+  return a
 }
 
 function renderSkeleton(n=6){
@@ -569,28 +516,27 @@ function renderSkeleton(n=6){
     const sk=document.createElement('article');
     sk.className='result-card card skel';
     sk.innerHTML=`<div class='thumb'></div><div class='result-main'><div class='block' style='width:40%'></div><div class='block' style='width:70%'></div><div class='block' style='width:55%'></div></div>`;
-    frag.appendChild(sk);
+    frag.appendChild(sk)
   }
-  return frag;
+  return frag
 }
 
 const resultsEl=document.getElementById('results'),noResultsEl=document.getElementById('no-results'),paginationEl=document.getElementById('pagination');
-let lastResults=[],currentPage=1,totalPages=1,lastQuery={};
+let lastResults=[],currentPage=1,totalPages=1,lastQuery={},lastTotal=0,lastPerPage=100;
 
 function renderResult(item){
   const card=document.createElement('article');
   card.className='result-card card shadow-hover';
-
   let img;
   if(item.main_photo_url){
     img=document.createElement('img');
     img.className='result-thumb';
     img.loading='lazy';
     img.alt='';
-    img.src=item.main_photo_url;
+    img.src=item.main_photo_url
   }else{
     img=document.createElement('div');
-    img.className='result-thumb result-thumb--empty';
+    img.className='result-thumb result-thumb--empty'
   }
 
   const main=document.createElement('div');
@@ -606,52 +552,26 @@ function renderResult(item){
   const chips=document.createElement('div');
   chips.className='result-row';
 
-  if(item.category){
-    const b=document.createElement('span');
-    b.className='badge';
-    b.textContent=item.category;
-    chips.appendChild(b);
-  }
-
-  if(item.category_line){
-    const b2=document.createElement('span');
-    b2.className='badge';
-    b2.textContent=item.category_line;
-    chips.appendChild(b2);
-  }
-
-  if(item.rating){
-    const b=document.createElement('span');
-    b.className='badge';
-    b.textContent=`★ ${item.rating} (${item.reviews_count||0})`;
-    chips.appendChild(b);
-  }
-
-  if(item.address_line){
-    const b=document.createElement('span');
-    b.className='badge';
-    b.textContent=item.address_line;
-    chips.appendChild(b);
-  }
+  if(item.category){const b=document.createElement('span');b.className='badge';b.textContent=item.category;chips.appendChild(b)}
+  if(item.category_line){const b2=document.createElement('span');b2.className='badge';b2.textContent=item.category_line;chips.appendChild(b2)}
+  if(item.rating){const b=document.createElement('span');b.className='badge';b.textContent=`★ ${item.rating} (${item.reviews_count||0})`;chips.appendChild(b)}
+  if(item.address_line){const b=document.createElement('span');b.className='badge';b.textContent=item.address_line;chips.appendChild(b)}
 
   const actions=document.createElement('div');
   actions.className='actions';
 
   const phoneVal=item.phone_e164||item.phone;
   if(phoneVal){
-    actions.appendChild(actionBtn('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 5.18 2 2 0 0 1 4.06 3h3a2 2 0 0 1 2 1.72c.12.89.33 1.76.62 2.6a2 2 0 0 1-.45 2.11L8.09 10.91a16 16 0  0 0 6 6l1.48-1.14a2 2 0  0 1 2.11-.45c.84.29 1.71.5 2.6.62A2 2 0  0 1 22 16.92z"/>','Call',`tel:${phoneVal}`));
-    actions.appendChild(actionBtn('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0  0 1-2-2V4a2 2 0  0 1 2-2h9a2 2 0  0 1 2 2v1"/>','Copy',null,phoneVal));
-    actions.appendChild(actionBtn('<path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/><path d="M9 13l1.5-1.5"/><path d="M11 15l1-1"/>','WhatsApp',`https://wa.me/${String(phoneVal).replace(/[^0-9]/g,'')}`));
+    actions.appendChild(actionBtn('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 5.18 2 2 0 0 1 4.06 3h3a2 2 0 0 1 2 1.72c.12.89.33 1.76.62 2.6a2 2 0 0 1-.45 2.11L8.09 10.91a16 16 0 0 0 6 6l1.48-1.14a2 2 0 0 1 2.11-.45c.84.29 1.71.5 2.6.62A2 2 0 0 1 22 16.92z"/>','Call',`tel:${phoneVal}`));
+    actions.appendChild(actionBtn('<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/><path d="M12 9l-8-8"/>','Copy',null,phoneVal));
+    actions.appendChild(actionBtn('<path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/><path d="M9 13l1.5-1.5"/><path d="M11 15l1-1"/>','WhatsApp',`https://wa.me/${String(phoneVal).replace(/[^0-9]/g,'')}`))
   }
 
-  if(item.whatsapp){
-    actions.appendChild(actionBtn('<path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/><path d="M9 13l1.5-1.5"/><path d="M11 15l1-1"/>','WhatsApp',`https://wa.me/${String(item.whatsapp).replace(/[^0-9]/g,'')}`));
-  }
+  if(item.whatsapp)actions.appendChild(actionBtn('<path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/><path d="M9 13l1.5-1.5"/><path d="M11 15l1-1"/>','WhatsApp',`https://wa.me/${item.whatsapp?.replace(/[^0-9]/g,'')}`));
 
   const site=item.website||item.website_fallback;
-  if(site)actions.appendChild(actionBtn('<path d="M10.9 2a1 1 0 0 0-.9 1v1H6a4 4 0  0 0-4 4v8a4 4 0  0 0 4 4h8a4 4 0  0 0 4-4v-4h1a1 1 0  0 0 1-1V9a7 7 0  0 0-7-7h-2z"/>','Website',site));
-
-  if(item.profile_url)actions.appendChild(actionBtn('<path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0  1 1 18 0z"/><circle cx="12" cy="10" r="3"/>','Maps',item.profile_url));
+  if(site)actions.appendChild(actionBtn('<path d="M10.9 2a1 1 0 0 0-.9 1v1H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-4h1a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7h-2z"/>','Website',site));
+  if(item.profile_url)actions.appendChild(actionBtn('<path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>','Maps',item.profile_url));
 
   card.appendChild(img);
   title.appendChild(name);
@@ -659,28 +579,39 @@ function renderResult(item){
   main.appendChild(chips);
   main.appendChild(actions);
   card.appendChild(main);
-  return card;
+  return card
 }
 
 function renderPagination(){
   if(!totalPages||totalPages<=1){paginationEl.innerHTML='';return}
-  const prevDisabled=currentPage<=1?'disabled':'',nextDisabled=currentPage>=totalPages?'disabled':'';
-  paginationEl.innerHTML=`<button id="page-prev" ${prevDisabled}>Prev</button><span class="page-info">Page ${currentPage} of ${totalPages}</span><button id="page-next" ${nextDisabled}>Next</button>`;
+  const prevDisabled=currentPage<=1?'disabled':'';
+  const nextDisabled=currentPage>=totalPages?'disabled':'';
+  paginationEl.innerHTML=`
+    <div class="left">
+      <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+      <span class="total-info">• ${lastTotal.toLocaleString()} results</span>
+    </div>
+    <div class="right">
+      <button id="page-prev" ${prevDisabled}>Prev</button>
+      <button id="page-next" ${nextDisabled}>Next</button>
+    </div>
+  `;
   const prevBtn=document.getElementById('page-prev'),nextBtn=document.getElementById('page-next');
   if(prevBtn&&!prevDisabled)prevBtn.addEventListener('click',()=>{if(currentPage>1)doSearch(currentPage-1)});
-  if(nextBtn&&!nextDisabled)nextBtn.addEventListener('click',()=>{if(currentPage<totalPages)doSearch(currentPage+1)});
+  if(nextBtn&&!nextDisabled)nextBtn.addEventListener('click',()=>{if(currentPage<totalPages)doSearch(currentPage+1)})
 }
 
 function buildQuery(page){
-  const rawCat=document.getElementById('category').value.trim(),loc=document.getElementById('location').value.trim();
+  const rawCat=document.getElementById('category').value.trim();
+  const loc=document.getElementById('location').value.trim();
   const isAll=/^all$/i.test(rawCat)||/^all categories$/i.test(rawCat);
   const category=isAll?'':rawCat;
 
-  const ratingEl=document.getElementById('filter-rating'),
-    hasPhoneEl=document.getElementById('filter-has-phone'),
-    hasWebsiteEl=document.getElementById('filter-has-website'),
-    sortEl=document.getElementById('sort-by'),
-    addrEl=document.getElementById('filter-address');
+  const ratingEl=document.getElementById('filter-rating');
+  const hasPhoneEl=document.getElementById('filter-has-phone');
+  const hasWebsiteEl=document.getElementById('filter-has-website');
+  const sortEl=document.getElementById('sort-by');
+  const addrEl=document.getElementById('filter-address');
 
   const rating=ratingEl?ratingEl.value:'';
   const hasPhone=hasPhoneEl&&hasPhoneEl.checked;
@@ -697,7 +628,7 @@ function buildQuery(page){
   if(sortBy)q.sort=sortBy;
   if(addressContains)q.address_contains=addressContains;
   if(page&&page>1)q.page=String(page);
-  return q;
+  return q
 }
 
 async function doSearch(page){
@@ -715,132 +646,70 @@ async function doSearch(page){
     const r=await fetch(`/search?${params.toString()}`);
     const data=await r.json();
     const rows=data.items||[];
+
     lastResults=rows;
     currentPage=data.page||1;
 
     const perPage=data.per_page||rows.length||100;
-    const total=data.total||rows.length;
+    const total=Number.isFinite(data.total)?data.total:(rows.length||0);
+
+    lastTotal=total;
+    lastPerPage=perPage;
+
     totalPages=perPage?Math.max(1,Math.ceil(total/perPage)):1;
 
     resultsEl.innerHTML='';
     if(!rows.length)noResultsEl.style.display='block';
     rows.forEach(x=>resultsEl.appendChild(renderResult(x)));
+
     renderPagination();
 
     const fb=document.getElementById('filters-bar');
-    if(fb)fb.classList.remove('hidden');
+    if(fb)fb.classList.remove('hidden')
   }catch(e){
     resultsEl.innerHTML='';
     noResultsEl.textContent='Something went wrong. Try again.';
     noResultsEl.style.display='block';
-    paginationEl.innerHTML='';
+    paginationEl.innerHTML=''
   }finally{
     resultsEl.setAttribute('aria-busy','false');
-    loading(false);
+    loading(false)
   }
 }
 
-document.getElementById('search-form').addEventListener('submit',e=>{
-  e.preventDefault();
-  currentPage=1;
-  totalPages=1;
-  lastQuery={};
-  doSearch(1);
-});
-
+document.getElementById('search-form').addEventListener('submit',e=>{e.preventDefault();currentPage=1;totalPages=1;lastQuery={};doSearch(1)});
 if(location.hash==='#search')showSearch();
 
-const modal=document.getElementById('modal-preview'),
-  btnPrev=document.getElementById('btn-preview'),
-  btnClose=document.getElementById('btn-close'),
-  tbl=document.getElementById('preview-table'),
-  btnDownload=document.getElementById('btn-download');
-
-let lastObjectUrl=null;
-let lastModalOpener=null;
-
-function closeModal(){
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden','true');
-  if(lastObjectUrl){
-    try{URL.revokeObjectURL(lastObjectUrl)}catch{}
-    lastObjectUrl=null;
-  }
-  if(lastModalOpener && typeof lastModalOpener.focus==='function') lastModalOpener.focus();
-}
+const modal=document.getElementById('modal-preview'),btnPrev=document.getElementById('btn-preview'),btnClose=document.getElementById('btn-close'),tbl=document.getElementById('preview-table'),btnDownload=document.getElementById('btn-download');
 
 btnPrev.onclick=()=>{
   if(!lastResults.length){showToast('Run a search first');return}
-  lastModalOpener=btnPrev;
-
   tbl.innerHTML='';
   const cols=["place name","category","location","address","phone","maps link","website"];
   tbl.insertAdjacentHTML('beforeend','<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>');
-
   lastResults.forEach(r=>{
-    const rowValues=[
-      r.correct_name||r.name||"",
-      r.category||"",
-      r.query_location||"",
-      r.address_line||r.address||"",
-      r.phone_e164||r.phone||"",
-      r.profile_url||"",
-      r.website||r.website_fallback||""
-    ];
-    tbl.insertAdjacentHTML('beforeend','<tr>'+rowValues.map(v=>`<td>${v??''}</td>`).join('')+'</tr>');
+    const rowValues=[r.correct_name||r.name||"",r.category||"",r.query_location||"",r.address_line||r.address||"",r.phone_e164||r.phone||"",r.profile_url||"",r.website||r.website_fallback||""];
+    tbl.insertAdjacentHTML('beforeend','<tr>'+rowValues.map(v=>`<td>${v??''}</td>`).join('')+'</tr>')
   });
-
-  const csv=[
-    cols.join(','),
-    ...lastResults.map(r=>{
-      const rowValues=[
-        r.correct_name||r.name||"",
-        r.category||"",
-        r.query_location||"",
-        r.address_line||r.address||"",
-        r.phone_e164||r.phone||"",
-        r.profile_url||"",
-        r.website||r.website_fallback||""
-      ];
-      return rowValues.map(v=>JSON.stringify(v??'')).join(',');
-    })
-  ].join('\n');
-
+  const csv=[cols.join(','),...lastResults.map(r=>{
+    const rowValues=[r.correct_name||r.name||"",r.category||"",r.query_location||"",r.address_line||r.address||"",r.phone_e164||r.phone||"",r.profile_url||"",r.website||r.website_fallback||""];
+    return rowValues.map(v=>JSON.stringify(v??'')).join(',')
+  })].join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
-  if(lastObjectUrl){
-    try{URL.revokeObjectURL(lastObjectUrl)}catch{}
-    lastObjectUrl=null;
-  }
-  lastObjectUrl=URL.createObjectURL(blob);
-  btnDownload.href=lastObjectUrl;
+  btnDownload.href=URL.createObjectURL(blob);
   btnDownload.download='leads.csv';
-
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
+  modal.classList.add('show')
 };
 
-btnClose.onclick=closeModal;
-
-modal.addEventListener('click',e=>{
-  if(e.target===modal)closeModal();
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape' && modal.classList.contains('show')) closeModal();
-});
+btnClose.onclick=()=>modal.classList.remove('show');
+modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show')});
 
 const ratingFilterEl=document.getElementById('filter-rating'),
-  hasPhoneEl=document.getElementById('filter-has-phone'),
-  hasWebsiteEl=document.getElementById('filter-has-website'),
-  sortEl=document.getElementById('sort-by'),
-  addrEl=document.getElementById('filter-address');
-
-const triggerFilteredSearch=debounce(()=>{
-  if(!lastResults.length)return;
-  currentPage=1;
-  totalPages=1;
-  doSearch(1);
-},250);
+      hasPhoneEl=document.getElementById('filter-has-phone'),
+      hasWebsiteEl=document.getElementById('filter-has-website'),
+      sortEl=document.getElementById('sort-by'),
+      addrEl=document.getElementById('filter-address'),
+      triggerFilteredSearch=debounce(()=>{if(!lastResults.length)return;currentPage=1;totalPages=1;doSearch(1)},250);
 
 if(ratingFilterEl)ratingFilterEl.addEventListener('change',triggerFilteredSearch);
 if(hasPhoneEl)hasPhoneEl.addEventListener('change',triggerFilteredSearch);
@@ -856,8 +725,8 @@ featureCards.forEach(card=>{
     svg.classList.remove('do-anim');
     void svg.offsetWidth;
     svg.classList.add('do-anim');
-    setTimeout(()=>svg.classList.remove('do-anim'),2200);
-  });
+    setTimeout(()=>svg.classList.remove('do-anim'),2200)
+  })
 });
 </script>
 </body>
