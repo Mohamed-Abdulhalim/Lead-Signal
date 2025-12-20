@@ -75,6 +75,30 @@ a{color:inherit;text-decoration:none}
 @keyframes headlineGlow{0%,100%{background-position:0% 50%;text-shadow:0 0 0 rgba(122,235,255,0)}50%{background-position:100% 50%;text-shadow:0 0 24px rgba(122,235,255,.25)}}
 .sub{color:var(--text-weak);font-family:'Cairo',ui-sans-serif,system-ui,Segoe UI,Inter,-apple-system,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";font-weight:600}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.trust-line{display:grid;gap:6px;align-content:center}
+.trust-pill{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(15,23,42,.55);
+  color:var(--text-weak);
+  font-size:13px;
+}
+.trust-pill strong{color:var(--text);font-weight:800}
+.trust-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--ok);
+  box-shadow:0 0 0 3px rgba(89,255,183,.15);
+}
+.trust-mini{
+  font-size:12px;
+  color:rgba(167,182,255,.9);
+  padding-left:2px;
+}
+@media (max-width:860px){
+  .trust-line{width:100%}
+  .trust-pill{width:fit-content;max-width:100%}
+}
 .btn{appearance:none;border:0;cursor:pointer;border-radius:12px;padding:12px 16px;font-weight:650;letter-spacing:.2px}
 .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
 .btn-primary:focus-visible{outline:none;box-shadow:var(--ring)}
@@ -232,7 +256,7 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
       <div class="hero">
         <h1 class="h1">Find real businesses from Google Maps. Contact them today.</h1>
         <p class="sub">Scrape, clean, and export verified local leads from Google Maps across the whole world. Phones, websites, socials, and maps links ready for recruiters, agencies, and scrapers who care about quality.</p>
-        <div class="hero-cta"><a href="#search" class="btn btn-primary" id="cta-start">Find leads</a></div>
+        <div class="hero-cta">   <a href="#search" class="btn btn-primary" id="cta-start">Find leads</a>   <div class="trust-line" aria-label="Access and privacy notice">     <span class="trust-pill">       <span class="trust-dot" aria-hidden="true"></span>       <strong>No signup.</strong> No credit card. We don’t store your searches.     </span>     <span class="trust-mini">Built for quick lead grabbing, not account creation.</span>   </div> </div>
         <div class="kpis grid-3" style="grid-template-columns:repeat(4,1fr)">
           <div class="kpi card"><div class="big" data-count="200000">0</div><div class="muted">rows processed</div></div>
           <div class="kpi card"><div class="big" data-count="92">0%</div><div class="muted">phone coverage</div></div>
