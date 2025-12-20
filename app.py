@@ -14,39 +14,6 @@ with open("categories.txt") as f:
     HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
 
 
-def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
-    seen = set()
-    values = []
-    offset = 0
-
-    for _ in range(max_batches):
-        res = (
-            sb
-            .table(LEADS_TABLE)
-            .select(col)
-            .order(col)
-            .range(offset, offset + batch - 1)
-            .execute()
-        )
-        rows = res.data or []
-        if not rows:
-            break
-
-        for r in rows:
-            v = (r.get(col) or "").strip()
-            if not v or v in seen:
-                continue
-            seen.add(v)
-            values.append(v)
-
-        if len(rows) < batch:
-            break
-
-        offset += batch
-
-    return values
-
-
 def unique_categories():
     return HARDCODED_CATEGORIES
 
@@ -86,24 +53,7 @@ def meta():
     )
 
 
-@app.get("/search")
-def search():
-    category = request.args.get("category", type=str)
-    location = request.args.get("location", type=str)
-    page = request.args.get("page", default=1, type=int)
-    if page < 1:
-        page = 1
-    per_page = 100
-    offset = (page - 1) * per_page
-
-    min_rating = request.args.get("min_rating", type=float)
-    has_phone = request.args.get("has_phone") == "1"
-    has_website = request.args.get("has_website") == "1"
-    address_contains = request.args.get("address_contains", type=str)
-    sort = (request.args.get("sort", type=str) or "").strip()
-
-    q = sb.table(LEADS_TABLE).select("*", count="exact")
-
+def apply_filters(q, category, location, min_rating, has_phone, has_website, address_contains):
     if category:
         q = q.eq("category", category)
 
@@ -132,18 +82,48 @@ def search():
         if addr:
             q = q.ilike("address_line", f"%{addr}%")
 
+    return q
+
+
+@app.get("/search")
+def search():
+    category = request.args.get("category", type=str)
+    location = request.args.get("location", type=str)
+
+    page = request.args.get("page", default=1, type=int)
+    if page < 1:
+        page = 1
+
+    per_page = 100
+    offset = (page - 1) * per_page
+
+    min_rating = request.args.get("min_rating", type=float)
+    has_phone = request.args.get("has_phone") == "1"
+    has_website = request.args.get("has_website") == "1"
+    address_contains = request.args.get("address_contains", type=str)
+    sort = (request.args.get("sort", type=str) or "").strip()
+
+    count_q = sb.table(LEADS_TABLE).select("id", count="exact")
+    count_q = apply_filters(count_q, category, location, min_rating, has_phone, has_website, address_contains)
+    count_res = count_q.range(0, 0).execute()
+    total = count_res.count or 0
+
+    data_q = sb.table(LEADS_TABLE).select("*")
+    data_q = apply_filters(data_q, category, location, min_rating, has_phone, has_website, address_contains)
+
     if sort == "rating_desc":
-        q = q.order("rating", desc=True)
+        data_q = data_q.order("rating", desc=True)
+    elif sort == "reviews_desc":
+        data_q = data_q.order("reviews_count", desc=True)
     elif sort == "name_asc":
-        q = q.order("name")
+        data_q = data_q.order("name")
     else:
-        q = q.order("rating", desc=True)
+        data_q = data_q.order("rating", desc=True)
 
-    q = q.range(offset, offset + per_page - 1)
+    data_q = data_q.range(offset, offset + per_page - 1)
+    res = data_q.execute()
 
-    res = q.execute()
     rows = res.data or []
-    total = res.count or len(rows)
 
     items = []
     for row in rows:
@@ -202,6 +182,7 @@ def sitemap_xml():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
 
 
 
