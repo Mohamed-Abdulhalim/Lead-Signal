@@ -43,6 +43,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ===== Premium Design System ===== */
+/* ===== Autocomplete dropdown (same pulling method as your working LeadSignal) ===== */
+.ac-wrap { position: relative; }
+.ac-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 9999;
+  background: rgba(10, 12, 22, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow: auto;
+  display: none;
+}
+.ac-menu.show { display: block; }
+.ac-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.ac-item:hover,
+.ac-item[aria-selected="true"] {
+  background: rgba(107, 121, 255, 0.18);
+}
+.ac-empty {
+  padding: 10px 12px;
+  color: var(--muted);
+}
+
 :root {
   /* Enhanced Color Palette */
   --bg-0: #0a0c16;
@@ -232,6 +264,20 @@ body::after {
   body.nav-open .sidebar {
     transform: translateX(0);
   }
+}
+.nav-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+  z-index: 999;
+}
+body.nav-open .nav-backdrop{
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Brand Area */
@@ -1259,28 +1305,33 @@ body.nav-open .nav-toggle span::after {
     </section>
     
     <section id="panel-search" class="panel" hidden>
-      <div class="search-form glass">
-        <div class="input-group">
-          <label for="category">BUSINESS CATEGORY</label>
-          <input id="category" name="category" placeholder="e.g. Dental clinic, Restaurant, Law firm" autocomplete="off"/>
+        <div class="search-form glass">
+          <div class="input-group ac-wrap">
+            <label for="category">BUSINESS CATEGORY</label>
+            <input id="category" name="category" placeholder="e.g. Dental clinic, Restaurant, Law firm" autocomplete="off"/>
+            <div class="ac-menu" id="ac-categories" role="listbox" aria-label="Category suggestions"></div>
+          </div>
+        
+          <div class="input-group ac-wrap">
+            <label for="location">LOCATION</label>
+            <input id="location" name="location" placeholder="e.g. New York, London, Dubai" autocomplete="off"/>
+            <div class="ac-menu" id="ac-locations" role="listbox" aria-label="Location suggestions"></div>
+          </div>
+        
+          <div class="input-group">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" type="submit" id="btn-search">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="M21 21l-4.3-4.3"/>
+              </svg>
+              Search Leads
+            </button>
+          </div>
         </div>
-        <div class="input-group">
-          <label for="location">LOCATION</label>
-          <input id="location" name="location" placeholder="e.g. New York, London, Dubai" autocomplete="off"/>
-        </div>
-        <div class="input-group">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary" type="submit" id="btn-search">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7"/>
-              <path d="M21 21l-4.3-4.3"/>
-            </svg>
-            Search Leads
-          </button>
-        </div>
-      </div>
+
       
-      <div id="filters" style="margin-top: 1.5rem;" class="glass" style="padding: 1.5rem; border-radius: var(--radius-lg);">
+      <div id="filters" class="glass" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: var(--radius-lg);">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
           <div class="input-group">
             <label for="filter-rating">MINIMUM RATING</label>
@@ -1351,6 +1402,127 @@ document.addEventListener('DOMContentLoaded', () => {
   const navHome = document.getElementById('nav-home');
   const navSearch = document.getElementById('nav-search');
   const ctaStart = document.getElementById('cta-start');
+  function initAutocomplete(inputEl, source, menuEl) {
+  let idx = -1;
+
+  const render = (items) => {
+    menuEl.innerHTML = "";
+    if (!items.length) {
+      menuEl.innerHTML = '<div class="ac-empty">No matches</div>';
+      return;
+    }
+    items.forEach((v, i) => {
+      const div = document.createElement("div");
+      div.className = "ac-item";
+      div.setAttribute("role", "option");
+      div.setAttribute("aria-selected", i === idx ? "true" : "false");
+      div.textContent = v;
+      div.onclick = () => {
+        inputEl.value = v;
+        menuEl.classList.remove("show");
+      };
+      menuEl.appendChild(div);
+    });
+  };
+
+  const filter = (q) =>
+    source
+      .filter((s) => s.toLowerCase().includes(q.toLowerCase()))
+      .slice(0, 50);
+
+  const renderAll = () => render(source.slice(0, 200));
+
+  inputEl.addEventListener("input", () => {
+    idx = -1;
+    render(filter(inputEl.value.trim()));
+    menuEl.classList.add("show");
+  });
+
+  inputEl.addEventListener("focus", () => {
+    idx = -1;
+    renderAll();
+    menuEl.classList.add("show");
+  });
+
+  inputEl.addEventListener("click", () => {
+    if (menuEl.classList.contains("show")) {
+      menuEl.classList.remove("show");
+      return;
+    }
+    idx = -1;
+    renderAll();
+    menuEl.classList.add("show");
+  });
+
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" && !menuEl.classList.contains("show")) {
+      e.preventDefault();
+      idx = -1;
+      renderAll();
+      menuEl.classList.add("show");
+      return;
+    }
+
+    const items = [...menuEl.querySelectorAll(".ac-item")];
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      idx = Math.min(idx + 1, items.length - 1);
+      render(items.map((i) => i.textContent));
+      menuEl.classList.add("show");
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      idx = Math.max(idx - 1, 0);
+      render(items.map((i) => i.textContent));
+    }
+
+    if (e.key === "Enter" && idx >= 0) {
+      e.preventDefault();
+      inputEl.value = items[idx].textContent;
+      menuEl.classList.remove("show");
+    }
+
+    if (e.key === "Escape") menuEl.classList.remove("show");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menuEl.contains(e.target) && e.target !== inputEl) {
+      menuEl.classList.remove("show");
+    }
+  });
+}
+
+let CATS = [];
+let LOCS = [];
+
+function wireAutocomplete() {
+  const catInput = document.getElementById("category");
+  const locInput = document.getElementById("location");
+  const catMenu = document.getElementById("ac-categories");
+  const locMenu = document.getElementById("ac-locations");
+  if (!catInput || !locInput || !catMenu || !locMenu) return;
+
+  const cats = CATS.length ? CATS.slice() : [];
+  if (!cats.includes("All categories")) cats.unshift("All categories");
+
+  initAutocomplete(catInput, cats, catMenu);
+  initAutocomplete(locInput, LOCS, locMenu);
+}
+
+fetch("/meta")
+  .then((r) => r.json())
+  .then((data) => {
+    CATS = Array.isArray(data.categories) ? data.categories.filter(Boolean) : [];
+    LOCS = Array.isArray(data.locations) ? data.locations.filter(Boolean) : [];
+    wireAutocomplete();
+  })
+  .catch(() => {
+    wireAutocomplete();
+  });
+
   
   function showHome() {
     panelHome.hidden = false;
@@ -1451,7 +1623,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   // Dynamic Year
-  document.getElementById('year').textContent = new Date().getFullYear();
+  document.getElementById('year')?.textContent = new Date().getFullYear();
   
   // Sample Data for Preview
   const sampleData = [
