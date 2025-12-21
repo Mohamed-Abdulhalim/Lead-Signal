@@ -1162,21 +1162,21 @@ body.nav-open .nav-toggle span::after {
       <div class="brand-name">LeadSignal</div>
     </div>
     <nav class="nav" aria-label="Primary">
-      <button id="nav-home" aria-current="page">
+      <button type="button" id="nav-home" aria-current="page">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 11l9-7 9 7"/>
           <path d="M9 22V12h6v10"/>
         </svg>
         <span>Dashboard</span>
       </button>
-      <button id="nav-search">
+      <button type="button" id="nav-search">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="7"/>
           <path d="M21 21l-4.3-4.3"/>
         </svg>
         <span>Find Leads</span>
       </button>
-      <button id="nav-export">
+      <button type="button" id="nav-export">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
@@ -1305,7 +1305,7 @@ body.nav-open .nav-toggle span::after {
     </section>
     
     <section id="panel-search" class="panel" hidden>
-        <div class="search-form glass">
+        <form class="search-form glass" id="search-form">
           <div class="input-group ac-wrap">
             <label for="category">BUSINESS CATEGORY</label>
             <input id="category" name="category" placeholder="e.g. Dental clinic, Restaurant, Law firm" autocomplete="off"/>
@@ -1328,7 +1328,7 @@ body.nav-open .nav-toggle span::after {
               Search Leads
             </button>
           </div>
-        </div>
+        </form>
 
       
       <div id="filters" class="glass" style="margin-top: 1.5rem; padding: 1.5rem; border-radius: var(--radius-lg);">
@@ -1655,14 +1655,24 @@ fetch("/meta")
   ];
   
   // Initialize Search Form
-  const searchForm = document.querySelector('.search-form');
+  const searchForm = document.getElementById('search-form');
   if (searchForm) {
     searchForm.addEventListener('submit', (e) => {
       e.preventDefault();
+    
+      const category = document.getElementById('category')?.value.trim();
+      const location = document.getElementById('location')?.value.trim();
+    
+      if (!category) {
+        showToast('Please enter a category.', 'error');
+        document.getElementById('category')?.focus();
+        return;
+      }
+    
       showToast('Searching for leads...', 'info');
-      // Your search logic here
     });
   }
+
   
   // Feature Cards Hover Animation
   const features = document.querySelectorAll('.feature');
@@ -1694,15 +1704,14 @@ fetch("/meta")
   
   // Initialize
 function routeFromHash() {
-  if (location.hash === '#search') showSearch();
+  const h = (location.hash || '').toLowerCase();
+  if (h === '#search') showSearch();
   else showHome();
 }
 
-
 window.addEventListener('hashchange', routeFromHash);
-
-// Initialize based on current hash
 routeFromHash();
+
 
 });
 
