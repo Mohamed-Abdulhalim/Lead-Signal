@@ -1541,12 +1541,19 @@ fetch("/meta")
     document.getElementById('category')?.focus();
   }
   
-  navHome.addEventListener('click', showHome);
-  navSearch.addEventListener('click', showSearch);
+  navHome.addEventListener('click', () => {
+    location.hash = '';
+  });
+  
+  navSearch.addEventListener('click', () => {
+    location.hash = '#search';
+  });
+  
   ctaStart.addEventListener('click', (e) => {
     e.preventDefault();
-    showSearch();
+    location.hash = '#search';
   });
+
   
   // Animated Counter
   const counters = document.querySelectorAll('[data-count]');
@@ -1686,19 +1693,29 @@ fetch("/meta")
   window.addEventListener('resize', handleResize);
   
   // Initialize
-  showHome();
+function routeFromHash() {
+  if (location.hash === '#search') showSearch();
+  else showHome();
+}
+
+window.addEventListener('hashchange', routeFromHash);
+
+// Initialize based on current hash
+routeFromHash();
+
 });
 
+// Keyboard Navigation
 // Keyboard Navigation
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.body.classList.remove('nav-open');
     document.querySelector('.modal.show')?.classList.remove('show');
   }
-  
+
   if (e.key === '/' && e.target === document.body) {
     e.preventDefault();
-    showSearch();
+    location.hash = '#search';
   }
 });
 </script>
