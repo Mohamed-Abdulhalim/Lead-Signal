@@ -1,103 +1,117 @@
 from flask import Flask, jsonify, request, render_template, Response
 from supabase import create_client
 import os
+import time
 
 app = Flask(__name__)
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
-LEADS_TABLE = os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps"
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
+LEADS_TABLE = (os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps").strip()
 
-sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+_sb = None
 
-with open("categories.txt") as f:
-    HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
+try:
+    with open("categories.txt", encoding="utf-8") as f:
+        HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
+except Exception:
+    HARDCODED_CATEGORIES = []
+
+_cache = {
+    "locations": {"ts": 0.0, "value": []},
+    "categories": {"ts": 0.0, "value": HARDCODED_CATEGORIES},
+}
 
 
-def _distinct(col: str, batch: int = 2000, max_batches: int = 250):
-    seen = set()
-    values = []
-    offset = 0
+def _get_sb():
+    global _sb
+    if _sb is not None:
+        return _sb
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+        raise RuntimeError("Missing SUPABASE_URL or SUPABASE_ANON_KEY")
+    _sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    return _sb
 
-    for _ in range(max_batches):
-        res = (
-            sb
-            .table(LEADS_TABLE)
-            .select(col)
-            .order(col)
-            .range(offset, offset + batch - 1)
-            .execute()
-        )
-        rows = res.data or []
-        if not rows:
-            break
 
-        for r in rows:
-            v = (r.get(col) or "").strip()
-            if not v or v in seen:
-                continue
-            seen.add(v)
-            values.append(v)
-
-        if len(rows) < batch:
-            break
-
-        offset += batch
-
-    return values
+def _retry(fn, tries=2, base_sleep=0.25):
+    last = None
+    for i in range(max(1, tries)):
+        try:
+            return fn()
+        except Exception as e:
+            last = e
+            if i < tries - 1:
+                time.sleep(base_sleep * (2 ** i))
+    raise last
 
 
 def unique_categories():
-    return HARDCODED_CATEGORIES
+    return _cache["categories"]["value"]
 
 
-def unique_locations():
+def _fetch_locations():
+    sb = _get_sb()
     res = (
         sb.table("distinct_query_locations")
         .select("query_location")
         .order("query_location")
         .execute()
     )
-
     rows = res.data or []
     values = []
     for r in rows:
         v = (r.get("query_location") or "").strip()
         if v:
             values.append(v)
-
     return values
+
+
+def unique_locations(ttl_seconds=900):
+    now = time.time()
+    bucket = _cache["locations"]
+    if bucket["value"] and (now - bucket["ts"]) < ttl_seconds:
+        return bucket["value"]
+
+    values = _retry(_fetch_locations, tries=2, base_sleep=0.3)
+    bucket["value"] = values
+    bucket["ts"] = now
+    return values
+
+
+@app.get("/health")
+def health():
+    return "ok", 200
 
 
 @app.route("/", methods=["GET", "HEAD"])
 def index():
     if request.method == "HEAD":
         return "", 200
-
-    return render_template(
-        "index.html",
-        categories=unique_categories(),
-        locations=unique_locations(),
-    )
+    return render_template("index.html", categories=unique_categories(), locations=[])
 
 
 @app.get("/meta")
 def meta():
-    return jsonify(
-        {
-            "categories": unique_categories(),
-            "locations": unique_locations(),
-        }
-    )
+    try:
+        locs = unique_locations()
+    except Exception:
+        locs = []
+    return jsonify({"categories": unique_categories(), "locations": locs})
 
 
 @app.get("/search")
 def search():
+    try:
+        sb = _get_sb()
+    except Exception:
+        return jsonify({"items": [], "page": 1, "per_page": 100, "total": 0, "error": "backend_not_ready"}), 503
+
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
     page = request.args.get("page", default=1, type=int)
     if page < 1:
         page = 1
+
     per_page = 100
     offset = (page - 1) * per_page
 
@@ -121,16 +135,10 @@ def search():
         q = q.gte("rating", min_rating)
 
     if has_phone:
-        q = (
-            q.not_.is_("phone", None)
-             .neq("phone", "")
-        )
+        q = q.not_.is_("phone", None).neq("phone", "")
 
     if has_website:
-        q = (
-            q.not_.is_("website", None)
-             .neq("website", "")
-        )
+        q = q.not_.is_("website", None).neq("website", "")
 
     if address_contains:
         addr = address_contains.strip()
@@ -141,12 +149,21 @@ def search():
         q = q.order("rating", desc=True)
     elif sort == "name_asc":
         q = q.order("name")
+    elif sort == "reviews_desc":
+        q = q.order("reviews_count", desc=True)
     else:
         q = q.order("rating", desc=True)
 
     q = q.range(offset, offset + per_page - 1)
 
-    res = q.execute()
+    def _exec():
+        return q.execute()
+
+    try:
+        res = _retry(_exec, tries=2, base_sleep=0.25)
+    except Exception:
+        return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "error": "query_failed"}), 502
+
     rows = res.data or []
     total = res.count or len(rows)
 
@@ -155,11 +172,7 @@ def search():
         row = {k: ("" if v is None else v) for k, v in row.items()}
 
         raw = (row.get("photo_urls") or "").strip()
-        photos = [
-            u.strip()
-            for u in raw.split(",")
-            if u.strip().startswith("http")
-        ]
+        photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
 
         if not row.get("main_photo_url") and photos:
             row["main_photo_url"] = photos[0]
@@ -171,14 +184,7 @@ def search():
 
         items.append(row)
 
-    return jsonify(
-        {
-            "items": items,
-            "page": page,
-            "per_page": per_page,
-            "total": total,
-        }
-    )
+    return jsonify({"items": items, "page": page, "per_page": per_page, "total": total})
 
 
 @app.route("/robots.txt")
@@ -194,8 +200,8 @@ def robots_txt():
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    body = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    body = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">
   <url>
     <loc>https://maps-scraper-gray.vercel.app/</loc>
     <priority>1.0</priority>
@@ -207,6 +213,7 @@ def sitemap_xml():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
 
 
 
