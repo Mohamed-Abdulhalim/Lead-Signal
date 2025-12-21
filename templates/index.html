@@ -1138,6 +1138,60 @@ document.addEventListener('DOMContentLoaded', () => {
       svg.style.transform = 'scale(1)';
     });
   });
+  const form = document.getElementById('search-form');
+  const resultsEl = document.getElementById('results');
+  const paginationEl = document.getElementById('pagination');
+
+  if (form && resultsEl) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const category = (document.getElementById('category')?.value || '').trim();
+      const location = (document.getElementById('location')?.value || '').trim();
+
+      const cat = (category.toLowerCase() === 'all categories') ? '' : category;
+
+      const qs = new URLSearchParams();
+      if (cat) qs.set('category', cat);
+      if (location) qs.set('location', location);
+
+      const url = `/search?${qs.toString()}`;
+
+      resultsEl.innerHTML = `<div class="glass" style="padding:1rem;border-radius:16px;">Searching...</div>`;
+      if (paginationEl) paginationEl.style.display = 'none';
+
+      try {
+        const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await r.json();
+
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        if (!items.length) {
+          resultsEl.innerHTML = `<div class="glass" style="padding:1rem;border-radius:16px;">No results</div>`;
+          return;
+        }
+
+        resultsEl.innerHTML = items.map(it => `
+          <div class="result-card glass" style="margin-bottom:1rem;">
+            <div>
+              <div class="result-title">${(it.name || 'Unknown')}</div>
+              <div class="result-meta">
+                ${it.rating ? `<span class="badge">★ ${it.rating}</span>` : ``}
+                ${it.location ? `<span class="badge">${it.location}</span>` : ``}
+              </div>
+              <div class="result-actions">
+                ${it.phone ? `<span class="badge">${it.phone}</span>` : ``}
+                ${it.website ? `<a class="action-btn" href="${it.website}" target="_blank" rel="noopener">Website</a>` : ``}
+                ${it.maps_url ? `<a class="action-btn" href="${it.maps_url}" target="_blank" rel="noopener">Maps</a>` : ``}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch {
+        resultsEl.innerHTML = `<div class="glass" style="padding:1rem;border-radius:16px;">Search failed</div>`;
+      }
+    });
+  }
 
   function handleResize() {
     if (window.innerWidth > 1024) document.body.classList.remove('nav-open');
