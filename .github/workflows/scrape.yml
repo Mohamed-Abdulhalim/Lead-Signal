@@ -55,57 +55,187 @@ jobs:
         run: |
           state_file=".github/rotation_index.txt"
 
-          mapfile -t cities <<'EOF'
-          Alabama, USA
-          Alaska, USA
-          Arizona, USA
-          Arkansas, USA
-          California, USA
-          Colorado, USA
-          Connecticut, USA
-          Delaware, USA
-          Florida, USA
-          Georgia, USA
-          Hawaii, USA
-          Idaho, USA
-          Illinois, USA
-          Indiana, USA
-          Iowa, USA
-          Kansas, USA
-          Kentucky, USA
-          Louisiana, USA
-          Maine, USA
-          Maryland, USA
-          Massachusetts, USA
-          Michigan, USA
-          Minnesota, USA
-          Mississippi, USA
-          Missouri, USA
-          Montana, USA
-          Nebraska, USA
-          Nevada, USA
-          New Hampshire, USA
-          New Jersey, USA
-          New Mexico, USA
-          New York, USA
-          North Carolina, USA
-          North Dakota, USA
-          Ohio, USA
-          Oklahoma, USA
-          Oregon, USA
-          Pennsylvania, USA
-          Rhode Island, USA
-          South Carolina, USA
-          South Dakota, USA
-          Tennessee, USA
-          Texas, USA
-          Utah, USA
-          Vermont, USA
-          Virginia, USA
-          Washington, USA
-          West Virginia, USA
-          Wisconsin, USA
-          Wyoming, USA
+          mapfile -t cities <<'EOF'          
+          London, United Kingdom
+          Manchester, United Kingdom
+          Birmingham, United Kingdom
+          Leeds, United Kingdom
+          Liverpool, United Kingdom
+          Bristol, United Kingdom
+          Edinburgh, United Kingdom
+          Glasgow, United Kingdom
+          Dublin, Ireland
+          Paris, France
+          Lyon, France
+          Marseille, France
+          Nice, France
+          Toulouse, France
+          Berlin, Germany
+          Hamburg, Germany
+          Munich, Germany
+          Frankfurt, Germany
+          Cologne, Germany
+          Düsseldorf, Germany
+          Amsterdam, Netherlands
+          Rotterdam, Netherlands
+          Utrecht, Netherlands
+          The Hague, Netherlands
+          Madrid, Spain
+          Barcelona, Spain
+          Valencia, Spain
+          Seville, Spain
+          Milan, Italy
+          Rome, Italy
+          Turin, Italy
+          Naples, Italy
+          Florence, Italy
+          Venice, Italy
+          Zurich, Switzerland
+          Geneva, Switzerland
+          Basel, Switzerland
+          Vienna, Austria
+          Prague, Czech Republic
+          Warsaw, Poland
+          Kraków, Poland
+          Wrocław, Poland
+          Budapest, Hungary
+          Brussels, Belgium
+          Antwerp, Belgium
+          Stockholm, Sweden
+          Gothenburg, Sweden
+          Oslo, Norway
+          Bergen, Norway
+          Copenhagen, Denmark
+          Helsinki, Finland
+          Lisbon, Portugal
+          Porto, Portugal
+          Athens, Greece
+          Thessaloniki, Greece
+          Bucharest, Romania
+          Cluj-Napoca, Romania
+          Sofia, Bulgaria
+          Belgrade, Serbia
+          Zagreb, Croatia
+          Ljubljana, Slovenia
+          Tallinn, Estonia
+          Riga, Latvia
+          Vilnius, Lithuania
+          Dubai, United Arab Emirates
+          Abu Dhabi, United Arab Emirates
+          Sharjah, United Arab Emirates
+          Riyadh, Saudi Arabia
+          Jeddah, Saudi Arabia
+          Dammam, Saudi Arabia
+          Khobar, Saudi Arabia
+          Mecca, Saudi Arabia
+          Medina, Saudi Arabia
+          Doha, Qatar
+          Manama, Bahrain
+          Kuwait City, Kuwait
+          Muscat, Oman
+          Amman, Jordan
+          Istanbul, Turkey
+          Ankara, Turkey
+          Izmir, Turkey
+          Bursa, Turkey
+          Tokyo, Japan
+          Osaka, Japan
+          Kyoto, Japan
+          Yokohama, Japan
+          Nagoya, Japan
+          Seoul, South Korea
+          Busan, South Korea
+          Incheon, South Korea
+          Shanghai, China
+          Beijing, China
+          Shenzhen, China
+          Guangzhou, China
+          Hangzhou, China
+          Chengdu, China
+          Hong Kong, China
+          Macau, China
+          Taipei, Taiwan
+          Kaohsiung, Taiwan
+          Singapore, Singapore
+          Kuala Lumpur, Malaysia
+          Penang, Malaysia
+          Bangkok, Thailand
+          Chiang Mai, Thailand
+          Phuket, Thailand
+          Jakarta, Indonesia
+          Surabaya, Indonesia
+          Bandung, Indonesia
+          Bali, Indonesia
+          Manila, Philippines
+          Cebu City, Philippines
+          Davao City, Philippines
+          Ho Chi Minh City, Vietnam
+          Hanoi, Vietnam
+          Da Nang, Vietnam
+          Mumbai, India
+          Delhi, India
+          Bangalore, India
+          Hyderabad, India
+          Chennai, India
+          Pune, India
+          Ahmedabad, India
+          Kolkata, India
+          Islamabad, Pakistan
+          Karachi, Pakistan
+          Lahore, Pakistan
+          Dhaka, Bangladesh
+          Colombo, Sri Lanka
+          Sydney, Australia
+          Melbourne, Australia
+          Brisbane, Australia
+          Perth, Australia
+          Adelaide, Australia
+          Gold Coast, Australia
+          Auckland, New Zealand
+          Wellington, New Zealand
+          Christchurch, New Zealand
+          São Paulo, Brazil
+          Rio de Janeiro, Brazil
+          Belo Horizonte, Brazil
+          Curitiba, Brazil
+          Porto Alegre, Brazil
+          Mexico City, Mexico
+          Guadalajara, Mexico
+          Monterrey, Mexico
+          Cancún, Mexico
+          Bogotá, Colombia
+          Medellín, Colombia
+          Cali, Colombia
+          Lima, Peru
+          Santiago, Chile
+          Valparaíso, Chile
+          Buenos Aires, Argentina
+          Córdoba, Argentina
+          Rosario, Argentina
+          Montevideo, Uruguay
+          Asunción, Paraguay
+          La Paz, Bolivia
+          Santa Cruz de la Sierra, Bolivia
+          Johannesburg, South Africa
+          Cape Town, South Africa
+          Durban, South Africa
+          Pretoria, South Africa
+          Nairobi, Kenya
+          Mombasa, Kenya
+          Lagos, Nigeria
+          Abuja, Nigeria
+          Ibadan, Nigeria
+          Accra, Ghana
+          Kumasi, Ghana
+          Casablanca, Morocco
+          Rabat, Morocco
+          Marrakesh, Morocco
+          Tangier, Morocco
+          Tunis, Tunisia
+          Algiers, Algeria
+          Dakar, Senegal
+          Abidjan, Ivory Coast
+          Addis Ababa, Ethiopia
           # ... rest commented cities ...
           EOF
 
