@@ -1698,6 +1698,7 @@ function routeFromHash() {
   else showHome();
 }
 
+
 window.addEventListener('hashchange', routeFromHash);
 
 // Initialize based on current hash
@@ -1705,7 +1706,6 @@ routeFromHash();
 
 });
 
-// Keyboard Navigation
 // Keyboard Navigation
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
@@ -1718,6 +1718,7 @@ document.addEventListener('keydown', (e) => {
     location.hash = '#search';
   }
 });
+
 </script>
 </body>
 </html>
