@@ -482,6 +482,9 @@ body::after {
   background: rgba(20, 25, 47, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  overflow: visible;
+  position: relative;
+  z-index: 50;
 }
 
 @media (max-width: 768px) {
@@ -565,60 +568,6 @@ body::after {
   transform: translateY(-2px);
 }
 
-.result-card {
-  padding: 1.5rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(20, 25, 47, 0.8) 0%, rgba(26, 30, 58, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all var(--transition-base);
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 1.25rem;
-}
-
-.result-card:hover { transform: translateY(-2px); border-color: rgba(107, 121, 255, 0.4); box-shadow: var(--shadow-md); }
-
-.result-thumb {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  background: linear-gradient(135deg, rgba(107, 121, 255, 0.1) 0%, rgba(0, 230, 246, 0.05) 100%);
-}
-
-.result-title { font-family: var(--font-heading); font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
-
-.result-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
-  background: rgba(107, 121, 255, 0.1);
-  border: 1px solid rgba(107, 121, 255, 0.2);
-  color: var(--primary-light);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.result-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-
-.action-btn {
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-weak);
-  font-size: 0.875rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.action-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); transform: translateY(-1px); }
-
 .pagination {
   display: flex;
   align-items: center;
@@ -628,6 +577,8 @@ body::after {
   background: rgba(20, 25, 47, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 2rem;
+  position: relative;
+  z-index: 10;
 }
 
 .pagination-info { color: var(--muted); font-size: 0.875rem; }
@@ -747,23 +698,11 @@ body.nav-open .nav-toggle span::after { transform: rotate(-45deg); }
 
 @media (max-width: 1024px) { .nav-toggle { display: flex; } }
 
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
 @media (max-width: 768px) {
   .h1 { font-size: 2rem; }
   .hero { padding: 1.5rem; }
   .feature-grid { grid-template-columns: 1fr; }
   .kpis { grid-template-columns: repeat(2, 1fr); }
-  .result-card { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
@@ -776,18 +715,6 @@ body.nav-open .nav-toggle span::after { transform: rotate(-45deg); }
   height: 1px;
   background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
   margin: 3rem 0;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -813,7 +740,7 @@ body.nav-open .nav-backdrop {
   pointer-events: auto;
 }
 
-.ac-wrap { position: relative; }
+.ac-wrap { position: relative; z-index: 60; }
 .ac-wrap input { padding-right: 2.25rem; }
 .ac-wrap::after {
   content: "▾";
@@ -827,7 +754,7 @@ body.nav-open .nav-backdrop {
 
 .ac-menu {
   position: absolute;
-  z-index: 50;
+  z-index: 1000;
   left: 0;
   right: 0;
   top: calc(100% + 8px);
@@ -861,10 +788,8 @@ body.nav-open .nav-backdrop {
   padding: 10px 12px;
   color: var(--muted);
 }
-.search-form { overflow: visible; }
-.ac-wrap { position: relative; z-index: 50; }
-.ac-menu { z-index: 9999; }
-#filters { position: relative; z-index: 1; }
+
+#filters { position: relative; z-index: 10; }
 </style>
 </head>
 <body>
