@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://maps-scraper-gray.vercel.app/sitemap.xml
+Sitemap: https://leadsignal-app.vercel.app/sitemap.xml
