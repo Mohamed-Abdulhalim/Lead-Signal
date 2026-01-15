@@ -51,6 +51,7 @@ from config import (
     SCROLL_BATCH_MAX,
     SCROLL_DELAY_MIN,
     SCROLL_DELAY_MAX,
+    get_chrome_major_runtime,
 )
 
 def canonicalize_maps_url(u: str) -> str:
