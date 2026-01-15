@@ -1,3 +1,6 @@
+import os, re, platform
+
+
 PAGELOAD_TIMEOUT = 30
 SCRIPT_TIMEOUT = 20
 MAX_SCROLL_TRIES = 50
@@ -7,6 +10,17 @@ SCROLL_DELAY_MIN = 0.25
 SCROLL_DELAY_MAX = 0.70
 HEADLESS_DEFAULT = True
 CHROME_VERSION_FALLBACK = 144
+
+def get_chrome_major_runtime():
+    try:
+        if platform.system().lower() == "linux":
+            out = os.popen("google-chrome --version").read().strip()
+            m = re.search(r"(\d+)\.", out)
+            if m:
+                return int(m.group(1))
+        return None
+    except Exception:
+        return None
 
 CSV_FIELDS = [
     "category",
