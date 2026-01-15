@@ -31,6 +31,8 @@ from config import (
     PHONE_ENRICH_LIMIT,
     LOG_FORMAT,
     LOG_LEVEL,
+    get_chrome_major_runtime,
+
 )
 
 DETAIL_PHONE_XP = "//button[.//div[contains(text(),'Phone') or contains(text(),'الهاتف') or contains(text(),'اتصال')]] | //a[contains(@href,'tel:')]"
@@ -106,8 +108,10 @@ def new_driver(headless: bool):
     opts.add_argument("--user-agent=" + ua)
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--blink-settings=imagesEnabled=true")
-    major = get_installed_chrome_major() or CHROME_VERSION_FALLBACK
+    major = get_chrome_major_runtime() or get_installed_chrome_major() or CHROME_VERSION_FALLBACK
+    logging.info("Chrome major chosen for UC: %s", major)
     d = uc.Chrome(options=opts, version_main=major)
+
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
         d.set_script_timeout(SCRIPT_TIMEOUT)
