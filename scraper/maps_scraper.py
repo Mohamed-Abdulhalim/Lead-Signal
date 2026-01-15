@@ -178,7 +178,8 @@ def new_driver(headless: bool, proxy: Optional[str]):
     if proxy:
         opts.add_argument(f"--proxy-server={proxy}")
         logging.info("Using proxy: %s", proxy)
-    major = get_installed_chrome_major() or CHROME_VERSION_FALLBACK
+    major = get_chrome_major_runtime() or get_installed_chrome_major() or CHROME_VERSION_FALLBACK
+    logging.info("Chrome major chosen for UC: %s", major)
     driver = uc.Chrome(options=opts, version_main=major)
     try:
         driver.set_page_load_timeout(PAGELOAD_TIMEOUT)
