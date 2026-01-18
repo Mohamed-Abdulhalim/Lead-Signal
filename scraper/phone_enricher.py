@@ -110,7 +110,7 @@ def new_driver(headless: bool):
     opts.add_argument("--blink-settings=imagesEnabled=true")
 #    major = get_chrome_major_runtime() or get_installed_chrome_major()
     logging.info("Launching UC with auto-managed Chrome version")
-    d = uc.Chrome(options=opts, version_main=none)
+    d = uc.Chrome(options=opts, version_main=None)
 
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
