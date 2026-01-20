@@ -13,7 +13,7 @@ try:
     import winreg
 except Exception:
     winreg = None
-
+d = uc.Chrome(options=opts)
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -108,19 +108,10 @@ def new_driver(headless: bool):
     opts.add_argument("--user-agent=" + ua)
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--blink-settings=imagesEnabled=true")
-    #    major = get_chrome_major_runtime() or get_installed_chrome_major()
-    major = get_chrome_major_runtime() or get_installed_chrome_major()
-    
-    if major:
-        logging.info("Launching UC with pinned Chrome major=%s", major)
-    else:
-        logging.warning("Chrome major not detected, falling back to UC auto-detect")
-    
-    d = uc.Chrome(
-        options=opts,
-        version_main=major
-    )
 
+    # Let UC auto-detect the right driver for the installed Chrome version
+    logging.info("Launching UC with auto-detect ChromeDriver (CI-friendly)")
+    d = uc.Chrome(options=opts)  # remove version_main entirely
 
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
