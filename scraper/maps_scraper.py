@@ -141,11 +141,16 @@ def append_csv(csv_path: str, place: Place) -> None:
     with open(csv_path, "a", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         w.writerow({k: _norm(v) for k, v in asdict(place).items()})
+        
 def get_chrome_major_ci():
     try:
-        out = os.popen("google-chrome --version").read().strip()
+        out = ""
+        for cmd in ("google-chrome --version", "chromium-browser --version", "chromium --version"):
+            out = os.popen(cmd).read().strip()
+            if out:
+                break
         if not out:
-            out = os.popen("chromium-browser --version").read().strip()
+            return None
         return int(out.split()[2].split(".")[0])
     except Exception:
         return None
