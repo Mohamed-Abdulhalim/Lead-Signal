@@ -141,7 +141,14 @@ def append_csv(csv_path: str, place: Place) -> None:
     with open(csv_path, "a", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         w.writerow({k: _norm(v) for k, v in asdict(place).items()})
-
+def get_chrome_major_ci():
+    try:
+        out = os.popen("google-chrome --version").read().strip()
+        if not out:
+            out = os.popen("chromium-browser --version").read().strip()
+        return int(out.split()[2].split(".")[0])
+    except Exception:
+        return None
 
 def get_installed_chrome_major() -> Optional[int]:
     try:
@@ -182,8 +189,15 @@ def new_driver(headless: bool, proxy: Optional[str]):
     #    major = get_chrome_major_runtime() or get_installed_chrome_major()
     
     
-    logging.info("Launching UC with auto-detect ChromeDriver (CI-stable)")
-    driver = uc.Chrome(options=opts)
+    major = get_chrome_major_ci()
+    
+    if os.getenv("GITHUB_ACTIONS") == "true" and major:
+        logging.info("Launching UC pinned to CI Chrome major=%s", major)
+        driver = uc.Chrome(options=opts, version_main=major)
+    else:
+        logging.info("Launching UC auto-detect (non-CI)")
+        driver = uc.Chrome(options=opts)
+
 
 
     try:
