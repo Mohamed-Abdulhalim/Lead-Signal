@@ -54,6 +54,15 @@ def strong_phone_extract(s: str) -> str:
         return ""
     m = PHONE_RE.search(re.sub(r"[^\d+]", "", s))
     return m.group(0) if m else ""
+    
+def get_chrome_major_ci():
+    try:
+        out = os.popen("google-chrome --version").read().strip()
+        if not out:
+            out = os.popen("chromium-browser --version").read().strip()
+        return int(out.split()[2].split(".")[0])
+    except Exception:
+        return None
 
 
 def normalize_phone_e164(s: str) -> str:
@@ -97,6 +106,7 @@ def get_installed_chrome_major() -> Optional[int]:
 def new_driver(headless: bool):
     ua = random.choice(USER_AGENTS)
     logging.info("Launching phone-enricher browser: UA=%s | headless=%s", ua, headless)
+
     opts = uc.ChromeOptions()
     if headless:
         opts.add_argument("--headless=new")
@@ -108,14 +118,23 @@ def new_driver(headless: bool):
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--blink-settings=imagesEnabled=true")
 
-    # Let UC auto-detect the right driver for the installed Chrome version
-    logging.info("Launching UC with auto-detect ChromeDriver (CI-friendly)")
+    major = get_chrome_major_ci()
+
+    if os.getenv("GITHUB_ACTIONS") == "true" and major:
+        logging.info("Launching UC pinned to CI Chrome major=%s", major)
+        d = uc.Chrome(options=opts, version_main=major)
+    else:
+        logging.info("Launching UC auto-detect (non-CI)")
+        d = uc.Chrome(options=opts)
+
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
         d.set_script_timeout(SCRIPT_TIMEOUT)
     except Exception:
         pass
+
     return d
+
 
 
 def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
