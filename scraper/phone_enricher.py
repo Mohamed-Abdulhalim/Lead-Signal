@@ -110,8 +110,6 @@ def new_driver(headless: bool):
 
     # Let UC auto-detect the right driver for the installed Chrome version
     logging.info("Launching UC with auto-detect ChromeDriver (CI-friendly)")
-    d = uc.Chrome(options=opts)  # remove version_main entirely
-
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
         d.set_script_timeout(SCRIPT_TIMEOUT)
