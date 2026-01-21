@@ -57,12 +57,20 @@ def strong_phone_extract(s: str) -> str:
     
 def get_chrome_major_ci():
     try:
-        out = os.popen("google-chrome --version").read().strip()
+        out = ""
+        for cmd in ("google-chrome --version", "chromium-browser --version", "chromium --version"):
+            out = os.popen(cmd).read().strip()
+            if out:
+                break
         if not out:
-            out = os.popen("chromium-browser --version").read().strip()
-        return int(out.split()[2].split(".")[0])
+            return None
+        parts = out.split()
+        if len(parts) < 3:
+            return None
+        return int(parts[2].split(".")[0])
     except Exception:
         return None
+
 
 
 def normalize_phone_e164(s: str) -> str:
