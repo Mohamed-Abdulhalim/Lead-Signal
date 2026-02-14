@@ -196,12 +196,16 @@ def new_driver(headless: bool, proxy: Optional[str]):
     
     major = get_chrome_major_ci()
     
-    if os.getenv("GITHUB_ACTIONS") == "true" and major:
-        logging.info("Launching UC pinned to CI Chrome major=%s", major)
-        driver = uc.Chrome(options=opts, version_main=major)
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        detected = uc.find_chrome_executable()
+        if major:
+            try:
+                driver = uc.Chrome(options=opts, version_main=major)
+            except Exception:
+                driver = uc.Chrome(options=opts)
     else:
-        logging.info("Launching UC auto-detect (non-CI)")
         driver = uc.Chrome(options=opts)
+
 
 
 
