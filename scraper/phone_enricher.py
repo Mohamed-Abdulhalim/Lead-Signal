@@ -127,13 +127,17 @@ def new_driver(headless: bool):
     opts.add_argument("--blink-settings=imagesEnabled=true")
 
     major = get_chrome_major_ci()
-
-    if os.getenv("GITHUB_ACTIONS") == "true" and major:
-        logging.info("Launching UC pinned to CI Chrome major=%s", major)
-        d = uc.Chrome(options=opts, version_main=major)
+    
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        detected = uc.find_chrome_executable()
+        if major:
+            try:
+                d = uc.Chrome(options=opts, version_main=major)
+            except Exception:
+                d = uc.Chrome(options=opts)
     else:
-        logging.info("Launching UC auto-detect (non-CI)")
         d = uc.Chrome(options=opts)
+
 
     try:
         d.set_page_load_timeout(PAGELOAD_TIMEOUT)
