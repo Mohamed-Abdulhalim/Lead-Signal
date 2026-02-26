@@ -128,9 +128,37 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .sub{margin:10px 0 0;color:var(--muted);font-weight:500}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi { padding: 12px; border-radius: 14px; background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); border: 1px solid var(--border); }
-.kpi .big{font-size:20px;font-weight:850}
-.kpi .label{margin-top:2px;font-size:12px;color:var(--muted-2);font-weight:700;letter-spacing:.2px}
+/* 1. Remove the box styling */
+.kpi { 
+  padding: 12px; 
+  background: transparent !important; 
+  border: none !important; 
+}
+
+/* 2. Apply the effect to the numbers */
+.kpi .big {
+  font-size: 24px; /* Increased slightly to make the shadow look better */
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  display: block;
+  
+  /* Down-Left Long Shadow (Slightly shorter for readability) */
+  text-shadow: 
+    -1px 1px #222, -2px 2px #222, -3px 3px #222, -4px 4px #222, -5px 5px #222, 
+    -6px 6px #222, -7px 7px #222, -8px 8px #222, -9px 9px #222, -10px 10px #222,
+    -12px 12px #222, -15px 15px #222;
+}
+
+/* 3. Adjust the labels to be dark/readable on the yellow */
+.kpi .label {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #1a1a1a !important; /* Dark grey to stand out on the yellow card */
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
 .side-card{padding:18px}
 .side-title{margin:0;font-weight:850;font-size:16px}
 .side-list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px}
