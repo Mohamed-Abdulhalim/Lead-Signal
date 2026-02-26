@@ -128,14 +128,11 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .sub{margin:10px 0 0;color:var(--muted);font-weight:500}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
-/* 1. Remove the box styling */
 .kpi { 
   padding: 12px; 
   background: transparent !important; 
   border: none !important; 
 }
-
-/* 2. Apply the effect to the numbers */
 .kpi .big {
   font-size: 24px; /* Increased slightly to make the shadow look better */
   font-weight: 900;
@@ -149,8 +146,6 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
     -6px 6px #222, -7px 7px #222, -8px 8px #222, -9px 9px #222, -10px 10px #222,
     -12px 12px #222, -15px 15px #222;
 }
-
-/* 3. Adjust the labels to be dark/readable on the yellow */
 .kpi .label {
   margin-top: 4px;
   font-size: 11px;
