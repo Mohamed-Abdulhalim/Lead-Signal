@@ -102,7 +102,29 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 @media (max-width:920px){.hero{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
 .hero-card{padding:22px}
-.h1{font-size:clamp(28px,3.6vw,42px);line-height:1.08;font-weight:850;letter-spacing:-.3px;margin:0}
+.h1 {
+  /* Text and Background Styling */
+  background-color: #f1d302; /* The yellow from the image */
+  color: #fff;
+  display: inline-block;
+  padding: 20px 30px;
+  margin-bottom: 20px;
+  
+  /* Font Styling */
+  font-family: 'Inter', sans-serif; /* Your existing font */
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(24px, 4vw, 42px);
+  line-height: 1;
+  letter-spacing: -1px;
+  
+  /* The Long Shadow Magic */
+  text-shadow: 
+    1px 1px #222, 2px 2px #222, 3px 3px #222, 4px 4px #222, 5px 5px #222, 
+    6px 6px #222, 7px 7px #222, 8px 8px #222, 9px 9px #222, 10px 10px #222,
+    11px 11px #222, 12px 12px #222, 13px 13px #222, 14px 14px #222, 15px 15px #222,
+    16px 16px #222, 17px 17px #222, 18px 18px #222, 19px 19px #222, 20px 20px #222;
+}
 .sub{margin:10px 0 0;color:var(--muted);font-weight:500}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
