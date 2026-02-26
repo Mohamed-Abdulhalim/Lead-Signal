@@ -101,7 +101,12 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center;margin-top:18px}
 @media (max-width:920px){.hero{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-.hero-card{padding:22px}
+.hero-card {
+  background-color: #f1d302 !important; /* The yellow background */
+  border: none !important;
+  padding: 30px;
+  overflow: hidden; /* Keeps the long shadow from leaking out */
+}
 .h1 {
   color: #fff;
   font-weight: 900;
@@ -125,12 +130,12 @@ backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
     -51px 51px #222, -52px 52px #222, -53px 53px #222, -54px 54px #222, -55px 55px #222,
     -56px 56px #222, -57px 57px #222, -58px 58px #222, -59px 59px #222, -60px 60px #222;
 }
-.sub{margin:10px 0 0;color:var(--muted);font-weight:500}
+.sub{margin:10px 0 0;color: #1a1a1a !important;font-weight:600;max-width: 90%;}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
 @media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi { padding: 12px; border-radius: 14px; background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); border: 1px solid var(--border); }
-.kpi .big{font-size:20px;font-weight:850}
-.kpi .label{margin-top:2px;font-size:12px;color:var(--muted-2);font-weight:700;letter-spacing:.2px}
+.kpi { padding: 12px; border-radius: 14px; background: rgba(0, 0, 0, 0.07) !important; border: 1px solid rgba(0, 0, 0, 0.1) !important;color: #1a1a1a !important; }
+.kpi .big{font-size:20px;font-weight:850;color: #000 !important;}
+.kpi .label{margin-top:2px;font-size:12px;color: #333 !important;font-weight:700;letter-spacing:.2px}
 .side-card{padding:18px}
 .side-title{margin:0;font-weight:850;font-size:16px}
 .side-list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px}
