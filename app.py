@@ -76,7 +76,13 @@ def health():
     return "ok", 200
 
 @app.route("/", methods=["GET", "HEAD"])
-def index():
+def landing():
+    if request.method == "HEAD":
+        return "", 200
+    return render_template("index.html")  # new landing page
+    
+@app.route("/app", methods=["GET", "HEAD"])  
+def tool():
     if request.method == "HEAD":
         return "", 200
     try:
@@ -84,7 +90,7 @@ def index():
     except Exception:
         locs = []
     return render_template(
-        "index.html",
+        "app.html",  # renamed from index.html
         categories=unique_categories(),
         locations=locs
     )
