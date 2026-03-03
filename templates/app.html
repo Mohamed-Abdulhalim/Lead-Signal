@@ -1042,6 +1042,71 @@ details.faq-item[open] summary::after { content: '−'; }
   transition: opacity .5s ease, transform .5s ease;
 }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── Mobile ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Nav */
+  .nav { display: none; }
+  .topbar-inner { padding: 0 16px; }
+  .brand-name { font-size: 18px; }
+
+  /* Hero */
+  .hero { padding: 48px 0 0; }
+  .hero-inner { padding: 0 16px; gap: 32px; }
+  .hero-headline { font-size: clamp(44px, 13vw, 72px); margin-bottom: 20px; }
+  .hero-sub { font-size: 15px; margin-bottom: 28px; }
+  .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 36px; }
+  .btn-primary { justify-content: center; }
+  .btn-ghost { justify-content: center; }
+  .hero-stats { gap: 20px; flex-wrap: wrap; }
+  .stat-number { font-size: 26px; }
+
+  /* Search */
+  #search { padding: 28px 0; }
+  .container { padding: 0 16px; }
+  .search-row { grid-template-columns: 1fr; }
+  .btn-search { width: 100%; justify-content: center; }
+  .filters .field { min-width: 100%; }
+  .filters { gap: 10px; }
+
+  /* Results */
+  .results-area { padding: 24px 16px; }
+  .result-card { padding: 14px 16px; grid-template-columns: 1fr; }
+  .r-actions { justify-content: flex-start; }
+  .r-action span { display: none; }
+  .r-action { padding: 9px 10px; }
+
+  /* Request form in empty state */
+  .empty-request { padding: 24px 16px 28px; }
+  .req-row { grid-template-columns: 1fr; }
+
+  /* Info section */
+  .info-inner { grid-template-columns: 1fr; gap: 32px; padding: 0 16px; }
+  .info-section { padding: 48px 0; }
+  .section-title { font-size: 32px; }
+
+  /* FAQ */
+  .faq-section { padding: 48px 0; }
+
+  /* Footer */
+  .footer-inner { padding: 0 16px; }
+  .footer { padding: 32px 0 24px; }
+  .footer-copy { padding-left: 16px; padding-right: 16px; }
+
+  /* Modal */
+  .modal-overlay { padding: 12px; }
+  .modal-box { max-height: 92vh; }
+  .modal-controls { flex-direction: column; }
+  .modal-header-actions { flex-wrap: wrap; }
+
+  /* Quick pills */
+  .quick-pills { gap: 6px; }
+  .pill { font-size: 12px; padding: 6px 11px; }
+
+  /* Status chips */
+  .status-row { gap: 8px; }
+  .chip { font-size: 12px; padding: 5px 10px; }
+}
 </style>
 </head>
 <body>
