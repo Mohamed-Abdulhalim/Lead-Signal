@@ -94,7 +94,22 @@ def tool():
         categories=unique_categories(),
         locations=locs
     )
-
+@app.post("/request")
+def submit_request():
+    data = request.get_json()
+    location = (data.get("location") or "").strip()
+    category = (data.get("category") or "").strip()
+    email    = (data.get("email") or "").strip()
+    if not (location or category) or not email:
+        return jsonify({"error": "missing_fields"}), 400
+    sb = _get_sb()
+    sb.table("lead_requests").insert({
+        "location": location,
+        "category": category,
+        "email":    email
+    }).execute()
+    return jsonify({"ok": True})
+    
 @app.get("/meta")
 def meta():
     try:
