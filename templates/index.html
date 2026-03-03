@@ -392,6 +392,94 @@ footer {
 .reveal-delay-1 { transition-delay: .1s; }
 .reveal-delay-2 { transition-delay: .2s; }
 .reveal-delay-3 { transition-delay: .3s; }
+
+/* ── Request section ── */
+.request-section {
+  background: var(--black);
+  padding: 96px 0;
+  position: relative; overflow: hidden;
+}
+.request-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-48deg, transparent, transparent 36px, rgba(241,211,2,.03) 36px, rgba(241,211,2,.03) 38px);
+}
+.request-inner {
+  position: relative; z-index: 2;
+  max-width: 720px; margin: 0 auto; padding: 0 24px;
+  text-align: center;
+}
+.request-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(241,211,2,.1); border: 1px solid rgba(241,211,2,.2);
+  color: var(--yellow); font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 24px;
+}
+.request-section .section-h { color: #fff; margin-bottom: 14px; }
+.request-section .section-h span { color: var(--yellow); }
+.request-section .section-p { color: rgba(255,255,255,.45); margin: 0 auto 40px; text-align: center; }
+
+.request-card {
+  background: rgba(255,255,255,.04);
+  border: 1.5px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+  padding: 36px 32px;
+  text-align: left;
+}
+.req-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
+}
+@media (max-width: 600px) { .req-grid { grid-template-columns: 1fr; } }
+
+.req-field { display: grid; gap: 7px; }
+.req-label {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: rgba(255,255,255,.4);
+}
+.req-input {
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 13px 15px;
+  font-size: 15px; color: #fff;
+  outline: none; width: 100%;
+  font-family: var(--font-b);
+  transition: border-color .15s, background .15s;
+}
+.req-input::placeholder { color: rgba(255,255,255,.22); }
+.req-input:focus { border-color: var(--yellow); background: rgba(255,255,255,.09); }
+
+.req-email-row { margin-bottom: 18px; }
+
+.btn-request {
+  width: 100%;
+  background: var(--yellow); color: var(--black);
+  font-size: 16px; font-weight: 800;
+  padding: 15px; border-radius: 12px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: background .15s, transform .12s;
+}
+.btn-request:hover { background: #dfc000; transform: translateY(-1px); }
+.btn-request:disabled { opacity: .6; cursor: default; transform: none; }
+
+.req-note {
+  text-align: center; margin-top: 14px;
+  font-size: 13px; color: rgba(255,255,255,.25); line-height: 1.6;
+}
+.req-note strong { color: rgba(255,255,255,.45); }
+
+.req-success {
+  display: none;
+  text-align: center; padding: 32px 20px;
+}
+.req-success-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3);
+  display: grid; place-items: center; margin: 0 auto 16px;
+}
+.req-success-icon svg { width: 26px; height: 26px; color: #4ade80; }
+.req-success h3 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+.req-success p { font-size: 15px; color: rgba(255,255,255,.45); }
 </style>
 </head>
 <body>
@@ -409,6 +497,7 @@ footer {
     </a>
     <div class="nav-links">
       <a href="#how">How it works</a>
+      <a href="#request">Request data</a>
       <a href="#data">Data</a>
       <a href="#faq">FAQ</a>
     </div>
@@ -553,6 +642,47 @@ footer {
         </div>
         <h3>Export</h3>
         <p>Filter by rating, phone availability, or address. Deduplicate. Pick your columns. Download a clean CSV — ready to drop into your CRM or outreach tool.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUEST SECTION -->
+<section class="request-section" id="request">
+  <div class="request-inner">
+    <div class="reveal">
+      <div class="request-badge">✦ Shape the product</div>
+      <h2 class="section-h">Don't see your city<br>or <span>niche?</span></h2>
+      <p class="section-p">Tell us what you need. We prioritize new locations and categories based on real requests — and we'll notify you the moment your data goes live.</p>
+    </div>
+    <div class="request-card reveal">
+      <div id="req-form-wrap">
+        <div class="req-grid">
+          <div class="req-field">
+            <label class="req-label" for="req-location">📍 Location you need</label>
+            <input class="req-input" id="req-location" type="text" placeholder="e.g. Lagos, Nigeria"/>
+          </div>
+          <div class="req-field">
+            <label class="req-label" for="req-category">🏢 Business category</label>
+            <input class="req-input" id="req-category" type="text" placeholder="e.g. physiotherapist"/>
+          </div>
+        </div>
+        <div class="req-field req-email-row">
+          <label class="req-label" for="req-email">✉️ Your email — we'll notify you when it's live</label>
+          <input class="req-input" id="req-email" type="email" placeholder="you@company.com"/>
+        </div>
+        <button class="btn-request" id="req-submit" type="button">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Submit request
+        </button>
+        <p class="req-note">We prioritize based on demand. <strong>Most locations go live within 48 hours.</strong> No spam — one email when your data is ready.</p>
+      </div>
+      <div class="req-success" id="req-success">
+        <div class="req-success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>Request received!</h3>
+        <p>We'll get to work on it and email you as soon as the data is live. Usually within 48 hours.</p>
       </div>
     </div>
   </div>
@@ -738,6 +868,55 @@ const revealObs = new IntersectionObserver(entries => {
   entries.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); });
 }, { threshold: .12 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+/* Request form */
+const reqSubmit   = document.getElementById('req-submit');
+const reqSuccess  = document.getElementById('req-success');
+const reqFormWrap = document.getElementById('req-form-wrap');
+
+reqSubmit.addEventListener('click', async () => {
+  const location = document.getElementById('req-location').value.trim();
+  const category = document.getElementById('req-category').value.trim();
+  const email    = document.getElementById('req-email').value.trim();
+
+  if (!email) {
+    document.getElementById('req-email').focus();
+    document.getElementById('req-email').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('req-email').style.borderColor = '', 1800);
+    return;
+  }
+  if (!location && !category) {
+    document.getElementById('req-location').focus();
+    document.getElementById('req-location').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('req-location').style.borderColor = '', 1800);
+    return;
+  }
+
+  reqSubmit.disabled = true;
+  reqSubmit.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ location, category, email })
+    });
+    if (res.ok) {
+      reqFormWrap.style.display = 'none';
+      reqSuccess.style.display  = 'block';
+    } else {
+      throw new Error('server error');
+    }
+  } catch {
+    reqSubmit.disabled = false;
+    reqSubmit.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Try again`;
+    reqSubmit.style.background = '#ef4444';
+    setTimeout(() => {
+      reqSubmit.style.background = '';
+      reqSubmit.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit request`;
+    }, 2500);
+  }
+});
 </script>
 </body>
 </html>
