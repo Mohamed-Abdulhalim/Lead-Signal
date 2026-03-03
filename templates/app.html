@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>LeadSignal – Search Business Leads by Category & Location</title>
-<meta name="description" content="Search Google Maps business data by category and city. Filter, sort, and export phone numbers, websites, and addresses to CSV instantly.">
-<link rel="canonical" href="https://leadsignal-app.vercel.app/app"/>
+<title>LeadSignal – Google Maps Lead Extractor & Business Leads Tool</title>
+<meta name="description" content="LeadSignal is a Google Maps lead extractor that finds real businesses by category and location, collects phone numbers, websites, addresses, and exports clean CSV lead lists.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
 /* ─── Design Tokens ─────────────────────────────────────── */
 :root {
@@ -598,24 +598,98 @@ button { cursor: pointer; }
 /* ─── Empty State ────────────────────────────────────────── */
 .empty-state {
   display: none;
-  text-align: center;
-  padding: 56px 24px;
-  border: 2px dashed var(--border);
   border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.empty-top {
+  text-align: center;
+  padding: 48px 24px 36px;
+  border: 2px dashed var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: var(--offwhite);
 }
 .empty-icon {
-  width: 56px;
-  height: 56px;
+  width: 56px; height: 56px;
   background: var(--border);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  display: grid; place-items: center;
   margin: 0 auto 16px;
 }
 .empty-icon svg { width: 26px; height: 26px; color: var(--muted); }
-.empty-state h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-.empty-state p { color: var(--muted); font-size: 15px; max-width: 380px; margin: 0 auto 20px; }
+.empty-top h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.empty-top p { color: var(--muted); font-size: 15px; max-width: 380px; margin: 0 auto 20px; }
+
+/* ─── Inline Request Form (inside empty state) ───────────── */
+.empty-request {
+  background: var(--black);
+  padding: 32px 28px 36px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  position: relative; overflow: hidden;
+}
+.empty-request::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-48deg, transparent, transparent 28px, rgba(241,211,2,.03) 28px, rgba(241,211,2,.03) 30px);
+}
+.empty-request-inner { position: relative; z-index: 2; max-width: 600px; margin: 0 auto; }
+.empty-req-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--yellow);
+  margin-bottom: 10px;
+}
+.empty-req-eyebrow span { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: pulse 1.8s ease-in-out infinite; }
+.empty-request h4 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.empty-request .req-sub { font-size: 14px; color: rgba(255,255,255,.4); margin-bottom: 24px; }
+
+.req-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;
+}
+@media (max-width: 580px) { .req-row { grid-template-columns: 1fr; } }
+
+.req-field-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: rgba(255,255,255,.35); margin-bottom: 6px;
+  display: block;
+}
+.req-inp {
+  width: 100%; background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 14px; color: #fff; font-family: var(--font-body);
+  outline: none; transition: border-color .15s, background .15s;
+}
+.req-inp::placeholder { color: rgba(255,255,255,.2); }
+.req-inp:focus { border-color: var(--yellow); background: rgba(255,255,255,.1); }
+.req-inp.error { border-color: #ef4444; }
+
+.req-email-wrap { margin-bottom: 14px; }
+
+.btn-req {
+  width: 100%; background: var(--yellow); color: var(--black);
+  font-size: 15px; font-weight: 800;
+  padding: 14px; border-radius: 10px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s, transform .1s;
+}
+.btn-req:hover { background: #dfc000; transform: translateY(-1px); }
+.btn-req:disabled { opacity: .6; cursor: default; transform: none; }
+.req-fine {
+  text-align: center; margin-top: 12px;
+  font-size: 12px; color: rgba(255,255,255,.2); line-height: 1.6;
+}
+.req-fine strong { color: rgba(255,255,255,.38); }
+
+.req-sent { display: none; text-align: center; padding: 8px 0 4px; }
+.req-sent-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3);
+  display: grid; place-items: center; margin: 0 auto 12px;
+}
+.req-sent-icon svg { width: 22px; height: 22px; color: #4ade80; }
+.req-sent h4 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.req-sent p { font-size: 14px; color: rgba(255,255,255,.4); }
 
 /* ─── Pagination ─────────────────────────────────────────── */
 .pagination {
@@ -1170,15 +1244,55 @@ details.faq-item[open] summary::after { content: '−'; }
   <div class="results-meta" id="results-meta" aria-live="polite"></div>
 
   <div class="empty-state" id="empty">
-    <div class="empty-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <!-- Top: no results message -->
+    <div class="empty-top">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </div>
+      <h3>No results found</h3>
+      <p>Try a broader category like <strong>restaurant</strong> or use <strong>City, Country</strong> format for location.</p>
+      <div class="quick-pills" style="justify-content:center">
+        <button class="pill" type="button" data-example="restaurant|Cairo, Egypt"><strong>Restaurant</strong> in Cairo</button>
+        <button class="pill" type="button" data-example="hospital|London, UK"><strong>Hospital</strong> in London</button>
+        <button class="pill" type="button" data-example="cafe|Istanbul, Turkey"><strong>Cafe</strong> in Istanbul</button>
+      </div>
     </div>
-    <h3>No results found</h3>
-    <p>Try a broader category like <strong>restaurant</strong> or use <strong>City, Country</strong> format for location.</p>
-    <div class="quick-pills" style="justify-content:center">
-      <button class="pill" type="button" data-example="restaurant|Cairo, Egypt"><strong>Restaurant</strong> in Cairo</button>
-      <button class="pill" type="button" data-example="hospital|London, UK"><strong>Hospital</strong> in London</button>
-      <button class="pill" type="button" data-example="cafe|Istanbul, Turkey"><strong>Cafe</strong> in Istanbul</button>
+
+    <!-- Bottom: inline request form -->
+    <div class="empty-request">
+      <div class="empty-request-inner">
+        <div id="req-form-body">
+          <div class="empty-req-eyebrow"><span></span> We can get this data for you</div>
+          <h4>Don't see what you need?</h4>
+          <p class="req-sub">Request it free — we'll scrape it and email you when it's live. Usually within 48 hours.</p>
+          <div class="req-row">
+            <div>
+              <label class="req-field-label" for="req-location">📍 Location</label>
+              <input class="req-inp" id="req-location" type="text" placeholder="e.g. Lagos, Nigeria"/>
+            </div>
+            <div>
+              <label class="req-field-label" for="req-category">🏢 Category</label>
+              <input class="req-inp" id="req-category" type="text" placeholder="e.g. physiotherapist"/>
+            </div>
+          </div>
+          <div class="req-email-wrap">
+            <label class="req-field-label" for="req-email">✉️ Your email — notify me when it's live</label>
+            <input class="req-inp" id="req-email" type="email" placeholder="you@company.com"/>
+          </div>
+          <button class="btn-req" id="req-submit" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Submit request — it's free
+          </button>
+          <p class="req-fine">No spam. <strong>One email when your data is ready.</strong> We prioritize by demand.</p>
+        </div>
+        <div class="req-sent" id="req-sent">
+          <div class="req-sent-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h4>Request received!</h4>
+          <p>We'll scrape it and email you when it's live — usually within 48 hours.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1633,6 +1747,7 @@ async function doSearch(state) {
 
     if (!rows.length) {
       emptyEl.style.display = 'block';
+      prefillRequestForm();
       setStatus('No results');
       resultsMetaEl.textContent = '0 results';
       filtersEl.classList.add('hidden');
@@ -1779,15 +1894,65 @@ exportDedupe.addEventListener('change', renderExport);
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(); });
 
-/* Focus trap */
-modal.addEventListener('keydown', e => {
-  if (e.key !== 'Tab') return;
-  const sel = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-  const els = [...modal.querySelectorAll(sel)].filter(el => el.offsetParent !== null);
-  if (!els.length) return;
-  if (e.shiftKey && document.activeElement === els[0])   { e.preventDefault(); els[els.length - 1].focus(); }
-  if (!e.shiftKey && document.activeElement === els[els.length - 1]) { e.preventDefault(); els[0].focus(); }
-});
+/* ── Inline request form in empty state ─────────── */
+function prefillRequestForm() {
+  const cat = (catInput.value || '').trim();
+  const loc = (locInput.value || '').trim();
+  const reqLoc = document.getElementById('req-location');
+  const reqCat = document.getElementById('req-category');
+  if (reqLoc && loc) reqLoc.value = loc;
+  if (reqCat && cat) reqCat.value = cat;
+}
+
+const reqSubmit = document.getElementById('req-submit');
+const reqSent   = document.getElementById('req-sent');
+const reqFormBody = document.getElementById('req-form-body');
+
+if (reqSubmit) {
+  reqSubmit.addEventListener('click', async () => {
+    const location = (document.getElementById('req-location').value || '').trim();
+    const category = (document.getElementById('req-category').value || '').trim();
+    const email    = (document.getElementById('req-email').value || '').trim();
+    const emailEl  = document.getElementById('req-email');
+    const locEl    = document.getElementById('req-location');
+
+    // Validate
+    if (!email) {
+      emailEl.classList.add('error');
+      emailEl.focus();
+      setTimeout(() => emailEl.classList.remove('error'), 1800);
+      return;
+    }
+    if (!location && !category) {
+      locEl.classList.add('error');
+      locEl.focus();
+      setTimeout(() => locEl.classList.remove('error'), 1800);
+      return;
+    }
+
+    reqSubmit.disabled = true;
+    reqSubmit.textContent = 'Sending…';
+
+    try {
+      const res = await fetch('/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location, category, email })
+      });
+      if (res.ok) {
+        reqFormBody.style.display = 'none';
+        reqSent.style.display     = 'block';
+      } else {
+        throw new Error();
+      }
+    } catch {
+      reqSubmit.disabled = false;
+      reqSubmit.textContent = 'Submit request — it\'s free';
+      reqSubmit.style.background = '#ef4444';
+      setTimeout(() => { reqSubmit.style.background = ''; }, 2500);
+    }
+  });
+}
 
 /* ── Nav links ─────────────────────────────────── */
 $('nav-link-search').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); });
