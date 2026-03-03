@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LeadSignal – Google Maps Lead Extractor for Business Leads</title>
+<meta name="description" content="Extract business leads from Google Maps by category and location. Get phone numbers, websites, addresses and export clean CSV files in seconds.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://maps-scraper-gray.vercel.app/"/>
+<meta property="og:title" content="LeadSignal – Google Maps Lead Extractor">
+<meta property="og:description" content="Stop copy-pasting from Google Maps. Get hundreds of business leads — phones, websites, addresses — exported to CSV in seconds."/>
+<meta property="og:url" content="https://maps-scraper-gray.vercel.app/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --red:      #C1292E;
+  --red-dark: #9b1c20;
+  --yellow:   #F1D302;
+  --black:    #0a0a0a;
+  --white:    #FAFAF7;
+  --off:      #F2EDE4;
+  --muted:    #6b6b6b;
+  --border:   #E0DAD0;
+  --font-d:   'Barlow Condensed', sans-serif;
+  --font-b:   'DM Sans', sans-serif;
+  --r:        14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--white); color: var(--black); font-family: var(--font-b); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ── Layout ── */
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Nav ── */
+nav {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--black);
+  border-bottom: 3px solid var(--yellow);
+}
+.nav-inner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo-box {
+  width: 32px; height: 32px; background: var(--yellow); border-radius: 6px;
+  display: grid; place-items: center;
+}
+.logo-box svg { width: 17px; height: 17px; color: var(--black); }
+.brand-name { font-family: var(--font-d); font-size: 22px; font-weight: 900; color: var(--white); text-transform: uppercase; letter-spacing: .4px; }
+.nav-links { display: flex; gap: 4px; }
+.nav-links a { padding: 7px 13px; border-radius: 6px; color: rgba(255,255,255,.5); font-size: 14px; font-weight: 600; transition: color .15s, background .15s; }
+.nav-links a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.btn-nav {
+  background: var(--yellow); color: var(--black); font-weight: 700; font-size: 14px;
+  padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer;
+  transition: background .15s, transform .1s; display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-nav:hover { background: #dfc000; transform: translateY(-1px); }
+
+/* ── Hero ── */
+.hero {
+  background: var(--black);
+  padding: 96px 0 0;
+  position: relative; overflow: hidden;
+  min-height: 92vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.hero-stripe {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-48deg, transparent, transparent 36px, rgba(241,211,2,.035) 36px, rgba(241,211,2,.035) 38px);
+}
+.hero-glow {
+  position: absolute; top: -120px; right: -80px;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(193,41,46,.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative; z-index: 2;
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  display: grid; grid-template-columns: 1fr 440px; gap: 56px; align-items: end;
+}
+@media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; } .hero-right { display: none; } }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(241,211,2,.1); border: 1px solid rgba(241,211,2,.22);
+  color: var(--yellow); font-size: 12px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 999px; margin-bottom: 28px;
+}
+.hero-badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); animation: blink 2s ease-in-out infinite; flex-shrink: 0; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero-h1 {
+  font-family: var(--font-d);
+  font-size: clamp(60px, 8.5vw, 110px);
+  font-weight: 900;
+  line-height: .92;
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 32px;
+}
+.hero-h1 .accent { color: var(--yellow); }
+.hero-h1 .hollow {
+  -webkit-text-stroke: 2.5px var(--red);
+  color: transparent;
+}
+
+.hero-sub {
+  font-size: 18px; color: rgba(255,255,255,.5);
+  max-width: 500px; line-height: 1.7; margin-bottom: 40px;
+}
+.hero-sub strong { color: rgba(255,255,255,.85); font-weight: 600; }
+
+.hero-ctas { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 64px; }
+.btn-primary {
+  background: var(--red); color: #fff;
+  font-size: 16px; font-weight: 700;
+  padding: 15px 30px; border-radius: var(--r); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 9px;
+  transition: background .15s, transform .12s, box-shadow .15s;
+  box-shadow: 0 6px 24px rgba(193,41,46,.38);
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(193,41,46,.5); }
+.btn-secondary {
+  color: rgba(255,255,255,.6); font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: color .15s;
+  text-decoration: none;
+}
+.btn-secondary:hover { color: #fff; }
+
+/* ── Hero right: animated terminal mockup ── */
+.hero-right { padding-bottom: 0; }
+.terminal {
+  background: #111;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  box-shadow: 0 -12px 60px rgba(0,0,0,.5);
+}
+.terminal-bar {
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  padding: 11px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.tdot { width: 10px; height: 10px; border-radius: 50%; }
+.tdot:nth-child(1) { background: #ff5f57; }
+.tdot:nth-child(2) { background: #febc2e; }
+.tdot:nth-child(3) { background: #28c840; }
+.t-label { margin-left: 6px; font-size: 12px; color: rgba(255,255,255,.3); font-family: monospace; }
+
+.terminal-body { padding: 20px; display: grid; gap: 12px; }
+
+.t-result {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,.07);
+  border-left: 3px solid var(--red);
+  border-radius: 10px;
+  padding: 13px 15px;
+}
+.t-result.dim { opacity: .4; }
+.t-result.appear { animation: slideIn .4s ease forwards; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.t-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.t-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.t-tag {
+  font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 9px;
+  background: rgba(255,255,255,.07); color: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.1);
+}
+.t-tag.green { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.25); color: #4ade80; }
+.t-tag.blue  { background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.25); color: #93c5fd; }
+.t-btns { display: flex; gap: 6px; }
+.t-btn {
+  font-size: 11px; font-weight: 700; border-radius: 6px;
+  padding: 4px 10px; background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.1);
+}
+
+/* ── Stats bar ── */
+.stats-bar {
+  background: var(--yellow);
+  padding: 20px 0;
+}
+.stats-inner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  display: flex; flex-wrap: wrap; gap: 0; justify-content: space-between; align-items: center;
+}
+.stat {
+  flex: 1; min-width: 140px;
+  padding: 8px 20px;
+  border-right: 1px solid rgba(0,0,0,.12);
+}
+.stat:last-child { border-right: none; }
+.stat-n { font-family: var(--font-d); font-size: 36px; font-weight: 900; color: var(--black); line-height: 1; }
+.stat-l { font-size: 13px; font-weight: 600; color: rgba(0,0,0,.55); margin-top: 2px; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── Section shared ── */
+.section { padding: 96px 0; }
+.eyebrow {
+  font-family: var(--font-d); font-size: 12px; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;
+}
+.section-h {
+  font-family: var(--font-d);
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 900; line-height: 1.02; text-transform: uppercase; margin-bottom: 20px;
+}
+.section-p { font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 540px; }
+
+/* ── How it works ── */
+.how { background: var(--off); }
+.how .eyebrow { color: var(--red); }
+.how-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px;
+}
+@media (max-width: 760px) { .how-grid { grid-template-columns: 1fr; } }
+
+.step {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 32px 28px;
+  position: relative; overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.step:hover { box-shadow: 0 12px 40px rgba(0,0,0,.1); transform: translateY(-3px); }
+.step-num {
+  font-family: var(--font-d); font-size: 72px; font-weight: 900;
+  color: var(--off); line-height: 1;
+  position: absolute; top: 16px; right: 20px;
+  user-select: none;
+}
+.step-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--black); display: grid; place-items: center; margin-bottom: 20px;
+}
+.step-icon svg { width: 22px; height: 22px; color: var(--yellow); }
+.step h3 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+.step p { font-size: 15px; color: var(--muted); line-height: 1.65; }
+
+/* ── Use cases ── */
+.usecases { background: var(--black); }
+.usecases .eyebrow { color: var(--yellow); }
+.usecases .section-h { color: var(--white); }
+.usecases .section-p { color: rgba(255,255,255,.45); }
+
+.personas {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px;
+}
+@media (max-width: 760px) { .personas { grid-template-columns: 1fr; } }
+
+.persona {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px; padding: 28px 24px;
+  transition: background .2s, border-color .2s;
+}
+.persona:hover { background: rgba(255,255,255,.07); border-color: rgba(241,211,2,.25); }
+.persona-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: rgba(241,211,2,.1); border: 1px solid rgba(241,211,2,.2);
+  display: grid; place-items: center; margin-bottom: 18px;
+}
+.persona-icon svg { width: 20px; height: 20px; color: var(--yellow); }
+.persona h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.persona p { font-size: 14px; color: rgba(255,255,255,.45); line-height: 1.7; }
+.persona ul { margin-top: 14px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.persona ul li {
+  font-size: 13px; color: rgba(255,255,255,.55); font-weight: 500;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.persona ul li::before { content: '→'; color: var(--yellow); font-weight: 700; flex-shrink: 0; }
+
+/* ── Data fields ── */
+.data-section { background: var(--white); }
+.data-section .eyebrow { color: var(--red); }
+.data-inner {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+@media (max-width: 860px) { .data-inner { grid-template-columns: 1fr; gap: 40px; } }
+
+.field-list { display: grid; gap: 12px; margin-top: 8px; }
+.field-item {
+  display: flex; align-items: flex-start; gap: 16px;
+  background: var(--off); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+  transition: border-color .15s;
+}
+.field-item:hover { border-color: var(--red); }
+.field-ico {
+  width: 38px; height: 38px; border-radius: 9px;
+  background: var(--black); display: grid; place-items: center; flex-shrink: 0;
+}
+.field-ico svg { width: 17px; height: 17px; color: var(--yellow); }
+.field-item h4 { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+.field-item p  { font-size: 13px; color: var(--muted); }
+
+/* ── CTA band ── */
+.cta-band {
+  background: var(--red);
+  padding: 80px 0;
+  position: relative; overflow: hidden;
+}
+.cta-band::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-48deg, transparent, transparent 28px, rgba(255,255,255,.04) 28px, rgba(255,255,255,.04) 30px);
+}
+.cta-inner {
+  position: relative; z-index: 2;
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 32px;
+}
+.cta-band h2 {
+  font-family: var(--font-d); font-size: clamp(32px, 4vw, 52px);
+  font-weight: 900; text-transform: uppercase; color: #fff; line-height: 1.05;
+}
+.cta-band h2 span { color: var(--yellow); }
+.cta-band p { color: rgba(255,255,255,.65); font-size: 16px; margin-top: 8px; max-width: 420px; }
+.btn-white {
+  background: #fff; color: var(--red);
+  font-size: 16px; font-weight: 800;
+  padding: 16px 32px; border-radius: var(--r); border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 9px;
+  transition: background .15s, transform .12s;
+  text-decoration: none; white-space: nowrap;
+}
+.btn-white:hover { background: var(--yellow); transform: translateY(-2px); }
+
+/* ── FAQ ── */
+.faq-section { background: var(--off); padding: 96px 0; }
+.faq-section .eyebrow { color: var(--red); text-align: center; }
+.faq-section .section-h { text-align: center; margin: 0 auto 48px; }
+.faq-list { max-width: 700px; margin: 0 auto; display: grid; gap: 10px; }
+
+details.faq {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 14px; overflow: hidden; transition: border-color .15s;
+}
+details.faq[open] { border-color: var(--red); }
+details.faq summary {
+  padding: 18px 22px; font-weight: 700; font-size: 15px;
+  cursor: pointer; list-style: none;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::after { content: '+'; font-size: 22px; font-weight: 300; color: var(--red); flex-shrink: 0; }
+details.faq[open] summary::after { content: '−'; }
+.faq-body { padding: 0 22px 18px; font-size: 15px; color: var(--muted); line-height: 1.75; }
+
+/* ── Footer ── */
+footer {
+  background: var(--black);
+  border-top: 3px solid var(--yellow);
+  padding: 48px 0 32px;
+}
+.footer-inner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: start;
+}
+@media (max-width: 600px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand-name { font-family: var(--font-d); font-size: 22px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
+.footer-desc { font-size: 14px; color: rgba(255,255,255,.35); max-width: 340px; line-height: 1.65; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 20px; }
+.footer-links a { color: rgba(255,255,255,.4); font-size: 14px; font-weight: 600; transition: color .15s; }
+.footer-links a:hover { color: var(--yellow); }
+.footer-copy {
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.07);
+  font-size: 13px; color: rgba(255,255,255,.2);
+  max-width: 1160px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px;
+}
+
+/* ── Fade animations ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: .1s; }
+.reveal-delay-2 { transition-delay: .2s; }
+.reveal-delay-3 { transition-delay: .3s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <span class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
+      </span>
+      <span class="brand-name">LeadSignal</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#data">Data</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn-nav" href="/app">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Try it free
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-stripe"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <!-- Left -->
+    <div class="hero-left">
+      <div class="hero-badge"><i></i> Google Maps Lead Extractor</div>
+      <h1 class="hero-h1">
+        Stop<br>
+        <span class="accent">Copy–</span><br>
+        <span class="hollow">Pasting.</span>
+      </h1>
+      <p class="hero-sub">
+        LeadSignal pulls <strong>real business leads</strong> from Google Maps — phones, websites, addresses, ratings — and exports them as a clean CSV. <strong>In seconds.</strong>
+      </p>
+      <div class="hero-ctas">
+        <a class="btn-primary" href="/app">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Start extracting — free
+        </a>
+        <a class="btn-secondary" href="#how">
+          See how it works
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right: terminal mockup -->
+    <div class="hero-right">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
+          <span class="t-label">leadsignal → dentists in Dubai</span>
+        </div>
+        <div class="terminal-body" id="term-body">
+          <div class="t-result appear" style="animation-delay:.2s">
+            <div class="t-name">Aster Clinic — Bur Dubai</div>
+            <div class="t-tags">
+              <span class="t-tag">Dental Clinic</span>
+              <span class="t-tag green">★ 4.8 · 412 reviews</span>
+              <span class="t-tag blue">+971 4 440 1000</span>
+            </div>
+            <div class="t-btns">
+              <span class="t-btn">📞 Call</span>
+              <span class="t-btn">💬 WhatsApp</span>
+              <span class="t-btn">🌐 Website</span>
+            </div>
+          </div>
+          <div class="t-result appear" style="animation-delay:.45s">
+            <div class="t-name">Dr. Smile Dental Center</div>
+            <div class="t-tags">
+              <span class="t-tag">Dental Clinic</span>
+              <span class="t-tag green">★ 4.6 · 219 reviews</span>
+              <span class="t-tag blue">+971 4 359 8000</span>
+            </div>
+            <div class="t-btns">
+              <span class="t-btn">📞 Call</span>
+              <span class="t-btn">🌐 Website</span>
+            </div>
+          </div>
+          <div class="t-result appear dim" style="animation-delay:.65s">
+            <div class="t-name">Al Zahra Dental Clinic</div>
+            <div class="t-tags">
+              <span class="t-tag">Dental Clinic</span>
+              <span class="t-tag green">★ 4.5 · 178 reviews</span>
+            </div>
+          </div>
+          <div class="t-result appear dim" style="animation-delay:.8s">
+            <div class="t-name">BrightSmile Dubai Marina</div>
+            <div class="t-tags">
+              <span class="t-tag">Dental Clinic</span>
+              <span class="t-tag blue">+971 4 421 7700</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-n" data-count="200000">0</div>
+      <div class="stat-l">Rows processed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" data-count="92" data-suffix="%">0%</div>
+      <div class="stat-l">Phone coverage</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">Global</div>
+      <div class="stat-l">Any city worldwide</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">CSV</div>
+      <div class="stat-l">One-click export</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section how" id="how">
+  <div class="container">
+    <div class="reveal">
+      <div class="eyebrow">How it works</div>
+      <h2 class="section-h">Three steps.<br>Hundreds of leads.</h2>
+    </div>
+    <div class="how-grid">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">1</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </div>
+        <h3>Search</h3>
+        <p>Enter a business category — <em>dentist</em>, <em>gym</em>, <em>café</em> — and a city. LeadSignal queries Google Maps data across your entire target area.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">2</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.8 19.5 19.5 0 0 1 5.2 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.48a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <h3>Extract</h3>
+        <p>Get a structured list of businesses with cleaned phone numbers, websites, addresses, ratings, review counts, and direct Maps profile links.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">3</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        </div>
+        <h3>Export</h3>
+        <p>Filter by rating, phone availability, or address. Deduplicate. Pick your columns. Download a clean CSV — ready to drop into your CRM or outreach tool.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<section class="section usecases">
+  <div class="container">
+    <div class="reveal">
+      <div class="eyebrow">Built for</div>
+      <h2 class="section-h" style="color:#fff">Who uses<br><span style="color:var(--yellow)">LeadSignal?</span></h2>
+      <p class="section-p">Anyone who needs structured business contact data — without spending hours doing it manually.</p>
+    </div>
+    <div class="personas">
+      <div class="persona reveal reveal-delay-1">
+        <div class="persona-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Sales Teams</h3>
+        <p>Build targeted prospect lists by industry and city. Stop wasting time researching — start calling.</p>
+        <ul>
+          <li>Outbound prospecting at scale</li>
+          <li>Territory-based lead generation</li>
+          <li>CRM import-ready CSV files</li>
+        </ul>
+      </div>
+      <div class="persona reveal reveal-delay-2">
+        <div class="persona-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Agencies & Freelancers</h3>
+        <p>Find local businesses that need your services — web design, SEO, ads — in any niche or city.</p>
+        <ul>
+          <li>Cold outreach to SMBs</li>
+          <li>Niche-specific lead lists</li>
+          <li>Filter by rating to find weak spots</li>
+        </ul>
+      </div>
+      <div class="persona reveal reveal-delay-3">
+        <div class="persona-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h3>Researchers & Analysts</h3>
+        <p>Map business density, coverage gaps, or competitive landscapes across geographies.</p>
+        <ul>
+          <li>Market research datasets</li>
+          <li>Competitor landscape mapping</li>
+          <li>Structured data for analysis</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA FIELDS -->
+<section class="section data-section" id="data">
+  <div class="container">
+    <div class="data-inner">
+      <div class="reveal">
+        <div class="eyebrow">What's in each lead</div>
+        <h2 class="section-h">Every field<br>you need.</h2>
+        <p class="section-p" style="margin-bottom:0">No fluff, no filler. Each lead comes with the contact data that actually matters for outreach and research.</p>
+      </div>
+      <div class="field-list reveal">
+        <div class="field-item">
+          <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.8 19.5 19.5 0 0 1 5.2 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.48a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div><h4>Phone number</h4><p>Cleaned and normalized. WhatsApp-ready.</p></div>
+        </div>
+        <div class="field-item">
+          <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div><h4>Website & socials</h4><p>Direct URL when listed on Maps.</p></div>
+        </div>
+        <div class="field-item">
+          <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div><h4>Address & Maps link</h4><p>Full street address + direct Google Maps profile URL.</p></div>
+        </div>
+        <div class="field-item">
+          <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div><h4>Rating & review count</h4><p>Filter and sort to prioritize the most relevant businesses.</p></div>
+        </div>
+        <div class="field-item">
+          <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <div><h4>Category</h4><p>Business type as listed on Google Maps.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-inner">
+    <div>
+      <h2>Ready to find<br><span>your leads?</span></h2>
+      <p>No signup. No credit card. Just search, extract, and export.</p>
+    </div>
+    <a class="btn-white" href="/app">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Start extracting free
+    </a>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="eyebrow">FAQ</div>
+    <h2 class="section-h">Common questions</h2>
+    <div class="faq-list">
+      <details class="faq">
+        <summary>What data comes with each lead?</summary>
+        <div class="faq-body">Business name, category, phone number (cleaned), website, social links when available, rating, review count, full address, and a direct Google Maps profile link.</div>
+      </details>
+      <details class="faq">
+        <summary>Is it free?</summary>
+        <div class="faq-body">Yes — the tool is free to use. No account or credit card required. Availability depends on backend capacity.</div>
+      </details>
+      <details class="faq">
+        <summary>What categories and locations work best?</summary>
+        <div class="faq-body">Use broad category names like <strong>dentist</strong>, <strong>café</strong>, or <strong>gym</strong> rather than specific brand names. For location, use <strong>City, Country</strong> format — e.g. <em>Riyadh, Saudi Arabia</em> — for best results.</div>
+      </details>
+      <details class="faq">
+        <summary>Can I filter and deduplicate before exporting?</summary>
+        <div class="faq-body">Yes. You can filter by minimum rating, phone availability, website availability, and address keyword. On export, you can deduplicate by phone, website, or name + address, and choose exactly which columns to include in your CSV.</div>
+      </details>
+      <details class="faq">
+        <summary>Is this affiliated with Google?</summary>
+        <div class="faq-body">No. LeadSignal uses publicly available business listing data. It is not affiliated with, endorsed by, or connected to Google in any way.</div>
+      </details>
+      <details class="faq">
+        <summary>How should I use the data responsibly?</summary>
+        <div class="faq-body">Use exported leads for legitimate outreach and research only. Respect local anti-spam laws and regulations in your jurisdiction. If consent-based outreach is required in your country, follow those rules.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand-name">LeadSignal</div>
+      <p class="footer-desc">Google Maps lead extraction for sales teams, agencies, freelancers, and researchers. Built by a data engineer, for people who need clean data fast.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#how">How it works</a>
+      <a href="#data">Data</a>
+      <a href="#faq">FAQ</a>
+      <a href="/app">Tool</a>
+      <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-copy">
+    © <span id="year"></span> LeadSignal · Built by Mohamed Abdelhalim · Data sourced from publicly available business listings. Not affiliated with Google.
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* Counter animation */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    const el = en.target;
+    const target = +el.dataset.count;
+    const suffix = el.dataset.suffix || '';
+    let v = 0;
+    const step = Math.max(1, Math.round(target / 60));
+    const t = setInterval(() => {
+      v += step;
+      if (v >= target) { v = target; clearInterval(t); }
+      el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
+    }, 16);
+    obs.unobserve(el);
+  });
+}, { threshold: .5 });
+document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+
+/* Reveal on scroll */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); });
+}, { threshold: .12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
