@@ -3,250 +3,982 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="google-site-verification" content="Yt-UMsZiJfRKA6VPCwN3otcxJpQdhK0Nl33syHrbMmQ" />
 <title>LeadSignal – Google Maps Lead Extractor & Business Leads Tool</title>
 <meta name="description" content="LeadSignal is a Google Maps lead extractor that finds real businesses by category and location, collects phone numbers, websites, addresses, and exports clean CSV lead lists.">
-<meta name="robots" content="index,follow">
-<link rel="canonical" href="https://maps-scraper-gray.vercel.app/" />
-<meta property="og:title" content="LeadSignal – Google Maps Lead Extractor">
-<meta property="og:description" content="Extract business leads from Google Maps by category and location. Export phone numbers, websites, addresses, ratings, and Maps links to CSV." />
-<meta property="og:url" content="https://maps-scraper-gray.vercel.app/">
-<meta property="og:image" content="https://maps-scraper-gray.vercel.app/static/og-image.png">
-<meta property="og:image:alt" content="LeadSignal – business leads finder">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="LeadSignal">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="LeadSignal – Google Maps Lead Extractor">
-<meta name="twitter:description" content="Extract business leads from Google Maps by category and location. Export clean CSV files with phones, websites, and addresses." />
-<meta name="twitter:image" content="https://maps-scraper-gray.vercel.app/static/og-image.png">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "LeadSignal",
-  "url": "https://maps-scraper-gray.vercel.app/",
-  "description": "LeadSignal is a Google Maps lead extractor that collects business contact details such as phone numbers, websites, addresses, ratings, and exports them as CSV files.",
-  "applicationCategory": "BusinessApplication",
-  "keywords": [
-    "google maps lead extractor",
-    "google maps leads",
-    "business leads from google maps",
-    "google maps scraping tool",
-    "export google maps leads csv"
-  ],
-  "operatingSystem": "All",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://maps-scraper-gray.vercel.app/?category={category}&location={location}",
-    "query-input": [
-      "required name=category",
-      "optional name=location"
-    ]
-  }
-}
-</script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='ls-grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231e40af'/%3E%3Cstop offset='55%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%233b82f6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='25' fill='none' stroke='url(%23ls-grad)' stroke-width='4'/%3E%3Cpath d='M32 18a14 14 0 1 1 0 28' fill='none' stroke='url(%23ls-grad)' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='4' fill='url(%23ls-grad)'/%3E%3C/svg%3E"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-:root{
-  --bg:#F4FBC1;
-  --surface:#121212;
-  --surface-2:#181818;
-  --border: transparent;
+/* ─── Design Tokens ─────────────────────────────────────── */
+:root {
+  --red:     #C1292E;
+  --red-dark:#9b1c20;
+  --yellow:  #F1D302;
+  --black:   #0a0a0a;
+  --white:   #FAFAF7;
+  --offwhite:#F5F0E8;
+  --muted:   #6b6b6b;
+  --border:  #e0ddd6;
 
-  --text:#f5f5f5;
-  --muted:#a1a1aa;
-  --muted-2:#71717a;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
 
-  --primary:#2563eb;
-  --primary-2:#3b82f6;
+  --radius-sm: 8px;
+  --radius:    14px;
+  --radius-lg: 20px;
 
-  --ok:#22c55e;
-  --warn:#f59e0b;
-  --danger:#ef4444;
-
-  --shadow:0 12px 32px rgba(0,0,0,.6);
-  --ring:0 0 0 3px rgba(59,130,246,.4);
-
-  --radius:16px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.07);
+  --shadow:    0 8px 28px rgba(0,0,0,.11);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.15);
 }
 
-
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:#F4FBC1;color:var(--text);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-a{color:inherit}
-button,input,select{font:inherit}
-.container{max-width:1120px;margin:0 auto;padding:18px 16px 48px}
-.topbar{position:sticky;top:0;z-index:30;background:#C1292E;
-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
-.topbar-inner{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo{width:34px;height:34px;border-radius:10px;background:#F1D302;display:grid;place-items:center;box-shadow:0 8px 18px rgba(37,99,235,.18)}
-.logo svg{width:20px;height:20px;display:block;color:#fff,stroke:#C1292E}
-.brand-name{font-weight:800;letter-spacing:.2px; color: #F4FBC1;}
-.nav{display:flex;align-items:center;gap:10px}
-.nav a{padding:10px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:600}
-.nav a[aria-current="page"],.nav a:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.nav a:focus-visible{outline:none;box-shadow:var(--ring)}
-.nav-cta{display:flex;gap:10px;align-items:center}
-.btn{appearance:none;border:1px solid transparent;background:transparent;color:var(--text);border-radius:12px;padding:10px 12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
-.btn:focus-visible{outline:none;box-shadow:var(--ring)}
-.btn-primary{background:#F1D302;color:#C1292E}
-.btn-primary:hover{background:#C1292E;color:#F4FBC1}
-.btn-success{background:#C1292E;border-color:transparent;color:#F4FBC1}
-.btn-success:hover{filter:brightness(.96)}
-.btn-outline{border-color:var(--border);background:var(--surface)}
-.btn-outline:hover{background:rgba(15,23,42,.02)}
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center;margin-top:18px}
-@media (max-width:920px){.hero{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);background-color: #f1d302 !important;}
-.hero-card {
-  background-color: #f1d302 !important; /* The yellow background */
-  border: none !important;
-  padding: 30px;
-  overflow: hidden; /* Keeps the long shadow from leaking out */
-}
-.h1 {
-  color: #fff;
-  font-weight: 900;
-  text-transform: uppercase;
-  font-size: clamp(28px, 4vw, 48px);
-  line-height: 1;
-  margin-bottom: 60px;
-  
-  /* Reversed Direction (Negative X) + Extra Long Length */
-  text-shadow: 
-    -1px 1px #0a0a0a, -2px 2px #0a0a0a, -3px 3px #0a0a0a, -4px 4px #0a0a0a, -5px 5px #0a0a0a, 
-    -6px 6px #0a0a0a, -7px 7px #0a0a0a, -8px 8px #0a0a0a, -9px 9px #0a0a0a, -10px 10px #0a0a0a,
-    -11px 11px #0a0a0a, -12px 12px #0a0a0a, -13px 13px #0a0a0a, -14px 14px #0a0a0a, -15px 15px #0a0a0a,
-    -16px 16px #0a0a0a, -17px 17px #0a0a0a, -18px 18px #0a0a0a, -19px 19px #0a0a0a, -20px 20px #0a0a0a,
-    -21px 21px #0a0a0a, -22px 22px #0a0a0a, -23px 23px #0a0a0a, -24px 24px #0a0a0a, -25px 25px #0a0a0a,
-    -26px 26px #0a0a0a, -27px 27px #0a0a0a, -28px 28px #0a0a0a, -29px 29px #0a0a0a, -30px 30px #0a0a0a,
-    -31px 31px #0a0a0a, -32px 32px #0a0a0a, -33px 33px #0a0a0a, -34px 34px #0a0a0a, -35px 35px #0a0a0a,
-    -36px 36px #0a0a0a, -37px 37px #0a0a0a, -38px 38px #0a0a0a, -39px 39px #0a0a0a, -40px 40px #0a0a0a,
-    -41px 41px #0a0a0a, -42px 42px #0a0a0a, -43px 43px #0a0a0a, -44px 44px #0a0a0a, -45px 45px #0a0a0a,
-    -46px 46px #0a0a0a, -47px 47px #0a0a0a, -48px 48px #0a0a0a, -49px 49px #0a0a0a, -50px 50px #0a0a0a,
-    -51px 51px #0a0a0a, -52px 52px #0a0a0a, -53px 53px #0a0a0a, -54px 54px #0a0a0a, -55px 55px #0a0a0a,
-    -56px 56px #0a0a0a, -57px 57px #0a0a0a, -58px 58px #0a0a0a, -59px 59px #0a0a0a, -60px 60px #0a0a0a;
-}
-.sub{margin: 10px 0 20px 0;color: #4a0e0e !important;font-weight:600;max-width: 90%;}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
-@media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi { padding: 12px; border-radius: 14px; background: #C1292E !important; border: 1px solid rgba(0, 0, 0, 0.1) !important;color: #1a1a1a !important; }
-.kpi .big{font-size:20px;font-weight:850;color: #F4FBC1 !important;}
-.kpi .label{margin-top:2px;font-size:12px;color: #F4FBC1 !important;font-weight:700;letter-spacing:.2px}
-.side-card{padding:18px;background-color: #f1d302 !important;}
-.side-title{margin:0;font-weight:850;font-size:16px;color: #4a0e0e;}
-.side-list{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:10px}
-.side-item{display:grid;grid-template-columns:20px 1fr;gap:10px;color:#4a0e0e}
-.dot{width:10px;height:10px;border-radius:50%;background:#C1292E;border:2px solid rgba(37,99,235,.35);margin-top:5px;color: #4a0e0e}
-.section{margin-top:22px}
-.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
-.section-title h2{margin:0;font-size:18px;font-weight:850;color:#C1292E}
-.section.card h2 {color: #C1292E !important;text-shadow: none;}
-.section.card h3 {color: #C1292E;
-  font-size: 1.2rem;
-  font-weight: 800;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-.section.card ul li {
-  color: #4a0e0e;
-  font-size: 15px;
+/* ─── Reset ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--font-body);
+  font-size: 16px;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; }
+a { color: inherit; text-decoration: none; }
+button, input, select { font-family: var(--font-body); font-size: inherit; }
+button { cursor: pointer; }
+
+/* ─── Utility ────────────────────────────────────────────── */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+/* ─── Topbar ─────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--black);
+  border-bottom: 3px solid var(--yellow);
+}
+.topbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--yellow);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+}
+.logo-mark svg { width: 18px; height: 18px; color: var(--black); }
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  color: var(--white);
+  text-transform: uppercase;
+}
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav a {
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: rgba(255,255,255,.55);
+  font-size: 14px;
+  font-weight: 600;
+  transition: color .15s, background .15s;
+}
+.nav a:hover, .nav a[aria-current="page"] { color: var(--white); background: rgba(255,255,255,.08); }
+.btn-nav {
+  background: var(--yellow);
+  color: var(--black);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  transition: background .15s, transform .1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn-nav:hover { background: #e0c100; transform: translateY(-1px); }
+
+/* ─── Hero ───────────────────────────────────────────────── */
+.hero {
+  background: var(--black);
+  padding: 72px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 38px,
+    rgba(241,211,2,.04) 38px,
+    rgba(241,211,2,.04) 40px
+  );
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 48px;
+  align-items: end;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-mockup { display: none; }
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(241,211,2,.12);
+  border: 1px solid rgba(241,211,2,.25);
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+.hero-eyebrow span { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: pulse 1.8s ease-in-out infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.7); }
+}
+
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 7vw, 88px);
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 28px;
+}
+.hero-headline em {
+  font-style: normal;
+  color: var(--yellow);
+  -webkit-text-stroke: 0px;
+}
+.hero-headline .outlined {
+  -webkit-text-stroke: 2px var(--red);
+  color: transparent;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: rgba(255,255,255,.55);
+  max-width: 480px;
+  line-height: 1.65;
+  margin-bottom: 36px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+.btn-primary {
+  background: var(--red);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 4px 18px rgba(193,41,46,.35);
+}
+.btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(193,41,46,.45); }
+.btn-ghost {
+  color: rgba(255,255,255,.65);
+  font-size: 15px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: color .15s;
+}
+.btn-ghost:hover { color: #fff; }
+
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.stat-item {}
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--yellow);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px;
+  color: rgba(255,255,255,.4);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 3px;
+}
+
+/* ─── Mockup preview card ────────────────────────────────── */
+.hero-mockup {
+  align-self: end;
+  padding-bottom: 0;
+}
+.mockup-card {
+  background: var(--white);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+  box-shadow: 0 -8px 60px rgba(0,0,0,.4);
+}
+.mockup-topbar {
+  background: var(--offwhite);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mockup-dot { width: 9px; height: 9px; border-radius: 50%; }
+.mockup-dot:nth-child(1) { background: #ff5f57; }
+.mockup-dot:nth-child(2) { background: #febc2e; }
+.mockup-dot:nth-child(3) { background: #28c840; }
+.mockup-url {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mockup-body { padding: 16px; display: grid; gap: 10px; }
+.mock-result {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+.mock-result.dim { opacity: .5; }
+.mock-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--black);
+}
+.mock-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mock-tag {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--offwhite);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: var(--muted);
+}
+.mock-tag.green { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.mock-tag.blue  { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+.mock-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.mock-btn {
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  color: var(--muted);
+  background: var(--offwhite);
+}
+
+/* ─── Search Band ────────────────────────────────────────── */
+#search {
+  background: var(--offwhite);
+  border-bottom: 1px solid var(--border);
+  padding: 40px 0;
+}
+.search-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.search-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+@media (max-width: 760px) { .search-row { grid-template-columns: 1fr; } }
+
+.field { display: grid; gap: 6px; }
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+}
+.input-wrap { position: relative; }
+.field-input {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  font-size: 15px;
+  color: var(--black);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field-input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(193,41,46,.1);
+}
+.field-input::placeholder { color: #b0aca4; }
+
+.btn-search {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  transition: background .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn-search:hover { background: var(--red-dark); transform: translateY(-1px); }
+.btn-search svg { width: 17px; height: 17px; }
+
+/* ─── Quick Pills ────────────────────────────────────────── */
+.quick-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.pill {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.pill:hover { border-color: var(--red); color: var(--red); background: #fff5f5; }
+.pill strong { color: var(--black); }
+
+/* ─── Status + Filters ───────────────────────────────────── */
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.chip b { color: var(--black); }
+.btn-chip {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--red);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.filters {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+}
+.filters.hidden { display: none; }
+.filters .field { min-width: 160px; }
+.filter-select {
+  background: var(--offwhite);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 14px;
+  color: var(--black);
+  outline: none;
+  width: 100%;
+}
+.filter-select:focus { border-color: var(--red); }
+.checks { display: flex; gap: 8px; flex-wrap: wrap; }
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--offwhite);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.check-label:hover { border-color: var(--red); }
+.check-label input { accent-color: var(--red); }
+.btn-clear {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+/* ─── Results Area ───────────────────────────────────────── */
+.results-area {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+.results-meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.results-grid { display: grid; gap: 10px; }
+
+/* ─── Result Card ────────────────────────────────────────── */
+.result-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+  transition: box-shadow .18s, border-left-color .18s;
+}
+.result-card:hover { box-shadow: var(--shadow); border-left-color: var(--yellow); }
+@media (max-width: 760px) { .result-card { grid-template-columns: 1fr; } }
+
+.r-name {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--black);
   margin-bottom: 8px;
 }
-.pill-row{display:flex;flex-wrap:wrap;gap:8px}
-.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:#C1292E;color:var(--muted);font-weight:650;cursor:pointer}
-.pill:hover{background:rgba(37,99,235,.06)}
-.pill:focus-visible{outline:none;box-shadow:var(--ring)}
-.pill strong{color:var(--text)}
-.grid{display:grid;grid-template-columns:1fr;gap:12px}
-.search{padding:18px}
-.search-form{display:grid;grid-template-columns:1.1fr 1.1fr auto;gap:10px;align-items:end}
-@media (max-width:860px){.search-form{grid-template-columns:1fr}}
-.field{display:grid;gap:6px}
-label{font-size:13px;color:var(--muted-2);font-weight:800;letter-spacing:.2px}
-.input{position:relative}
-input,select{width:100%;border-radius:12px;border:1px solid var(--border);background:var(--surface);padding:12px 12px;outline:none;color:var(--text)}
-input:focus,select:focus{box-shadow:var(--ring);border-color:rgba(37,99,235,.45)}
-.helper{margin-top:8px;color:#C1292E;font-size:13px;font-weight:600}
-.ac-menu{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 50px rgba(15,23,42,.12);max-height:280px;overflow:auto;display:none;z-index:20}
-.ac-menu.show{display:block}
-.ac-item{padding:10px 12px;cursor:pointer;color:var(--text);font-weight:600}
-.ac-item:hover,.ac-item[aria-selected="true"]{background:rgba(37,99,235,.08)}
-.ac-empty{padding:10px 12px;color:var(--muted);font-weight:600}
-.status{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
-.status .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:#C1292E;padding:8px 10px;border-radius:999px;font-size:13px;color:var(--muted);font-weight:700}
-.status .chip b{color:var(--text)}
-.filters{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:12px;border-radius:14px;background:var(--surface-2);border:1px solid rgba(37,99,235,.14)}
-.filters.hidden{display:none}
-.filters .field{min-width:170px}
-.filters .checks{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.check{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(229,231,235,.9);background:var(--surface);color:var(--muted);font-weight:700;cursor:pointer}
-.check input{width:auto}
-.meta{margin:12px 0 8px;color:var(--muted);font-weight:650}
-.results{display:grid;gap:10px}
-.result{padding:14px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
-@media (max-width:900px){.result{grid-template-columns:1fr}}
-.r-head{display:grid;gap:6px}
-.r-name{font-weight:900;font-size:16px;color:#C1292E}
-.r-tags{display:flex;flex-wrap:wrap;gap:8px}
-.tag{font-size:12px;font-weight:750;color:var(--muted);border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:4px 8px}
-.actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
-@media (max-width:900px){.actions{justify-content:flex-start}}
-.action{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:9px 10px;cursor:pointer;text-decoration:none;font-weight:750;color:var(--text)}
-.action:hover{background:rgba(15,23,42,.02)}
-.action:focus-visible{outline:none;box-shadow:var(--ring)}
-.action svg{width:16px;height:16px}
-.pagination{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px;color:var(--muted);font-weight:650}
-.pagination button{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:8px 10px;cursor:pointer;font-weight:750}
-.pagination button[disabled]{opacity:.5;cursor:default}
-.empty{padding:14px;border-radius:14px;border:1px dashed rgba(148,163,184,.8);background:var(--surface);color:var(--muted);display:none}
-.empty strong{color:var(--text)}
-.footer{margin-top:22px;padding:16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;gap:10px}
-.footer-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.small-links{display:flex;flex-wrap:wrap;gap:10px}
-.small-links a{color:#F4FBC1;font-weight:700;text-decoration:none}
-.small-links a:hover{text-decoration:underline}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;border-radius:999px;padding:10px 14px;font-weight:750;opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:60}
-.toast.show{opacity:1}
-.loader{position:fixed;inset:0;background:rgba(15,23,42,.35);backdrop-filter:blur(3px);display:none;place-items:center;z-index:55}
-.loader.show{display:grid}
-.spinner{width:40px;height:40px;border-radius:50%;border:4px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;place-items:center;z-index:70}
-.modal.show{display:grid}
-.modal-card{width:min(980px,94vw);max-height:84vh;overflow:auto;background:var(--surface);border-radius:18px;border:1px solid rgba(229,231,235,.9);box-shadow:0 30px 80px rgba(15,23,42,.25)}
-.modal-head{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.modal-head strong{font-size:14px}
-.modal-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:13px}
-.table th{position:sticky;top:0;background:var(--surface);z-index:2}
-.table tbody tr:nth-child(odd){background:rgba(15,23,42,.01)}
-.export-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:12px 14px;border-bottom:1px solid var(--border)}
-.export-controls .field{min-width:200px}
-.sr-only{
-  position:absolute;
-  width:1px;height:1px;
-  padding:0;margin:-1px;
-  overflow:hidden;
-  clip:rect(0,0,0,0);
-  white-space:nowrap;
-  border:0;
+.r-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.r-tag {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--offwhite);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--muted);
 }
+.r-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+@media (max-width: 760px) { .r-actions { justify-content: flex-start; } }
+
+.r-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--offwhite);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  cursor: pointer;
+  transition: border-color .13s, background .13s;
+  text-decoration: none;
+}
+.r-action:hover { border-color: var(--red); background: #fff5f5; color: var(--red); }
+.r-action svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─── Skeleton ───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -500px 0; }
+  100% { background-position: 500px 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+
+/* ─── Empty State ────────────────────────────────────────── */
+.empty-state {
+  display: none;
+  text-align: center;
+  padding: 56px 24px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--offwhite);
+}
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--border);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+}
+.empty-icon svg { width: 26px; height: 26px; color: var(--muted); }
+.empty-state h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.empty-state p { color: var(--muted); font-size: 15px; max-width: 380px; margin: 0 auto 20px; }
+
+/* ─── Pagination ─────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.page-btn {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color .13s, color .13s;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+.page-btn:disabled { opacity: .4; cursor: default; }
+
+/* ─── Info Section ───────────────────────────────────────── */
+.info-section {
+  background: var(--black);
+  padding: 72px 0;
+  color: #fff;
+}
+.info-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+@media (max-width: 800px) { .info-inner { grid-template-columns: 1fr; gap: 40px; } }
+
+.section-eyebrow {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.section-title em { font-style: normal; color: var(--yellow); }
+.section-body {
+  color: rgba(255,255,255,.55);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.data-list { display: grid; gap: 14px; margin-top: 8px; }
+.data-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--radius-sm);
+}
+.data-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(241,211,2,.12);
+  border: 1px solid rgba(241,211,2,.2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.data-icon svg { width: 17px; height: 17px; color: var(--yellow); }
+.data-item-text h4 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.data-item-text p { font-size: 13px; color: rgba(255,255,255,.45); }
+
+/* ─── FAQ ────────────────────────────────────────────────── */
+#faq {
+  padding: 72px 0;
+  background: var(--offwhite);
+}
+.faq-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.faq-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.faq-header .section-eyebrow { color: var(--red); }
+.faq-header .section-title { color: var(--black); }
+.faq-list { display: grid; gap: 10px; }
+
+details.faq-item {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .15s;
+}
+details.faq-item[open] { border-color: var(--red); }
+details.faq-item summary {
+  padding: 18px 20px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+details.faq-item summary::-webkit-details-marker { display: none; }
+details.faq-item summary::after {
+  content: '+';
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--red);
+  transition: transform .2s;
+  flex-shrink: 0;
+}
+details.faq-item[open] summary::after { content: '−'; }
+.faq-body {
+  padding: 0 20px 18px;
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ─── Footer ─────────────────────────────────────────────── */
+.footer {
+  background: var(--black);
+  border-top: 3px solid var(--yellow);
+  padding: 40px 0;
+}
+.footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-brand {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.footer-links a {
+  color: rgba(255,255,255,.45);
+  font-size: 14px;
+  font-weight: 600;
+  transition: color .15s;
+}
+.footer-links a:hover { color: var(--yellow); }
+.footer-copy {
+  width: 100%;
+  font-size: 13px;
+  color: rgba(255,255,255,.25);
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+/* ─── Autocomplete ───────────────────────────────────────── */
+.ac-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 5px);
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  max-height: 260px;
+  overflow-y: auto;
+  display: none;
+  z-index: 30;
+}
+.ac-menu.show { display: block; }
+.ac-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .1s;
+}
+.ac-item:hover, .ac-item[aria-selected="true"] { background: #fff5f5; color: var(--red); }
+.ac-empty { padding: 10px 14px; font-size: 14px; color: var(--muted); }
+
+/* ─── Modal ──────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  place-items: center;
+  z-index: 80;
+  padding: 20px;
+}
+.modal-overlay.show { display: grid; }
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  width: min(1000px, 95vw);
+  max-height: 86vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 40px 100px rgba(0,0,0,.3);
+}
+.modal-header {
+  padding: 18px 22px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.modal-header h3 { font-size: 16px; font-weight: 800; }
+.modal-header-actions { display: flex; gap: 10px; align-items: center; }
+.btn-download {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background .15s;
+  text-decoration: none;
+}
+.btn-download:hover { background: var(--red-dark); }
+.btn-close {
+  background: var(--offwhite);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.modal-controls {
+  padding: 14px 22px;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+  flex-shrink: 0;
+}
+.modal-table-wrap { overflow-y: auto; flex: 1; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table th {
+  background: var(--offwhite);
+  border-bottom: 1.5px solid var(--border);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.table td {
+  border-bottom: 1px solid var(--border);
+  padding: 9px 14px;
+  color: var(--black);
+}
+.table tbody tr:hover { background: #fff5f5; }
+
+/* ─── Toast ──────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--black);
+  color: #fff;
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 90;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ─── Loader ─────────────────────────────────────────────── */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,.4);
+  backdrop-filter: blur(3px);
+  display: none;
+  place-items: center;
+  z-index: 70;
+}
+.loader-overlay.show { display: grid; }
+.spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,.25);
+  border-top-color: var(--yellow);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Entrance Animations ────────────────────────────────── */
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .5s ease, transform .5s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
+
+<!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="#" id="nav-home" aria-current="page">
-      <span class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="M21 21l-4.3-4.3"></path>
+    <a class="brand" href="#" id="nav-home">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
         </svg>
       </span>
       <span class="brand-name">LeadSignal</span>
@@ -256,124 +988,170 @@ input:focus,select:focus{box-shadow:var(--ring);border-color:rgba(37,99,235,.45)
       <a href="#search" id="nav-link-search">Search</a>
       <a href="#faq" id="nav-link-faq">FAQ</a>
     </nav>
-    <div class="nav-cta">
-      <a class="btn btn-primary" href="#search" id="cta-go">Find leads</a>
-    </div>
+    <a class="btn-nav" href="#search" id="cta-go">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Find leads
+    </a>
   </div>
 </header>
 
-<main class="container">
-  <section class="hero">
-    <div class="card hero-card">
-      <h1 class="h1">Google Maps Lead Extractor for Business Leads</h1>
-      <div class="kpis" aria-label="Highlights">
-        <div class="kpi"><div class="big" data-count="200000">0</div><div class="label">rows processed</div></div>
-        <div class="kpi"><div class="big" data-count="92">0%</div><div class="label">phone coverage</div></div>
-        <div class="kpi"><div class="big">Global</div><div class="label">any city</div></div>
-        <div class="kpi"><div class="big">CSV</div><div class="label">ready export</div></div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span></span>
+        Google Maps Lead Extractor
+      </div>
+      <h1 class="hero-headline">
+        Find<br>
+        <em>Business</em><br>
+        Leads<br>
+        <span class="outlined">Fast.</span>
+      </h1>
+      <p class="hero-sub">
+        Search by category and location. Extract phone numbers, websites, addresses, ratings, and export clean CSV files — no manual searching required.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#search" id="hero-cta">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Start extracting
+        </a>
+        <a class="btn-ghost" href="#faq">
+          How it works
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number" data-count="200000">0</div>
+          <div class="stat-label">Rows processed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-count="92" data-suffix="%">0%</div>
+          <div class="stat-label">Phone coverage</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">Global</div>
+          <div class="stat-label">Any city worldwide</div>
+        </div>
       </div>
     </div>
-    <div class="card side-card">
-            <p class="sub">LeadSignal lets you extract business leads from Google Maps by category and location. Collect phone numbers, websites, addresses, ratings, and export everything to clean CSV files.</p>
-      <h3 class="side-title">What you get</h3>
-      <ul class="side-list">
-        <li class="side-item"><span class="dot"></span><span>Search businesses by <b>category</b> and <b>location</b>.</span></li>
-        <li class="side-item"><span class="dot"></span><span>Cleaned phone numbers, fixed websites, socials when found.</span></li>
-        <li class="side-item"><span class="dot"></span><span>One-click actions: copy phone, open website, open Maps profile.</span></li>
-        <li class="side-item"><span class="dot"></span><span>Export filtered results to CSV. Optional dedupe on export.</span></li>
-      </ul>
-      <div class="helper" style="margin-top:12px">Tip: Use broad categories like <b>dentist</b>, <b>cafe</b>, <b>gym</b>. Locations work best as <b>city, country</b>.</div>
+
+    <!-- Preview mockup -->
+    <div class="hero-mockup" aria-hidden="true">
+      <div class="mockup-card">
+        <div class="mockup-topbar">
+          <span class="mockup-dot"></span>
+          <span class="mockup-dot"></span>
+          <span class="mockup-dot"></span>
+          <span class="mockup-url">leadsignal.app/search?dentists+dubai</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mock-result">
+            <div class="mock-name">Aster Medical Centre — Bur Dubai</div>
+            <div class="mock-meta">
+              <span class="mock-tag">Dental Clinic</span>
+              <span class="mock-tag green">★ 4.7 · 312 reviews</span>
+              <span class="mock-tag blue">+971 4 440 1000</span>
+            </div>
+            <div class="mock-actions">
+              <span class="mock-btn">📞 Call</span>
+              <span class="mock-btn">🌐 Website</span>
+              <span class="mock-btn">📍 Maps</span>
+            </div>
+          </div>
+          <div class="mock-result dim">
+            <div class="mock-name">Al Zahra Dental Clinic</div>
+            <div class="mock-meta">
+              <span class="mock-tag">Dental Clinic</span>
+              <span class="mock-tag green">★ 4.5 · 188 reviews</span>
+            </div>
+          </div>
+          <div class="mock-result dim">
+            <div class="mock-name">Dr. Smile Dental Center</div>
+            <div class="mock-meta">
+              <span class="mock-tag">Dental Clinic</span>
+              <span class="mock-tag blue">+971 4 359 8000</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
-  <section class="section card" style="padding:18px">
-  <h2>Extract Business Leads from Google Maps</h2>
-  <p class="sub">
-    LeadSignal is a Google Maps lead generation tool designed to help you find real businesses anywhere in the world.
-    Search by business category and city, then export verified contact data including phone numbers, websites, addresses,
-    ratings, and Google Maps profile links.
-  </p>
-
-  <h3>What data does LeadSignal collect?</h3>
-  <ul>
-    <li>Business name and category</li>
-    <li>Phone numbers (cleaned and normalized)</li>
-    <li>Website and social links when available</li>
-    <li>Physical address and location</li>
-    <li>Ratings, reviews count, and Maps URLs</li>
-  </ul>
-
-  <p class="sub">
-    This tool is commonly used by sales teams, freelancers, agencies, and researchers who need structured business lead data
-    directly from Google Maps without manual searching.
-  </p>
+  </div>
 </section>
 
-  <section id="search" class="section card search" aria-label="Lead search">
-    <div class="section-title">
-      <h2>Search</h2>
-      <div class="pill-row" aria-label="Quick examples">
-        <button class="pill" type="button" data-example="restaurants|Dubai, United Arab Emirates"><strong>Restaurants</strong> in Dubai</button>
-        <button class="pill" type="button" data-example="gyms|Berlin, Germany"><strong>Gyms</strong> in Berlin</button>
-        <button class="pill" type="button" data-example="clinics|Riyadh, Saudi Arabia"><strong>Clinics</strong> in Riyadh</button>
-        <button class="pill" type="button" data-example="cafes|Paris, France"><strong>Cafes</strong> in Paris</button>
-      </div>
-    </div>
-
-    <form id="search-form" class="search-form" action="/search" method="GET">
+<!-- SEARCH -->
+<section id="search">
+  <div class="container">
+    <div class="search-label">Search businesses</div>
+    <form id="search-form" class="search-row" action="/search" method="GET">
       <div class="field">
-        <label for="category">Category</label>
-        <div class="input">
-          <input id="category" name="category" placeholder="e.g. dental clinic" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-categories"/>
+        <label class="field-label" for="category">Category</label>
+        <div class="input-wrap">
+          <input class="field-input" id="category" name="category" placeholder="e.g. dental clinic, gym, café" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-categories"/>
           <div class="ac-menu" id="ac-categories" role="listbox" aria-label="Category suggestions"></div>
         </div>
       </div>
       <div class="field">
-        <label for="location">Location</label>
-        <div class="input">
-          <input id="location" name="location" placeholder="e.g. Nasr City, Cairo" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-locations"/>
+        <label class="field-label" for="location">Location</label>
+        <div class="input-wrap">
+          <input class="field-input" id="location" name="location" placeholder="e.g. Nasr City, Cairo" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-locations"/>
           <div class="ac-menu" id="ac-locations" role="listbox" aria-label="Location suggestions"></div>
         </div>
       </div>
       <div class="field">
         <label class="sr-only" for="btn-search">Search</label>
-        <button class="btn btn-success" type="submit" id="btn-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <button class="btn-search" type="submit" id="btn-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           Search
         </button>
       </div>
     </form>
 
-    <div class="status" aria-live="polite">
-      <div class="chip" id="status-text"><b>Status:</b> Ready</div>
-      <div class="chip" id="results-summary" style="display:none"><b>Results:</b> <span id="results-summary-text"></span></div>
-      <div class="chip" id="export-chip" style="display:none"><b>Export:</b> <button class="btn btn-outline" id="btn-preview" type="button" style="padding:6px 10px;border-radius:999px">Preview / Export</button></div>
+    <!-- Quick examples -->
+    <div class="quick-pills" aria-label="Quick examples">
+      <button class="pill" type="button" data-example="restaurants|Dubai, United Arab Emirates"><strong>Restaurants</strong> in Dubai</button>
+      <button class="pill" type="button" data-example="gyms|Berlin, Germany"><strong>Gyms</strong> in Berlin</button>
+      <button class="pill" type="button" data-example="clinics|Riyadh, Saudi Arabia"><strong>Clinics</strong> in Riyadh</button>
+      <button class="pill" type="button" data-example="cafes|Paris, France"><strong>Cafes</strong> in Paris</button>
+      <button class="pill" type="button" data-example="dental clinic|Cairo, Egypt"><strong>Dentists</strong> in Cairo</button>
     </div>
 
+    <!-- Status -->
+    <div class="status-row" aria-live="polite">
+      <div class="chip" id="status-text"><b>Status:</b> Ready</div>
+      <div class="chip" id="results-summary" style="display:none"><b>Results:</b> <span id="results-summary-text"></span></div>
+      <div class="chip" id="export-chip" style="display:none">
+        <button class="btn-chip" id="btn-preview" type="button">Preview &amp; Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
     <div id="filters" class="filters hidden" aria-label="Filters">
       <div class="field">
-        <label for="filter-rating">Minimum rating</label>
-        <select id="filter-rating">
+        <label class="field-label" for="filter-rating">Min rating</label>
+        <select class="filter-select" id="filter-rating">
           <option value="">Any</option>
           <option value="4.5">4.5+ only</option>
-          <option value="4.0">4.0+ and above</option>
-          <option value="3.5">3.5+ and above</option>
-          <option value="3.0">3.0+ and above</option>
+          <option value="4.0">4.0+</option>
+          <option value="3.5">3.5+</option>
         </select>
       </div>
       <div class="field">
-        <label>Contact data</label>
+        <label class="field-label">Contact data</label>
         <div class="checks">
-          <label class="check"><input type="checkbox" id="filter-has-phone"/> Has phone</label>
-          <label class="check"><input type="checkbox" id="filter-has-website"/> Has website</label>
+          <label class="check-label"><input type="checkbox" id="filter-has-phone"/> Has phone</label>
+          <label class="check-label"><input type="checkbox" id="filter-has-website"/> Has website</label>
         </div>
       </div>
       <div class="field">
-        <label for="filter-address">Address contains</label>
-        <input id="filter-address" placeholder="e.g. Nasr City, Maadi"/>
+        <label class="field-label" for="filter-address">Address contains</label>
+        <input class="field-input" id="filter-address" placeholder="e.g. Maadi, Nasr City" style="padding: 9px 12px;"/>
       </div>
       <div class="field">
-        <label for="sort-by">Sort</label>
-        <select id="sort-by">
+        <label class="field-label" for="sort-by">Sort by</label>
+        <select class="filter-select" id="sort-by">
           <option value="">Best match</option>
           <option value="rating_desc">Rating (high → low)</option>
           <option value="reviews_desc">Reviews (high → low)</option>
@@ -381,565 +1159,655 @@ input:focus,select:focus{box-shadow:var(--ring);border-color:rgba(37,99,235,.45)
         </select>
       </div>
       <div class="field" style="min-width:auto">
-        <button class="btn btn-outline" id="btn-clear-filters" type="button">Clear</button>
+        <button class="btn-clear" id="btn-clear-filters" type="button">Clear filters</button>
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="meta" id="results-meta" aria-live="polite"></div>
+<!-- RESULTS -->
+<div class="results-area">
+  <div class="results-meta" id="results-meta" aria-live="polite"></div>
 
-    <div id="empty" class="empty">
-      <div><strong>No results.</strong> Try one of these fixes:</div>
-      <ul style="margin:8px 0 0;padding-left:18px">
-        <li>Use a broader category (e.g. <b>restaurant</b> instead of a brand name).</li>
-        <li>Try <b>City, Country</b> (e.g. <b>Riyadh, Saudi Arabia</b>).</li>
-        <li>Remove extra words and try again.</li>
-      </ul>
-      <div style="margin-top:10px" class="pill-row">
-        <button class="pill" type="button" data-example="restaurant|Cairo, Egypt"><strong>Restaurant</strong> in Cairo</button>
-        <button class="pill" type="button" data-example="hospital|London, UK"><strong>Hospital</strong> in London</button>
-        <button class="pill" type="button" data-example="cafe|Istanbul, Turkey"><strong>Cafe</strong> in Istanbul</button>
+  <div class="empty-state" id="empty">
+    <div class="empty-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    </div>
+    <h3>No results found</h3>
+    <p>Try a broader category like <strong>restaurant</strong> or use <strong>City, Country</strong> format for location.</p>
+    <div class="quick-pills" style="justify-content:center">
+      <button class="pill" type="button" data-example="restaurant|Cairo, Egypt"><strong>Restaurant</strong> in Cairo</button>
+      <button class="pill" type="button" data-example="hospital|London, UK"><strong>Hospital</strong> in London</button>
+      <button class="pill" type="button" data-example="cafe|Istanbul, Turkey"><strong>Cafe</strong> in Istanbul</button>
+    </div>
+  </div>
+
+  <div id="results" class="results-grid" aria-live="polite" aria-busy="false"></div>
+  <div id="pagination" class="pagination" aria-live="polite"></div>
+</div>
+
+<!-- INFO SECTION -->
+<section class="info-section">
+  <div class="info-inner">
+    <div class="fade-up">
+      <div class="section-eyebrow">What you get</div>
+      <h2 class="section-title">Every data point<br>you <em>actually need</em></h2>
+      <p class="section-body">LeadSignal collects structured business data directly from Google Maps. No manual copy-pasting, no guesswork — just clean, ready-to-use lead lists.</p>
+    </div>
+    <div class="data-list fade-up">
+      <div class="data-item">
+        <div class="data-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.8 19.5 19.5 0 0 1 5.2 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.48a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="data-item-text">
+          <h4>Phone numbers</h4>
+          <p>Cleaned, normalized, and ready for dialing or WhatsApp outreach.</p>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="data-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="data-item-text">
+          <h4>Websites &amp; socials</h4>
+          <p>Business websites and social profile links when available.</p>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="data-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="data-item-text">
+          <h4>Addresses &amp; Maps links</h4>
+          <p>Full address plus direct Google Maps profile URL per listing.</p>
+        </div>
+      </div>
+      <div class="data-item">
+        <div class="data-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="data-item-text">
+          <h4>Ratings &amp; review counts</h4>
+          <p>Filter and sort by quality — focus on the businesses that matter.</p>
+        </div>
       </div>
     </div>
+  </div>
+</section>
 
-    <div id="results" class="results" aria-live="polite" aria-busy="false"></div>
-    <div id="pagination" class="pagination" aria-live="polite"></div>
-  </section>
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq-inner">
+    <div class="faq-header">
+      <div class="section-eyebrow">FAQ</div>
+      <h2 class="section-title" style="color:var(--black)">Common <em style="color:var(--red)">questions</em></h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>What data comes with each lead?</summary>
+        <div class="faq-body">Name, category, phone(s), website, socials (when found), rating, reviews count, address, and a direct Google Maps profile link.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Is this free to use?</summary>
+        <div class="faq-body">The tool is free. Availability and response time depend on backend capacity. No account required.</div>
+      </details>
+      <details class="faq-item">
+        <summary>What's the best way to search?</summary>
+        <div class="faq-body">Use broad category names like <strong>dentist</strong>, <strong>cafe</strong>, or <strong>gym</strong> rather than brand names. For location, use <strong>City, Country</strong> format (e.g. <em>Riyadh, Saudi Arabia</em>) for best results.</div>
+      </details>
+      <details class="faq-item">
+        <summary>How should I use this responsibly?</summary>
+        <div class="faq-body">Use exported data for legitimate outreach and research only. Respect local laws and anti-spam regulations. If your jurisdiction requires consent for outreach, follow those rules. This tool is not affiliated with Google.</div>
+      </details>
+      <details class="faq-item">
+        <summary>Can I export to CSV?</summary>
+        <div class="faq-body">Yes — after running a search, click "Preview &amp; Export CSV" to choose your columns, apply deduplication, and download the file.</div>
+      </details>
+    </div>
+  </div>
+</section>
 
-  <section id="faq" class="section">
-    <div class="card" style="padding:18px">
-      <div class="section-title"><h2>FAQ</h2></div>
-      <div class="grid">
-        <details class="card" style="padding:12px 14px">
-          <summary style="cursor:pointer;font-weight:850;color:#C1292E;">What data comes with each lead?</summary>
-          <div style="margin-top:8px;color:#C1292E;">Name, category, phone(s), website, socials (when found), rating, reviews, address, and a Google Maps profile link.</div>
-        </details>
-        <details class="card" style="padding:12px 14px">
-          <summary style="cursor:pointer;font-weight:850;color:#C1292E;">Is this free?</summary>
-          <div style="margin-top:8px;color:#C1292E;">The tool is free to use. Availability and response time depend on backend capacity.</div>
-        </details>
-        <details class="card" style="padding:12px 14px">
-          <summary style="cursor:pointer;font-weight:850;color:#C1292E;">How should I use this responsibly?</summary>
-          <div style="margin-top:8px;color:#C1292E;">Use the exported data for legitimate outreach and research. Respect local laws and do not spam. If you need consent-based outreach, follow your jurisdiction rules.</div>
-        </details>
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">LeadSignal</div>
+    <div class="footer-links">
+      <a href="#" id="link-privacy">Privacy</a>
+      <a href="#" id="link-terms">Terms</a>
+      <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div class="footer-copy">
+      © <span id="year"></span> LeadSignal · Built by Mohamed Abdelhalim · Data sourced from publicly available business listings. Not affiliated with Google.
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-label="Export preview">
+    <div class="modal-header">
+      <h3>Export preview</h3>
+      <div class="modal-header-actions">
+        <a id="btn-download" class="btn-download" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download CSV
+        </a>
+        <button id="btn-close" class="btn-close" type="button">Close</button>
       </div>
     </div>
-  </section>
-
-  <footer class="footer">
-    <div class="footer-top">
-      <div style="font-weight:800;color:var(--text)">LeadSignal</div>
-      <div class="small-links">
-        <a href="#" id="link-privacy">Privacy</a>
-        <a href="#" id="link-terms">Terms</a>
-        <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </div>
-    <div style="font-size:13px">© <span id="year"></span> LeadSignal • Built by Mohamed Abdelhalim</div>
-    <div style="font-size:13px">Data is sourced from publicly available business listings. Use responsibly. This tool is not affiliated with Google.</div>
-  </footer>
-</main>
-
-<div class="modal" id="modal" aria-hidden="true">
-  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Export preview">
-    <div class="modal-head">
-      <strong>Export preview</strong>
-      <div class="modal-actions">
-        <a id="btn-download" class="btn btn-primary" href="#">Download CSV</a>
-        <button id="btn-close" class="btn btn-outline" type="button">Close</button>
-      </div>
-    </div>
-    <div class="export-controls">
+    <div class="modal-controls">
       <div class="field">
-        <label for="export-dedupe">Dedupe on export</label>
-        <select id="export-dedupe">
+        <label class="field-label" for="export-dedupe">Deduplicate</label>
+        <select class="filter-select" id="export-dedupe" style="min-width:180px">
           <option value="">No dedupe</option>
           <option value="phone">By phone</option>
           <option value="website">By website</option>
           <option value="name_address">By name + address</option>
         </select>
       </div>
-      <div class="field" style="min-width:280px">
-        <label>Columns</label>
+      <div class="field">
+        <label class="field-label">Columns</label>
         <div class="checks">
-          <label class="check"><input type="checkbox" class="col" value="place name" checked/> Name</label>
-          <label class="check"><input type="checkbox" class="col" value="category" checked/> Category</label>
-          <label class="check"><input type="checkbox" class="col" value="location" checked/> Query location</label>
-          <label class="check"><input type="checkbox" class="col" value="address" checked/> Address</label>
-          <label class="check"><input type="checkbox" class="col" value="phone" checked/> Phone</label>
-          <label class="check"><input type="checkbox" class="col" value="maps link" checked/> Maps</label>
-          <label class="check"><input type="checkbox" class="col" value="website" checked/> Website</label>
+          <label class="check-label"><input type="checkbox" class="col" value="place name" checked/> Name</label>
+          <label class="check-label"><input type="checkbox" class="col" value="category" checked/> Category</label>
+          <label class="check-label"><input type="checkbox" class="col" value="location" checked/> Location</label>
+          <label class="check-label"><input type="checkbox" class="col" value="address" checked/> Address</label>
+          <label class="check-label"><input type="checkbox" class="col" value="phone" checked/> Phone</label>
+          <label class="check-label"><input type="checkbox" class="col" value="maps link" checked/> Maps</label>
+          <label class="check-label"><input type="checkbox" class="col" value="website" checked/> Website</label>
         </div>
       </div>
-      <div class="field" style="min-width:auto">
-        <button class="btn btn-outline" id="btn-refresh-export" type="button">Refresh preview</button>
-      </div>
+      <button class="btn-clear" id="btn-refresh-export" type="button">Refresh</button>
     </div>
-    <div style="padding:12px 14px">
+    <div class="modal-table-wrap">
       <table class="table" id="preview"></table>
     </div>
   </div>
 </div>
 
+<!-- TOAST + LOADER -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<div id="loader" class="loader"><div class="spinner" aria-label="Loading"></div></div>
+<div id="loader" class="loader-overlay"><div class="spinner" aria-label="Loading"></div></div>
 
 <script>
-const yearEl=document.getElementById('year');
-yearEl.textContent=new Date().getFullYear();
+/* ── Utilities ─────────────────────────────────── */
+document.getElementById('year').textContent = new Date().getFullYear();
 
-const toast=document.getElementById('toast');
-function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)}
+const $  = id => document.getElementById(id);
+const toast  = $('toast');
+const loader = $('loader');
 
-const loader=document.getElementById('loader');
-function loading(on){loader.classList.toggle('show',!!on)}
-
-function debounce(fn,delay){let t;return function(...args){clearTimeout(t);t=setTimeout(()=>fn.apply(this,args),delay)}}
-
-const countEls=[...document.querySelectorAll('[data-count]')];
-const obs=new IntersectionObserver(entries=>{entries.forEach(en=>{if(!en.isIntersecting)return;const el=en.target;const target=+el.dataset.count;let v=0;const isPercent=(el.textContent||'').includes('%');const step=Math.max(1,Math.round(target/60));const timer=setInterval(()=>{v+=step;if(v>=target){v=target;clearInterval(timer)}el.textContent=isPercent?`${v}%`:v.toLocaleString()},16);obs.unobserve(el)})},{threshold:.55});
-countEls.forEach(el=>obs.observe(el));
-
-const statusText=document.getElementById('status-text');
-const resultsSummary=document.getElementById('results-summary');
-const resultsSummaryText=document.getElementById('results-summary-text');
-const exportChip=document.getElementById('export-chip');
-
-function setStatus(kind,label){
-  let prefix='Status:';
-  if(kind==='search') prefix='Searching:';
-  if(kind==='clean') prefix='Cleaning:';
-  if(kind==='done') prefix='Status:';
-  if(kind==='error') prefix='Status:';
-  statusText.innerHTML=`<b>${prefix}</b> ${label}`;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1500);
+}
+function loading(on) { loader.classList.toggle('show', !!on); }
+function debounce(fn, delay) {
+  let t;
+  return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), delay); };
 }
 
-const ALL_LABEL='All categories';
-const formEl=document.getElementById('search-form');
-const catInput=document.getElementById('category');
-const locInput=document.getElementById('location');
-const catMenu=document.getElementById('ac-categories');
-const locMenu=document.getElementById('ac-locations');
-const filtersEl=document.getElementById('filters');
-const resultsMetaEl=document.getElementById('results-meta');
-const resultsEl=document.getElementById('results');
-const emptyEl=document.getElementById('empty');
-const paginationEl=document.getElementById('pagination');
+/* ── Counter animation ─────────────────────────── */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    const el = en.target;
+    const target = +el.dataset.count;
+    const suffix = el.dataset.suffix || '';
+    let v = 0;
+    const step = Math.max(1, Math.round(target / 60));
+    const t = setInterval(() => {
+      v += step;
+      if (v >= target) { v = target; clearInterval(t); }
+      el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
+    }, 16);
+    obs.unobserve(el);
+  });
+}, { threshold: .5 });
+document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
 
-const ratingFilterEl=document.getElementById('filter-rating');
-const hasPhoneEl=document.getElementById('filter-has-phone');
-const hasWebsiteEl=document.getElementById('filter-has-website');
-const sortEl=document.getElementById('sort-by');
-const addrEl=document.getElementById('filter-address');
-const clearFiltersBtn=document.getElementById('btn-clear-filters');
+/* ── Fade-up animation ─────────────────────────── */
+const fadeObs = new IntersectionObserver(entries => {
+  entries.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); });
+}, { threshold: .15 });
+document.querySelectorAll('.fade-up').forEach(el => fadeObs.observe(el));
 
-function normalizeAllCategories(v){const s=(v||'').trim();if(!s)return '';if(/^all\s*categories$/i.test(s)||/^all$/i.test(s))return '';if(/^all\s*categories$/i.test(s.toLowerCase()))return '';return s}
+/* ── State ─────────────────────────────────────── */
+const statusText       = $('status-text');
+const resultsSummary   = $('results-summary');
+const resultsSummaryText = $('results-summary-text');
+const exportChip       = $('export-chip');
+const filtersEl        = $('filters');
+const resultsMetaEl    = $('results-meta');
+const resultsEl        = $('results');
+const emptyEl          = $('empty');
+const paginationEl     = $('pagination');
+const catInput         = $('category');
+const locInput         = $('location');
+const catMenu          = $('ac-categories');
+const locMenu          = $('ac-locations');
+const ratingFilterEl   = $('filter-rating');
+const hasPhoneEl       = $('filter-has-phone');
+const hasWebsiteEl     = $('filter-has-website');
+const sortEl           = $('sort-by');
+const addrEl           = $('filter-address');
 
-function setIfExists(el,val){if(!el)return;el.value=val??''}
+let lastResults = [], currentPage = 1, totalPages = 1, lastTotal = 0;
 
-function readUrlState(){const u=new URL(window.location.href);const p=u.searchParams;return{category:normalizeAllCategories(p.get('category')||''),location:(p.get('location')||'').trim(),min_rating:(p.get('min_rating')||''),has_phone:(p.get('has_phone')||''),has_website:(p.get('has_website')||''),address_contains:(p.get('address_contains')||''),sort:(p.get('sort')||''),page:parseInt(p.get('page')||'1',10)||1}}
+function setStatus(label) { statusText.innerHTML = `<b>Status:</b> ${label}`; }
 
-function writeUrlState(state,replace=true){const u=new URL(window.location.href);['page','category','location','min_rating','has_phone','has_website','address_contains','sort'].forEach(k=>u.searchParams.delete(k));
-  const cat=normalizeAllCategories(state.category);
-  const loc=(state.location||'').trim();
-  if(cat)u.searchParams.set('category',cat);
-  if(loc)u.searchParams.set('location',loc);
-  if(state.min_rating)u.searchParams.set('min_rating',String(state.min_rating));
-  if(state.has_phone==='1')u.searchParams.set('has_phone','1');
-  if(state.has_website==='1')u.searchParams.set('has_website','1');
-  if((state.address_contains||'').trim())u.searchParams.set('address_contains',String(state.address_contains).trim());
-  if((state.sort||'').trim())u.searchParams.set('sort',String(state.sort).trim());
-  if(state.page && state.page>1)u.searchParams.set('page',String(state.page));
-  if(replace)history.replaceState({},'',u.toString()); else history.pushState({},'',u.toString());
+/* ── URL state ─────────────────────────────────── */
+function normalizeCategory(v) {
+  const s = (v || '').trim();
+  return /^all(\s*categories)?$/i.test(s) ? '' : s;
+}
+function readUrl() {
+  const p = new URL(location.href).searchParams;
+  return {
+    category:         normalizeCategory(p.get('category') || ''),
+    location:         (p.get('location') || '').trim(),
+    min_rating:       p.get('min_rating') || '',
+    has_phone:        p.get('has_phone') || '',
+    has_website:      p.get('has_website') || '',
+    address_contains: p.get('address_contains') || '',
+    sort:             p.get('sort') || '',
+    page:             parseInt(p.get('page') || '1', 10) || 1,
+  };
+}
+function writeUrl(st, replace = true) {
+  const u = new URL(location.href);
+  ['page','category','location','min_rating','has_phone','has_website','address_contains','sort'].forEach(k => u.searchParams.delete(k));
+  if (st.category)              u.searchParams.set('category', st.category);
+  if (st.location)              u.searchParams.set('location', st.location);
+  if (st.min_rating)            u.searchParams.set('min_rating', st.min_rating);
+  if (st.has_phone === '1')     u.searchParams.set('has_phone', '1');
+  if (st.has_website === '1')   u.searchParams.set('has_website', '1');
+  if ((st.address_contains || '').trim()) u.searchParams.set('address_contains', st.address_contains.trim());
+  if ((st.sort || '').trim())   u.searchParams.set('sort', st.sort.trim());
+  if (st.page > 1)              u.searchParams.set('page', String(st.page));
+  replace ? history.replaceState({}, '', u) : history.pushState({}, '', u);
+}
+function setUiFromState(st) {
+  catInput.value = st.category || '';
+  locInput.value = st.location || '';
+  if (ratingFilterEl) ratingFilterEl.value = st.min_rating || '';
+  if (addrEl)         addrEl.value         = st.address_contains || '';
+  if (sortEl)         sortEl.value         = st.sort || '';
+  if (hasPhoneEl)     hasPhoneEl.checked   = st.has_phone === '1';
+  if (hasWebsiteEl)   hasWebsiteEl.checked = st.has_website === '1';
+}
+function collectState(page) {
+  return {
+    category:         normalizeCategory(catInput.value),
+    location:         (locInput.value || '').trim(),
+    min_rating:       ratingFilterEl?.value || '',
+    has_phone:        hasPhoneEl?.checked ? '1' : '',
+    has_website:      hasWebsiteEl?.checked ? '1' : '',
+    address_contains: (addrEl?.value || '').trim(),
+    sort:             sortEl?.value || '',
+    page:             page ?? 1,
+  };
 }
 
-function setUiFromState(st){
-  setIfExists(catInput,st.category?st.category:'');
-  setIfExists(locInput,st.location);
-  setIfExists(ratingFilterEl,st.min_rating);
-  setIfExists(addrEl,st.address_contains);
-  setIfExists(sortEl,st.sort);
-  if(hasPhoneEl)hasPhoneEl.checked=st.has_phone==='1';
-  if(hasWebsiteEl)hasWebsiteEl.checked=st.has_website==='1';
-}
-
-function collectStateFromUi(pageOverride){
-  const cat=normalizeAllCategories(catInput.value);
-  const loc=(locInput.value||'').trim();
-  const rating=ratingFilterEl?.value||'';
-  const hp=hasPhoneEl?.checked;
-  const hw=hasWebsiteEl?.checked;
-  const addr=(addrEl?.value||'').trim();
-  const sort=sortEl?.value||'';
-  const page=pageOverride??1;
-  return{category:cat,location:loc,min_rating:rating,has_phone:hp?'1':'',has_website:hw?'1':'',address_contains:addr,sort:sort,page:page}
-}
-
-function initAutocomplete(inputEl,items,menuEl){
-  let active=-1;
-  function close(){menuEl.classList.remove('show');menuEl.innerHTML='';active=-1;inputEl.setAttribute('aria-expanded','false')}
-  function open(list){
-    menuEl.innerHTML='';
-    if(!list.length){const d=document.createElement('div');d.className='ac-empty';d.textContent='No matches';menuEl.appendChild(d);menuEl.classList.add('show');inputEl.setAttribute('aria-expanded','true');return}
-    list.slice(0,12).forEach((it,idx)=>{const d=document.createElement('div');d.className='ac-item';d.setAttribute('role','option');d.dataset.idx=String(idx);d.textContent=it;d.addEventListener('mousedown',e=>{e.preventDefault();inputEl.value=it;close();triggerSearchFromUi(1,true)});menuEl.appendChild(d)});
-    menuEl.classList.add('show');
-    inputEl.setAttribute('aria-expanded','true');
+/* ── Autocomplete ──────────────────────────────── */
+function initAutocomplete(inputEl, items, menuEl) {
+  let active = -1;
+  function close() { menuEl.classList.remove('show'); menuEl.innerHTML = ''; active = -1; inputEl.setAttribute('aria-expanded', 'false'); }
+  function open(list) {
+    menuEl.innerHTML = '';
+    if (!list.length) {
+      const d = document.createElement('div'); d.className = 'ac-empty'; d.textContent = 'No matches';
+      menuEl.appendChild(d); menuEl.classList.add('show'); inputEl.setAttribute('aria-expanded', 'true'); return;
+    }
+    list.slice(0, 12).forEach((it, idx) => {
+      const d = document.createElement('div'); d.className = 'ac-item'; d.setAttribute('role', 'option'); d.textContent = it;
+      d.addEventListener('mousedown', e => { e.preventDefault(); inputEl.value = it; close(); triggerSearch(1, true); });
+      menuEl.appendChild(d);
+    });
+    menuEl.classList.add('show'); inputEl.setAttribute('aria-expanded', 'true');
   }
-  function update(){const q=(inputEl.value||'').trim().toLowerCase();if(!q){close();return}const list=items.filter(x=>String(x||'').toLowerCase().includes(q));open(list)}
-  inputEl.addEventListener('input',debounce(update,80));
-  inputEl.addEventListener('blur',()=>setTimeout(close,120));
-  inputEl.addEventListener('keydown',e=>{
-    if(!menuEl.classList.contains('show'))return;
-    const opts=[...menuEl.querySelectorAll('.ac-item')];
-    if(!opts.length)return;
-    if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(opts.length-1,active+1)}
-    else if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(0,active-1)}
-    else if(e.key==='Enter'){if(active>=0){e.preventDefault();opts[active].dispatchEvent(new MouseEvent('mousedown'))}return}
-    else if(e.key==='Escape'){e.preventDefault();close();return}
-    opts.forEach((o,i)=>o.setAttribute('aria-selected',i===active?'true':'false'));
+  function update() {
+    const q = (inputEl.value || '').trim().toLowerCase();
+    if (!q) { close(); return; }
+    open(items.filter(x => String(x || '').toLowerCase().includes(q)));
+  }
+  inputEl.addEventListener('input', debounce(update, 80));
+  inputEl.addEventListener('blur', () => setTimeout(close, 120));
+  inputEl.addEventListener('keydown', e => {
+    if (!menuEl.classList.contains('show')) return;
+    const opts = [...menuEl.querySelectorAll('.ac-item')];
+    if (!opts.length) return;
+    if      (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(opts.length - 1, active + 1); }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); active = Math.max(0, active - 1); }
+    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); opts[active].dispatchEvent(new MouseEvent('mousedown')); return; }
+    else if (e.key === 'Escape')    { e.preventDefault(); close(); return; }
+    opts.forEach((o, i) => o.setAttribute('aria-selected', i === active ? 'true' : 'false'));
   });
 }
 
-let CATS=[];
-let LOCS=[];
-function wireAutocomplete(){
-  const cats=[...new Set([ALL_LABEL,...CATS.filter(Boolean)])];
-  initAutocomplete(catInput,cats,catMenu);
-  initAutocomplete(locInput,LOCS.filter(Boolean),locMenu);
+let CATS = [], LOCS = [];
+function wireAC() {
+  initAutocomplete(catInput, ['All categories', ...CATS.filter(Boolean)], catMenu);
+  initAutocomplete(locInput, LOCS.filter(Boolean), locMenu);
 }
+fetch('/meta').then(r => r.json()).then(d => {
+  CATS = Array.isArray(d.categories) ? d.categories : [];
+  LOCS = Array.isArray(d.locations)  ? d.locations  : [];
+  wireAC();
+}).catch(() => wireAC());
 
-fetch('/meta').then(async r=>{
-  const data=await r.json().catch(()=>({}));
-  CATS=Array.isArray(data.categories)?data.categories:[];
-  LOCS=Array.isArray(data.locations)?data.locations:[];
-  wireAutocomplete();
-}).catch(()=>wireAutocomplete());
-
-function actionBtn(icon,label,href,copy){
-  const a=document.createElement('a');
-  a.className='action';
-  if(href){a.href=href;a.target='_blank';a.rel='noopener'}
-  else{a.href='#'}
-  a.setAttribute('role','button');
-  a.innerHTML=`${icon}<span>${label}</span>`;
-  if(copy){a.addEventListener('click',async e=>{e.preventDefault();try{await navigator.clipboard.writeText(copy);showToast('Copied')}catch{showToast('Copy failed')}})}
-  return a;
-}
-
-function renderSkeleton(n=6){
-  const frag=document.createDocumentFragment();
-  for(let i=0;i<n;i++){
-    const card=document.createElement('div');
-    card.className='card result';
-    card.style.opacity='.75';
-    card.innerHTML=`<div class="r-head"><div style="height:14px;width:40%;border-radius:999px;background:#eef2ff"></div><div style="height:12px;width:70%;border-radius:999px;background:#f1f5f9"></div><div style="height:12px;width:55%;border-radius:999px;background:#f1f5f9"></div></div><div class="actions"><div style="height:34px;width:86px;border-radius:12px;background:#f1f5f9"></div><div style="height:34px;width:86px;border-radius:12px;background:#f1f5f9"></div></div>`;
+/* ── Render helpers ────────────────────────────── */
+function renderSkeleton(n = 6) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < n; i++) {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.style.cssText = 'border-left-color:#e0ddd6';
+    card.innerHTML = `
+      <div style="display:grid;gap:10px">
+        <div class="skel" style="height:16px;width:55%"></div>
+        <div style="display:flex;gap:6px">
+          <div class="skel" style="height:22px;width:80px;border-radius:999px"></div>
+          <div class="skel" style="height:22px;width:100px;border-radius:999px"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <div class="skel" style="height:36px;width:80px;border-radius:8px"></div>
+        <div class="skel" style="height:36px;width:80px;border-radius:8px"></div>
+      </div>`;
     frag.appendChild(card);
   }
   return frag;
 }
 
-let lastResults=[];
-let currentPage=1;
-let totalPages=1;
-let lastTotal=0;
+function actionBtn(svgPath, label, href, copy) {
+  const a = document.createElement('a');
+  a.className = 'r-action';
+  if (href) { a.href = href; a.target = '_blank'; a.rel = 'noopener'; } else { a.href = '#'; }
+  a.setAttribute('role', 'button');
+  a.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${svgPath}</svg><span>${label}</span>`;
+  if (copy) {
+    a.addEventListener('click', async e => {
+      e.preventDefault();
+      try { await navigator.clipboard.writeText(copy); showToast('Copied!'); } catch { showToast('Copy failed'); }
+    });
+  }
+  return a;
+}
 
-function renderResult(item){
-  const card=document.createElement('article');
-  card.className='card result';
+function renderResult(item) {
+  const card = document.createElement('article');
+  card.className = 'result-card';
 
-  const left=document.createElement('div');
-  left.className='r-head';
+  const left = document.createElement('div');
+  const name = document.createElement('div');
+  name.className = 'r-name';
+  name.textContent = item.name || 'Unknown';
 
-  const name=document.createElement('div');
-  name.className='r-name';
-  name.textContent=item.name||'Unknown';
-
-  const tags=document.createElement('div');
-  tags.className='r-tags';
-
-  function addTag(txt){if(!txt)return;const t=document.createElement('span');t.className='tag';t.textContent=txt;tags.appendChild(t)}
-
-  addTag(item.category||'');
-  if(item.rating){addTag(`★ ${item.rating} (${item.reviews_count||0})`)}
-  addTag(item.address_line||item.address||'');
+  const tags = document.createElement('div');
+  tags.className = 'r-tags';
+  const addTag = txt => { if (!txt) return; const t = document.createElement('span'); t.className = 'r-tag'; t.textContent = txt; tags.appendChild(t); };
+  addTag(item.category || '');
+  if (item.rating) addTag(`★ ${item.rating} (${item.reviews_count || 0})`);
+  addTag(item.address_line || item.address || '');
 
   left.appendChild(name);
   left.appendChild(tags);
 
-  const actions=document.createElement('div');
-  actions.className='actions';
+  const actions = document.createElement('div');
+  actions.className = 'r-actions';
 
-  const phoneVal=item.phone_e164||item.phone;
-  if(phoneVal){
-    actions.appendChild(actionBtn('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.08 5.18 2 2 0 0 1 4.06 3h3a2 2 0 0 1 2 1.72c.12.89.33 1.76.62 2.6a2 2 0 0 1-.45 2.11L8.09 10.91a16 16 0 0 0 6 6l1.48-1.14a2 2 0 0 1 2.11-.45c.84.29 1.71.5 2.6.62A2 2 0 0 1 22 16.92z"/></svg>','Call',`tel:${phoneVal}`));
-    actions.appendChild(actionBtn('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>','Copy',null,phoneVal));
-    actions.appendChild(actionBtn('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/></svg>','WhatsApp',`https://wa.me/${String(phoneVal).replace(/[^0-9]/g,'')}`));
+  const ph = item.phone_e164 || item.phone;
+  const PHONE_SVG = `<path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.8 19.5 19.5 0 0 1 5.2 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.48a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92z"/>`;
+
+  if (ph) {
+    actions.appendChild(actionBtn(PHONE_SVG, 'Call', `tel:${ph}`));
+    actions.appendChild(actionBtn(`<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`, 'Copy', null, ph));
+    actions.appendChild(actionBtn(`<path d="M20.52 3.48A11.5 11.5 0 0 1 12 23.5h0A11.5 11.5 0 1 1 20.52 3.48z"/><path d="M16.65 17c-1.2.54-2.7.42-4.35-.35-1.5-.7-3.25-2.45-3.95-3.95-.77-1.65-.89-3.15-.35-4.35"/>`, 'WhatsApp', `https://wa.me/${String(ph).replace(/[^0-9]/g, '')}`));
   }
-  if(item.website){actions.appendChild(actionBtn('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>','Website',item.website))}
-  if(item.profile_url){actions.appendChild(actionBtn('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>','Maps',item.profile_url))}
+  if (item.website) actions.appendChild(actionBtn(`<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>`, 'Website', item.website));
+  if (item.profile_url) actions.appendChild(actionBtn(`<path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>`, 'Maps', item.profile_url));
 
   card.appendChild(left);
   card.appendChild(actions);
   return card;
 }
 
-function renderPagination(){
-  if(!totalPages||totalPages<=1){paginationEl.innerHTML='';return}
-  const prevDisabled=currentPage<=1;
-  const nextDisabled=currentPage>=totalPages;
-  paginationEl.innerHTML=`<button id="page-prev" ${prevDisabled?'disabled':''}>Prev</button><span>Page ${currentPage} of ${totalPages}</span><button id="page-next" ${nextDisabled?'disabled':''}>Next</button>`;
-  const prevBtn=document.getElementById('page-prev');
-  const nextBtn=document.getElementById('page-next');
-  if(prevBtn&&!prevDisabled)prevBtn.addEventListener('click',()=>triggerSearchFromUi(currentPage-1,true));
-  if(nextBtn&&!nextDisabled)nextBtn.addEventListener('click',()=>triggerSearchFromUi(currentPage+1,true));
+function renderPagination() {
+  if (!totalPages || totalPages <= 1) { paginationEl.innerHTML = ''; return; }
+  paginationEl.innerHTML = `
+    <button class="page-btn" id="page-prev" ${currentPage <= 1 ? 'disabled' : ''}>← Prev</button>
+    <span>Page ${currentPage} of ${totalPages}</span>
+    <button class="page-btn" id="page-next" ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>`;
+  if (currentPage > 1) $('page-prev').addEventListener('click', () => triggerSearch(currentPage - 1, true));
+  if (currentPage < totalPages) $('page-next').addEventListener('click', () => triggerSearch(currentPage + 1, true));
 }
 
-function setResultsMeta(total,page,perPage){
-  const shown=lastResults.length;
-  const start=total?((page-1)*perPage+1):0;
-  const end=total?Math.min(total,page*perPage):0;
-  resultsMetaEl.textContent=total?`${start}–${end} of ${total}`:`${shown} results`;
-}
-
-async function doSearchWithState(state){
+/* ── Main search ───────────────────────────────── */
+async function doSearch(state) {
   loading(true);
-  resultsEl.setAttribute('aria-busy','true');
-  resultsEl.innerHTML='';
-  emptyEl.style.display='none';
-  paginationEl.innerHTML='';
-  resultsMetaEl.textContent='';
+  resultsEl.setAttribute('aria-busy', 'true');
+  resultsEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+  paginationEl.innerHTML = '';
+  resultsMetaEl.textContent = '';
   resultsEl.appendChild(renderSkeleton(8));
-  resultsSummary.style.display='none';
-  exportChip.style.display='none';
-  setStatus('search',`${(state.category||'businesses')} in ${(state.location||'your location')}`);
+  resultsSummary.style.display = 'none';
+  exportChip.style.display = 'none';
+  setStatus(`Searching ${state.category || 'businesses'} in ${state.location || 'your location'}…`);
 
-  try{
-    writeUrlState(state,true);
-    const params=new URLSearchParams();
-    if(state.category)params.set('category',state.category);
-    if(state.location)params.set('location',state.location);
-    if(state.min_rating)params.set('min_rating',state.min_rating);
-    if(state.has_phone==='1')params.set('has_phone','1');
-    if(state.has_website==='1')params.set('has_website','1');
-    if((state.address_contains||'').trim())params.set('address_contains',state.address_contains.trim());
-    if((state.sort||'').trim())params.set('sort',state.sort.trim());
-    if(state.page && state.page>1)params.set('page',String(state.page));
+  try {
+    writeUrl(state, true);
+    const params = new URLSearchParams();
+    if (state.category)              params.set('category', state.category);
+    if (state.location)              params.set('location', state.location);
+    if (state.min_rating)            params.set('min_rating', state.min_rating);
+    if (state.has_phone === '1')     params.set('has_phone', '1');
+    if (state.has_website === '1')   params.set('has_website', '1');
+    if ((state.address_contains || '').trim()) params.set('address_contains', state.address_contains.trim());
+    if ((state.sort || '').trim())   params.set('sort', state.sort.trim());
+    if (state.page > 1)              params.set('page', String(state.page));
 
-    const t1=setTimeout(()=>setStatus('clean','Normalizing phones and websites'),800);
-    const r=await fetch(`/search?${params.toString()}`);
-    clearTimeout(t1);
+    const r = await fetch(`/search?${params}`);
+    let data = {};
+    try { data = await r.json(); } catch {}
 
-    let data={};
-    try{data=await r.json()}catch{data={}}
-
-    if(!r.ok){
-      const err=data.error||'request_failed';
-      resultsEl.innerHTML='';
-      if(err==='backend_not_ready'){
-        emptyEl.style.display='block';
-        emptyEl.querySelector('strong').textContent='Backend is waking up.';
-        setStatus('error','Backend is waking up. Try again in a few seconds.');
-      }else{
-        emptyEl.style.display='block';
-        emptyEl.querySelector('strong').textContent='Search failed.';
-        setStatus('error','Search failed. Try again.');
-      }
+    if (!r.ok) {
+      resultsEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      setStatus(data.error === 'backend_not_ready' ? 'Backend waking up — try again in a few seconds.' : 'Search failed. Try again.');
       filtersEl.classList.add('hidden');
       return;
     }
 
-    const rows=data.items||[];
-    lastResults=rows;
-    currentPage=data.page||state.page||1;
-    const perPage=data.per_page||rows.length||100;
-    lastTotal=data.total||rows.length;
-    totalPages=perPage?Math.max(1,Math.ceil(lastTotal/perPage)):1;
+    const rows = data.items || [];
+    lastResults = rows;
+    currentPage = data.page || state.page || 1;
+    const perPage = data.per_page || rows.length || 100;
+    lastTotal = data.total || rows.length;
+    totalPages = perPage ? Math.max(1, Math.ceil(lastTotal / perPage)) : 1;
 
-    resultsEl.innerHTML='';
+    resultsEl.innerHTML = '';
 
-    if(!rows.length){
-      emptyEl.style.display='block';
-      setStatus('done','No results');
-      resultsMetaEl.textContent='0 results';
+    if (!rows.length) {
+      emptyEl.style.display = 'block';
+      setStatus('No results');
+      resultsMetaEl.textContent = '0 results';
       filtersEl.classList.add('hidden');
       return;
     }
 
-    rows.forEach(x=>resultsEl.appendChild(renderResult(x)));
+    rows.forEach(x => resultsEl.appendChild(renderResult(x)));
     renderPagination();
     filtersEl.classList.remove('hidden');
-    setResultsMeta(lastTotal,currentPage,perPage);
 
-    resultsSummary.style.display='inline-flex';
-    resultsSummaryText.textContent=String(lastTotal||rows.length);
-    exportChip.style.display='inline-flex';
-    setStatus('done','Done');
+    const start = (currentPage - 1) * perPage + 1;
+    const end   = Math.min(lastTotal, currentPage * perPage);
+    resultsMetaEl.textContent = `Showing ${start}–${end} of ${lastTotal} results`;
 
-  }catch{
-    resultsEl.innerHTML='';
-    emptyEl.style.display='block';
-    emptyEl.querySelector('strong').textContent='Something went wrong.';
-    setStatus('error','Something went wrong. Try again.');
-    paginationEl.innerHTML='';
-  }finally{
-    resultsEl.setAttribute('aria-busy','false');
+    resultsSummary.style.display = 'inline-flex';
+    resultsSummaryText.textContent = String(lastTotal);
+    exportChip.style.display = 'inline-flex';
+    setStatus('Done');
+
+  } catch {
+    resultsEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    setStatus('Something went wrong. Try again.');
+    paginationEl.innerHTML = '';
+  } finally {
+    resultsEl.setAttribute('aria-busy', 'false');
     loading(false);
   }
 }
 
-function triggerSearchFromUi(page,scrollToSearch){
-  const st=collectStateFromUi(page);
-  doSearchWithState(st);
-  if(scrollToSearch){document.getElementById('search').scrollIntoView({behavior:'smooth',block:'start'})}
+function triggerSearch(page, scroll) {
+  doSearch(collectState(page));
+  if (scroll) document.getElementById('search').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-formEl.addEventListener('submit',e=>{e.preventDefault();triggerSearchFromUi(1,true)});
+$('search-form').addEventListener('submit', e => { e.preventDefault(); triggerSearch(1, true); });
 
-const triggerFilteredSearch=debounce(()=>triggerSearchFromUi(1,false),250);
-if(ratingFilterEl)ratingFilterEl.addEventListener('change',triggerFilteredSearch);
-if(hasPhoneEl)hasPhoneEl.addEventListener('change',triggerFilteredSearch);
-if(hasWebsiteEl)hasWebsiteEl.addEventListener('change',triggerFilteredSearch);
-if(sortEl)sortEl.addEventListener('change',triggerFilteredSearch);
-if(addrEl)addrEl.addEventListener('input',triggerFilteredSearch);
-if(clearFiltersBtn)clearFiltersBtn.addEventListener('click',()=>{
-  setIfExists(ratingFilterEl,'');
-  if(hasPhoneEl)hasPhoneEl.checked=false;
-  if(hasWebsiteEl)hasWebsiteEl.checked=false;
-  setIfExists(addrEl,'');
-  setIfExists(sortEl,'');
-  triggerSearchFromUi(1,false);
+const triggerFiltered = debounce(() => triggerSearch(1, false), 250);
+ratingFilterEl?.addEventListener('change', triggerFiltered);
+hasPhoneEl?.addEventListener('change', triggerFiltered);
+hasWebsiteEl?.addEventListener('change', triggerFiltered);
+sortEl?.addEventListener('change', triggerFiltered);
+addrEl?.addEventListener('input', triggerFiltered);
+$('btn-clear-filters')?.addEventListener('click', () => {
+  if (ratingFilterEl) ratingFilterEl.value = '';
+  if (hasPhoneEl)     hasPhoneEl.checked   = false;
+  if (hasWebsiteEl)   hasWebsiteEl.checked = false;
+  if (addrEl)         addrEl.value         = '';
+  if (sortEl)         sortEl.value         = '';
+  triggerSearch(1, false);
 });
 
-document.querySelectorAll('[data-example]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const v=btn.dataset.example||'';
-    const [c,l]=v.split('|');
-    catInput.value=c||'';
-    locInput.value=l||'';
-    triggerSearchFromUi(1,true);
+document.querySelectorAll('[data-example]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const [c, l] = (btn.dataset.example || '').split('|');
+    catInput.value = c || '';
+    locInput.value = l || '';
+    triggerSearch(1, true);
   });
 });
 
-const modal=document.getElementById('modal');
-const btnPreview=document.getElementById('btn-preview');
-const btnClose=document.getElementById('btn-close');
-const btnDownload=document.getElementById('btn-download');
-const previewTable=document.getElementById('preview');
-const exportDedupe=document.getElementById('export-dedupe');
-const btnRefreshExport=document.getElementById('btn-refresh-export');
+/* ── Export modal ──────────────────────────────── */
+const modal    = $('modal');
+const btnClose = $('btn-close');
+const btnDownload = $('btn-download');
+const exportDedupe = $('export-dedupe');
+const previewTable = $('preview');
+let lastModalFocus = null;
 
-let lastFocusedBeforeModal=null;
-
-function dedupeRows(rows,mode){
-  if(!mode)return rows;
-  const seen=new Set();
-  const out=[];
-  for(const r of rows){
-    let key='';
-    if(mode==='phone') key=String(r.phone_e164||r.phone||'').replace(/\s+/g,'').toLowerCase();
-    if(mode==='website') key=String(r.website||'').trim().toLowerCase();
-    if(mode==='name_address') key=`${String(r.correct_name||r.name||'').trim().toLowerCase()}|${String(r.address_line||r.address||'').trim().toLowerCase()}`;
-    if(!key) key=`__empty__${out.length}`;
-    if(seen.has(key)) continue;
-    seen.add(key);
-    out.push(r);
+function dedupeRows(rows, mode) {
+  if (!mode) return rows;
+  const seen = new Set(), out = [];
+  for (const r of rows) {
+    let key = '';
+    if (mode === 'phone')        key = String(r.phone_e164 || r.phone || '').toLowerCase().replace(/\s/g, '');
+    if (mode === 'website')      key = String(r.website || '').toLowerCase().trim();
+    if (mode === 'name_address') key = `${(r.correct_name || r.name || '').trim().toLowerCase()}|${(r.address_line || r.address || '').trim().toLowerCase()}`;
+    if (!key) key = `__${out.length}`;
+    if (seen.has(key)) continue;
+    seen.add(key); out.push(r);
   }
   return out;
 }
 
-function getSelectedCols(){
-  const cols=[...modal.querySelectorAll('input.col')].filter(x=>x.checked).map(x=>x.value);
-  return cols.length?cols:["place name","category","location","address","phone","maps link","website"];
+function getSelectedCols() {
+  const cols = [...modal.querySelectorAll('input.col')].filter(x => x.checked).map(x => x.value);
+  return cols.length ? cols : ['place name','category','location','address','phone','maps link','website'];
 }
 
-function rowToValues(r,cols){
-  const mapping={
-    "place name": r.correct_name||r.name||"",
-    "category": r.category||"",
-    "location": r.query_location||"",
-    "address": r.address_line||r.address||"",
-    "phone": r.phone_e164||r.phone||"",
-    "maps link": r.profile_url||"",
-    "website": r.website||""
+function rowToValues(r, cols) {
+  const map = {
+    'place name': r.correct_name || r.name || '',
+    'category':   r.category || '',
+    'location':   r.query_location || '',
+    'address':    r.address_line || r.address || '',
+    'phone':      r.phone_e164 || r.phone || '',
+    'maps link':  r.profile_url || '',
+    'website':    r.website || '',
   };
-  return cols.map(c=>mapping[c]??"");
+  return cols.map(c => map[c] ?? '');
 }
 
-function renderExport(){
-  if(!lastResults.length){showToast('Run a search first');return}
-  const cols=getSelectedCols();
-  const rows=dedupeRows(lastResults,exportDedupe.value||'');
+function renderExport() {
+  if (!lastResults.length) { showToast('Run a search first'); return; }
+  const cols = getSelectedCols();
+  const rows = dedupeRows(lastResults, exportDedupe.value || '');
 
-  previewTable.innerHTML='';
-  previewTable.insertAdjacentHTML('beforeend','<thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead>');
-  const body=document.createElement('tbody');
-  const maxPreview=Math.min(rows.length,80);
-  for(let i=0;i<maxPreview;i++){
-    const values=rowToValues(rows[i],cols);
-    const tr=document.createElement('tr');
-    tr.innerHTML=values.map(v=>`<td>${String(v??'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</td>`).join('');
+  previewTable.innerHTML = '';
+  previewTable.insertAdjacentHTML('beforeend', '<thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead>');
+  const body = document.createElement('tbody');
+  rows.slice(0, 80).forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = rowToValues(r, cols).map(v => `<td>${String(v ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('');
     body.appendChild(tr);
-  }
+  });
   previewTable.appendChild(body);
 
-  const csv=[cols.join(','),...rows.map(r=>rowToValues(r,cols).map(v=>JSON.stringify(v??'')).join(','))].join('\n');
-  const blob=new Blob([csv],{type:'text/csv'});
-  btnDownload.href=URL.createObjectURL(blob);
-  btnDownload.download='leads.csv';
+  const csv = [cols.join(','), ...rows.map(r => rowToValues(r, cols).map(v => JSON.stringify(v ?? '')).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  btnDownload.href = URL.createObjectURL(blob);
+  btnDownload.download = 'leads.csv';
 }
 
-function openModal(){
-  if(!lastResults.length){showToast('Run a search first');return}
-  lastFocusedBeforeModal=document.activeElement;
+function openModal() {
+  if (!lastResults.length) { showToast('Run a search first'); return; }
+  lastModalFocus = document.activeElement;
   renderExport();
   modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
+  modal.setAttribute('aria-hidden', 'false');
   btnClose.focus();
-  document.body.style.overflow='hidden';
+  document.body.style.overflow = 'hidden';
 }
-
-function closeModal(){
+function closeModal() {
   modal.classList.remove('show');
-  modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
-  if(lastFocusedBeforeModal&&lastFocusedBeforeModal.focus) lastFocusedBeforeModal.focus();
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  lastModalFocus?.focus();
 }
 
-btnPreview.addEventListener('click',openModal);
-btnClose.addEventListener('click',closeModal);
-btnRefreshExport.addEventListener('click',renderExport);
-exportDedupe.addEventListener('change',renderExport);
-modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('show'))closeModal()});
+$('btn-preview').addEventListener('click', openModal);
+btnClose.addEventListener('click', closeModal);
+$('btn-refresh-export').addEventListener('click', renderExport);
+exportDedupe.addEventListener('change', renderExport);
+modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(); });
 
-const focusablesSelector='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
-modal.addEventListener('keydown',e=>{
-  if(e.key!=='Tab')return;
-  const focusables=[...modal.querySelectorAll(focusablesSelector)].filter(el=>el.offsetParent!==null);
-  if(!focusables.length)return;
-  const first=focusables[0];
-  const last=focusables[focusables.length-1];
-  if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus()}
-  else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus()}
+/* Focus trap */
+modal.addEventListener('keydown', e => {
+  if (e.key !== 'Tab') return;
+  const sel = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  const els = [...modal.querySelectorAll(sel)].filter(el => el.offsetParent !== null);
+  if (!els.length) return;
+  if (e.shiftKey && document.activeElement === els[0])   { e.preventDefault(); els[els.length - 1].focus(); }
+  if (!e.shiftKey && document.activeElement === els[els.length - 1]) { e.preventDefault(); els[0].focus(); }
 });
 
-function maybeAutoSearchFromUrl(){
-  const st=readUrlState();
-  const hasQuery=!!(st.category||st.location||st.min_rating||st.has_phone==='1'||st.has_website==='1'||(st.address_contains||'').trim()||(st.sort||'').trim()||(st.page&&st.page>1));
+/* ── Nav links ─────────────────────────────────── */
+$('nav-link-search').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); });
+$('nav-link-faq').addEventListener('click', e => { e.preventDefault(); $('faq').scrollIntoView({ behavior:'smooth', block:'start' }); });
+$('nav-link-home').addEventListener('click', e => { e.preventDefault(); window.scrollTo({ top:0, behavior:'smooth' }); });
+$('cta-go').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); catInput.focus(); });
+$('hero-cta').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); catInput.focus(); });
+
+$('link-privacy')?.addEventListener('click', e => { e.preventDefault(); showToast('Privacy page coming soon'); });
+$('link-terms')?.addEventListener('click', e => { e.preventDefault(); showToast('Terms page coming soon'); });
+
+/* ── Auto-search from URL ───────────────────────── */
+function autoSearch() {
+  const st = readUrl();
   setUiFromState(st);
-  if(hasQuery){triggerSearchFromUi(st.page,false)}
+  const hasQ = !!(st.category || st.location || st.min_rating || st.has_phone === '1' || st.has_website === '1' || (st.address_contains || '').trim() || (st.sort || '').trim() || st.page > 1);
+  if (hasQ) triggerSearch(st.page, false);
 }
-
-window.addEventListener('popstate',()=>maybeAutoSearchFromUrl());
-maybeAutoSearchFromUrl();
-
-document.getElementById('nav-link-search').addEventListener('click',e=>{e.preventDefault();document.getElementById('search').scrollIntoView({behavior:'smooth',block:'start'})});
-document.getElementById('nav-link-faq').addEventListener('click',e=>{e.preventDefault();document.getElementById('faq').scrollIntoView({behavior:'smooth',block:'start'})});
-document.getElementById('nav-link-home').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})});
-document.getElementById('cta-go').addEventListener('click',e=>{e.preventDefault();document.getElementById('search').scrollIntoView({behavior:'smooth',block:'start'});catInput.focus()});
-
-document.getElementById('link-privacy').addEventListener('click',e=>{e.preventDefault();showToast('Add /privacy route when ready')});
-document.getElementById('link-terms').addEventListener('click',e=>{e.preventDefault();showToast('Add /terms route when ready')});
+window.addEventListener('popstate', autoSearch);
+autoSearch();
 </script>
 </body>
 </html>
