@@ -1642,7 +1642,7 @@ function initAutocomplete(inputEl, items, menuEl) {
     }
     list.slice(0, 12).forEach((it, idx) => {
       const d = document.createElement('div'); d.className = 'ac-item'; d.setAttribute('role', 'option'); d.textContent = it;
-      d.addEventListener('mousedown', e => { e.preventDefault(); inputEl.value = it; close(); triggerSearch(1, true); });
+      d.addEventListener('mousedown', e => { e.preventDefault(); inputEl.value = it; close(); });
       menuEl.appendChild(d);
     });
     menuEl.classList.add('show'); inputEl.setAttribute('aria-expanded', 'true');
