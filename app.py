@@ -343,7 +343,6 @@ def sitemap_xml():
     except Exception:
         locs = []
     if not locs:
-        # Force a fresh fetch ignoring cache
         try:
             locs = _fetch_locations()
         except Exception:
@@ -374,7 +373,11 @@ def sitemap_xml():
 {url_entries}
 </urlset>"""
 
-    return Response(body, mimetype="application/xml")
+    response = Response(body, mimetype="application/xml")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Surrogate-Control"] = "no-store"
+    return response
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
