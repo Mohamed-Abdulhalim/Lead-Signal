@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{{ page_title }}</title>
+<meta name="description" content="{{ meta_description }}">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://leadsignal-app.vercel.app/leads/{{ slug }}"/>
+<meta property="og:title" content="{{ page_title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:url" content="https://leadsignal-app.vercel.app/leads/{{ slug }}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Structured data for Google -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "{{ page_title }}",
+  "description": "{{ meta_description }}",
+  "url": "https://leadsignal-app.vercel.app/leads/{{ slug }}",
+  "provider": {
+    "@type": "Organization",
+    "name": "LeadSignal",
+    "url": "https://leadsignal-app.vercel.app"
+  }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --red:     #C1292E;
+  --red-dark:#9b1c20;
+  --yellow:  #F1D302;
+  --black:   #0a0a0a;
+  --white:   #FAFAF7;
+  --off:     #F2EDE4;
+  --muted:   #6b6b6b;
+  --border:  #E0DAD0;
+  --font-d:  'Barlow Condensed', sans-serif;
+  --font-b:  'DM Sans', sans-serif;
+  --r:       14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--white); color: var(--black); font-family: var(--font-b); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+
+.container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Nav ── */
+nav {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--black);
+  border-bottom: 3px solid var(--yellow);
+}
+.nav-inner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo-box {
+  width: 32px; height: 32px; background: var(--yellow); border-radius: 6px;
+  display: grid; place-items: center;
+}
+.logo-box svg { width: 17px; height: 17px; color: var(--black); }
+.brand-name { font-family: var(--font-d); font-size: 22px; font-weight: 900; color: var(--white); text-transform: uppercase; letter-spacing: .4px; }
+.btn-nav {
+  background: var(--yellow); color: var(--black); font-weight: 700; font-size: 14px;
+  padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer;
+  transition: background .15s; display: inline-flex; align-items: center; gap: 7px;
+  text-decoration: none;
+}
+.btn-nav:hover { background: #dfc000; }
+
+/* ── Hero ── */
+.hero {
+  background: var(--black);
+  padding: 64px 0 56px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-48deg, transparent, transparent 36px, rgba(241,211,2,.03) 36px, rgba(241,211,2,.03) 38px);
+}
+.hero-inner { position: relative; z-index: 2; }
+.breadcrumb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: rgba(255,255,255,.35); font-weight: 600;
+  margin-bottom: 20px;
+}
+.breadcrumb a { color: rgba(255,255,255,.35); transition: color .15s; }
+.breadcrumb a:hover { color: var(--yellow); }
+.breadcrumb span { color: rgba(255,255,255,.2); }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(241,211,2,.1); border: 1px solid rgba(241,211,2,.2);
+  color: var(--yellow); font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 6px 13px; border-radius: 999px; margin-bottom: 20px;
+}
+.hero-eyebrow i { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero h1 {
+  font-family: var(--font-d);
+  font-size: clamp(40px, 5.5vw, 72px);
+  font-weight: 900; line-height: .95;
+  text-transform: uppercase; color: var(--white);
+  letter-spacing: -1px; margin-bottom: 20px;
+}
+.hero h1 span { color: var(--yellow); }
+
+.hero-sub {
+  font-size: 17px; color: rgba(255,255,255,.45);
+  max-width: 560px; line-height: 1.7; margin-bottom: 32px;
+}
+.hero-sub strong { color: rgba(255,255,255,.75); }
+
+.hero-stats {
+  display: flex; gap: 32px; flex-wrap: wrap;
+  padding-top: 24px; border-top: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 36px;
+}
+.h-stat-n {
+  font-family: var(--font-d); font-size: 32px; font-weight: 900;
+  color: var(--yellow); line-height: 1;
+}
+.h-stat-l { font-size: 12px; color: rgba(255,255,255,.35); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+
+.btn-cta {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--red); color: #fff;
+  font-size: 16px; font-weight: 700;
+  padding: 15px 30px; border-radius: var(--r); border: none;
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, transform .12s, box-shadow .15s;
+  box-shadow: 0 6px 24px rgba(193,41,46,.38);
+}
+.btn-cta:hover { background: var(--red-dark); transform: translateY(-2px); }
+
+/* ── Sample results ── */
+.results-section {
+  padding: 64px 0;
+  background: var(--white);
+}
+.section-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 28px;
+}
+.section-eyebrow {
+  font-family: var(--font-d); font-size: 12px; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px;
+}
+.section-title {
+  font-family: var(--font-d); font-size: clamp(28px, 4vw, 42px);
+  font-weight: 900; text-transform: uppercase; line-height: 1.02;
+}
+.section-title span { color: var(--red); }
+.see-all {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 14px; font-weight: 700; color: var(--red);
+  border: 1.5px solid var(--red); border-radius: 8px;
+  padding: 9px 16px; transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.see-all:hover { background: var(--red); color: #fff; }
+
+.results-grid { display: grid; gap: 10px; }
+
+.result-card {
+  background: #fff; border: 1.5px solid var(--border);
+  border-left: 4px solid var(--red); border-radius: var(--r);
+  padding: 18px 20px;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 16px; align-items: center;
+  transition: box-shadow .18s, border-left-color .18s;
+}
+.result-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.1); border-left-color: var(--yellow); }
+.r-name { font-weight: 800; font-size: 16px; color: var(--black); margin-bottom: 8px; }
+.r-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.r-tag {
+  font-size: 12px; font-weight: 600; border-radius: 999px;
+  padding: 3px 10px; background: var(--off); border: 1px solid var(--border); color: var(--muted);
+}
+.r-tag.green { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+.r-tag.blue  { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+.r-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+.r-action {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1.5px solid var(--border); background: var(--off);
+  border-radius: 8px; padding: 8px 12px;
+  font-size: 13px; font-weight: 700; color: var(--black);
+  text-decoration: none; transition: border-color .13s, background .13s, color .13s;
+}
+.r-action:hover { border-color: var(--red); background: #fff5f5; color: var(--red); }
+.r-action svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* blurred teaser rows */
+.result-card.blurred {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+  opacity: .6;
+}
+
+/* ── Unlock CTA ── */
+.unlock-band {
+  background: var(--off); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 36px 32px;
+  text-align: center; margin-top: 16px;
+  position: relative;
+}
+.unlock-band h3 {
+  font-family: var(--font-d); font-size: 32px; font-weight: 900;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.unlock-band h3 span { color: var(--red); }
+.unlock-band p { font-size: 15px; color: var(--muted); margin-bottom: 24px; max-width: 440px; margin-left: auto; margin-right: auto; }
+
+/* ── Related searches ── */
+.related-section { padding: 56px 0; background: var(--off); }
+.related-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px; margin-top: 28px;
+}
+.related-card {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 16px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; text-decoration: none;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.related-card:hover { border-color: var(--red); box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
+.related-card-text { font-size: 14px; font-weight: 700; color: var(--black); line-height: 1.3; }
+.related-card-arrow { color: var(--red); flex-shrink: 0; }
+
+/* ── About section ── */
+.about-section { padding: 64px 0; background: var(--black); }
+.about-inner {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;
+}
+.about-eyebrow {
+  font-family: var(--font-d); font-size: 12px; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--yellow); margin-bottom: 12px;
+}
+.about-h {
+  font-family: var(--font-d); font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 900; text-transform: uppercase; color: #fff;
+  line-height: 1.02; margin-bottom: 16px;
+}
+.about-p { font-size: 15px; color: rgba(255,255,255,.45); line-height: 1.75; margin-bottom: 14px; }
+.about-features { display: grid; gap: 10px; margin-top: 4px; }
+.about-feat {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 600; color: rgba(255,255,255,.55);
+}
+.about-feat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; }
+
+/* ── Footer ── */
+footer {
+  background: var(--black); border-top: 3px solid var(--yellow);
+  padding: 40px 0 28px;
+}
+.footer-inner {
+  max-width: 1160px; margin: 0 auto; padding: 0 24px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;
+}
+.footer-brand { font-family: var(--font-d); font-size: 20px; font-weight: 900; color: #fff; text-transform: uppercase; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
+.footer-links a { color: rgba(255,255,255,.35); font-size: 13px; font-weight: 600; transition: color .15s; }
+.footer-links a:hover { color: var(--yellow); }
+.footer-copy {
+  max-width: 1160px; margin: 20px auto 0; padding: 16px 24px 0;
+  border-top: 1px solid rgba(255,255,255,.07);
+  font-size: 12px; color: rgba(255,255,255,.18);
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .nav-inner { padding: 0 16px; }
+  .brand-name { font-size: 18px; }
+  .hero { padding: 40px 0 40px; }
+  .container { padding: 0 16px; }
+  .result-card { grid-template-columns: 1fr; }
+  .r-actions { justify-content: flex-start; }
+  .about-inner { grid-template-columns: 1fr; gap: 36px; }
+  .hero-stats { gap: 20px; }
+  .section-header { flex-direction: column; align-items: flex-start; }
+  .unlock-band { padding: 28px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <span class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </span>
+      <span class="brand-name">LeadSignal</span>
+    </a>
+    <a class="btn-nav" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      See all {{ total }} results
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner container">
+    <div class="breadcrumb">
+      <a href="/">Home</a>
+      <span>›</span>
+      <a href="/leads">Leads</a>
+      <span>›</span>
+      <span style="color:rgba(255,255,255,.6)">{{ category_title }} in {{ location_raw }}</span>
+    </div>
+    <div class="hero-eyebrow"><i></i> Free business leads</div>
+    <h1>{{ category_title }}<br><span>in {{ location_display }}</span></h1>
+    <p class="hero-sub">
+      <strong>{{ total }} businesses</strong> found in {{ location_raw }} — with phone numbers, websites, addresses and ratings.
+      Export the full list to CSV instantly, no signup required.
+    </p>
+    <div class="hero-stats">
+      <div>
+        <div class="h-stat-n">{{ total }}</div>
+        <div class="h-stat-l">Businesses found</div>
+      </div>
+      <div>
+        <div class="h-stat-n">{{ phone_count }}</div>
+        <div class="h-stat-l">With phone numbers</div>
+      </div>
+      <div>
+        <div class="h-stat-n">{{ website_count }}</div>
+        <div class="h-stat-l">With websites</div>
+      </div>
+      <div>
+        <div class="h-stat-n">Free</div>
+        <div class="h-stat-l">No signup needed</div>
+      </div>
+    </div>
+    <a class="btn-cta" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Export all {{ total }} to CSV — free
+    </a>
+  </div>
+</section>
+
+<!-- SAMPLE RESULTS -->
+<section class="results-section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Sample data</div>
+        <h2 class="section-title">{{ category_title }}<br><span>in {{ location_display }}</span></h2>
+      </div>
+      <a class="see-all" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
+        See all {{ total }} results
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="results-grid">
+      {% for r in sample_results %}
+      <div class="result-card{% if loop.index > 5 %} blurred{% endif %}">
+        <div>
+          <div class="r-name">{{ r.correct_name or r.name }}</div>
+          <div class="r-tags">
+            {% if r.category %}<span class="r-tag">{{ r.category }}</span>{% endif %}
+            {% if r.rating %}<span class="r-tag green">★ {{ r.rating }}{% if r.reviews_count %} · {{ r.reviews_count }} reviews{% endif %}</span>{% endif %}
+            {% if r.phone %}<span class="r-tag blue">{{ r.phone }}</span>{% endif %}
+            {% if r.address_line %}<span class="r-tag">{{ r.address_line }}</span>{% endif %}
+          </div>
+        </div>
+        {% if not loop.index > 5 %}
+        <div class="r-actions">
+          {% if r.phone %}
+          <a class="r-action" href="tel:{{ r.phone }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6z"/></svg>
+            Call
+          </a>
+          {% endif %}
+          {% if r.website %}
+          <a class="r-action" href="{{ r.website }}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Website
+          </a>
+          {% endif %}
+          {% if r.profile_url %}
+          <a class="r-action" href="{{ r.profile_url }}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Maps
+          </a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Unlock CTA -->
+    <div class="unlock-band">
+      <h3>See all <span>{{ total }} {{ category_title }}</span><br>in {{ location_raw }}</h3>
+      <p>The full list includes phone numbers, websites, addresses, ratings and Google Maps links — export to CSV in one click, completely free.</p>
+      <a class="btn-cta" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Unlock full list — it's free
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- RELATED SEARCHES -->
+{% if related %}
+<section class="related-section">
+  <div class="container">
+    <div class="section-eyebrow">Related searches</div>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,36px);margin-bottom:4px">More leads nearby</h2>
+    <div class="related-grid">
+      {% for rel in related %}
+      <a class="related-card" href="/leads/{{ rel.slug }}">
+        <div class="related-card-text">{{ rel.label }}</div>
+        <svg class="related-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ABOUT -->
+<section class="about-section">
+  <div class="container">
+    <div class="about-inner">
+      <div>
+        <div class="about-eyebrow">About LeadSignal</div>
+        <h2 class="about-h">Free Google Maps<br>Lead Extractor</h2>
+        <p class="about-p">LeadSignal is a free tool that extracts structured business contact data from Google Maps by category and location. Search any business type in any city worldwide and get a clean, exportable list instantly.</p>
+        <p class="about-p">No signup. No credit card. No limits on how many results you export.</p>
+        <a class="btn-cta" href="/app" style="margin-top:8px;display:inline-flex">
+          Try LeadSignal free
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="about-features">
+        <div class="about-feat"><span class="about-feat-dot"></span>Phone numbers — cleaned and normalized</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Websites and social links</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Full addresses and Google Maps links</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Ratings and review counts</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Filter by rating, phone, website</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Deduplicate before exporting</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>One-click CSV export — no row limits</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Works for any city worldwide</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">LeadSignal</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/app">Tool</a>
+      <a href="/#faq">FAQ</a>
+      <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+  <div class="footer-copy">
+    © <script>document.write(new Date().getFullYear())</script> LeadSignal · Free Google Maps lead extractor · Not affiliated with Google.
+  </div>
+</footer>
+
+</body>
+</html>
