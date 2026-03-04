@@ -1671,11 +1671,21 @@ function wireAC() {
   initAutocomplete(catInput, ['All categories', ...CATS.filter(Boolean)], catMenu);
   initAutocomplete(locInput, LOCS.filter(Boolean), locMenu);
 }
-fetch('/meta').then(r => r.json()).then(d => {
-  CATS = Array.isArray(d.categories) ? d.categories : [];
-  LOCS = Array.isArray(d.locations)  ? d.locations  : [];
-  wireAC();
-}).catch(() => wireAC());
+function fetchMeta(attempt = 1) {
+  fetch('/meta').then(r => r.json()).then(d => {
+    CATS = Array.isArray(d.categories) ? d.categories : [];
+    LOCS = Array.isArray(d.locations)  ? d.locations  : [];
+    if (!LOCS.length && attempt < 3) {
+      setTimeout(() => fetchMeta(attempt + 1), 3000);
+    } else {
+      wireAC();
+    }
+  }).catch(() => {
+    if (attempt < 3) setTimeout(() => fetchMeta(attempt + 1), 3000);
+    else wireAC();
+  });
+}
+fetchMeta();
 
 /* ── Render helpers ────────────────────────────── */
 function renderSkeleton(n = 6) {
