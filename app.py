@@ -3,6 +3,7 @@ from supabase import create_client
 import os
 import time
 import threading
+import re
 
 app = Flask(__name__)
 
@@ -31,13 +32,7 @@ def _get_sb():
         raise RuntimeError("Missing SUPABASE_URL or SUPABASE_ANON_KEY")
     _sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
     return _sb
-def _warm_cache():
-    try:
-        unique_locations()
-        print("Cache warmed: locations loaded")
-    except Exception as e:
-        print(f"Cache warm failed: {e}")
-threading.Thread(target=_warm_cache, daemon=True).start()
+
 def _retry(fn, tries=2, base_sleep=0.25):
     last = None
     for i in range(max(1, tries)):
@@ -78,6 +73,38 @@ def unique_locations(ttl_seconds=900):
     bucket["ts"] = now
     return values
 
+def _slugify(text):
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_]+', '-', text)
+    text = re.sub(r'-+', '-', text)
+    return text.strip('-')
+
+def _make_slug(category, location):
+    return f"{_slugify(category)}-{_slugify(location)}"
+
+def _parse_slug(slug):
+    cats = unique_categories()
+    locs = unique_locations()
+    for cat in sorted(cats, key=len, reverse=True):
+        cat_slug = _slugify(cat)
+        if slug.startswith(cat_slug + '-'):
+            loc_slug = slug[len(cat_slug) + 1:]
+            for loc in locs:
+                if _slugify(loc) == loc_slug:
+                    return cat, loc
+    return None, None
+
+def _warm_cache():
+    try:
+        unique_locations()
+        print("Cache warmed: locations loaded")
+    except Exception as e:
+        print(f"Cache warm failed: {e}")
+
+# Everything it needs is defined above — safe to call now
+threading.Thread(target=_warm_cache, daemon=True).start()
+
 @app.get("/health")
 def health():
     return "ok", 200
@@ -86,9 +113,9 @@ def health():
 def landing():
     if request.method == "HEAD":
         return "", 200
-    return render_template("index.html")  # new landing page
-    
-@app.route("/app", methods=["GET", "HEAD"])  
+    return render_template("index.html")
+
+@app.route("/app", methods=["GET", "HEAD"])
 def tool():
     if request.method == "HEAD":
         return "", 200
@@ -97,10 +124,11 @@ def tool():
     except Exception:
         locs = []
     return render_template(
-        "app.html",  # renamed from index.html
+        "app.html",
         categories=unique_categories(),
         locations=locs
     )
+
 @app.post("/request")
 def submit_request():
     data = request.get_json()
@@ -116,7 +144,7 @@ def submit_request():
         "email":    email
     }).execute()
     return jsonify({"ok": True})
-    
+
 @app.get("/meta")
 def meta():
     try:
@@ -124,6 +152,93 @@ def meta():
     except Exception:
         locs = []
     return jsonify({"categories": unique_categories(), "locations": locs})
+
+@app.get("/leads")
+def leads_index():
+    cats = unique_categories()
+    locs = unique_locations()
+    combos = []
+    for cat in cats:
+        for loc in locs:
+            combos.append({
+                "slug": _make_slug(cat, loc),
+                "label": f"{cat.title()} in {loc}"
+            })
+    return render_template("leads_index.html", combos=combos)
+
+@app.get("/leads/<slug>")
+def leads_page(slug):
+    try:
+        category, location = _parse_slug(slug)
+    except Exception:
+        category, location = None, None
+
+    if not category or not location:
+        return render_template("404.html"), 404
+
+    sb = _get_sb()
+
+    try:
+        res = (
+            sb.table(LEADS_TABLE)
+            .select("name,correct_name,category,phone,website,address_line,rating,reviews_count,profile_url")
+            .eq("category", category)
+            .ilike("query_location", f"{location}%")
+            .order("rating", desc=True)
+            .limit(10)
+            .execute()
+        )
+        sample_results = res.data or []
+    except Exception:
+        sample_results = []
+
+    try:
+        count_res = (
+            sb.table(LEADS_TABLE)
+            .select("id", count="exact")
+            .eq("category", category)
+            .ilike("query_location", f"{location}%")
+            .execute()
+        )
+        total = count_res.count or len(sample_results)
+    except Exception:
+        total = len(sample_results)
+
+    phone_count   = sum(1 for r in sample_results if r.get("phone"))
+    website_count = sum(1 for r in sample_results if r.get("website"))
+
+    locs = unique_locations()
+    related = []
+    for loc in locs:
+        if loc == location:
+            continue
+        related.append({"slug": _make_slug(category, loc), "label": f"{category.title()} in {loc}"})
+        if len(related) >= 8:
+            break
+
+    category_title   = category.title()
+    location_display = location.split(",")[0]
+    page_title       = f"{category_title} in {location} — Phone Numbers, Websites & Addresses | LeadSignal"
+    meta_description = (
+        f"Free list of {category_title.lower()} in {location} with phone numbers, websites, "
+        f"addresses and ratings. {total} businesses found. Export to CSV instantly — no signup."
+    )
+
+    return render_template(
+        "leads_page.html",
+        slug=slug,
+        category_raw=category,
+        category_title=category_title,
+        location_raw=location,
+        location_display=location_display,
+        page_title=page_title,
+        meta_description=meta_description,
+        sample_results=sample_results,
+        total=total,
+        phone_count=phone_count,
+        website_count=website_count,
+        related=related,
+    )
 
 @app.get("/search")
 def search():
@@ -151,21 +266,16 @@ def search():
 
     if category:
         q = q.eq("category", category)
-
     if location:
         loc = location.strip()
         if loc:
             q = q.ilike("query_location", f"{loc}%")
-
     if min_rating is not None:
         q = q.gte("rating", min_rating)
-
     if has_phone:
         q = q.not_.is_("phone", None).neq("phone", "")
-
     if has_website:
         q = q.not_.is_("website", None).neq("website", "")
-
     if address_contains:
         addr = address_contains.strip()
         if addr:
@@ -196,18 +306,13 @@ def search():
     items = []
     for row in rows:
         row = {k: ("" if v is None else v) for k, v in row.items()}
-
         raw = (row.get("photo_urls") or "").strip()
         photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
-
         if not row.get("main_photo_url") and photos:
             row["main_photo_url"] = photos[0]
-
         row["photos"] = photos
-
         if row.get("correct_name"):
             row["name"] = row["correct_name"]
-
         items.append(row)
 
     return jsonify({"items": items, "page": page, "per_page": per_page, "total": total})
@@ -218,31 +323,47 @@ def robots_txt():
         "User-agent: *\n"
         "Disallow:\n"
         "\n"
-        "Sitemap: https://maps-scraper-gray.vercel.app/sitemap.xml\n"
+        "Sitemap: https://leadsignal-app.vercel.app/sitemap.xml\n"
     )
     return Response(body, mimetype="text/plain")
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    body = """<?xml version="1.0" encoding="UTF-8"?>
+    cats = unique_categories()
+    try:
+        locs = unique_locations()
+    except Exception:
+        locs = []
+
+    urls = [
+        ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
+        ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
+        ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
+    ]
+
+    for cat in cats:
+        for loc in locs:
+            slug = _make_slug(cat, loc)
+            urls.append((
+                f"https://leadsignal-app.vercel.app/leads/{slug}",
+                "weekly",
+                "0.6"
+            ))
+
+    url_entries = "\n".join(
+        f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
+        for u, f, p in urls
+    )
+
+    body = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://leadsignal-app.vercel.app/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://leadsignal-app.vercel.app/app</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-</urlset>
-"""
+{url_entries}
+</urlset>"""
+
     return Response(body, mimetype="application/xml")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 
 
 
