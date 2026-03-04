@@ -334,6 +334,12 @@ def sitemap_xml():
         locs = unique_locations()
     except Exception:
         locs = []
+    if not locs:
+        # Force a fresh fetch ignoring cache
+        try:
+            locs = _fetch_locations()
+        except Exception:
+            locs = []
 
     urls = [
         ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
