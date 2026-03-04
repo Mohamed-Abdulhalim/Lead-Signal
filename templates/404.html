@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Page Not Found | LeadSignal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#C1292E; --yellow:#F1D302; --black:#0a0a0a;
+  --white:#FAFAF7; --muted:#6b6b6b;
+  --font-d:'Barlow Condensed',sans-serif;
+  --font-b:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--black);color:var(--white);font-family:var(--font-b);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+
+nav{border-bottom:3px solid var(--yellow);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo-box{width:32px;height:32px;background:var(--yellow);border-radius:6px;display:grid;place-items:center;}
+.logo-box svg{width:17px;height:17px;color:var(--black);}
+.brand-name{font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--white);text-transform:uppercase;letter-spacing:.4px;}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;position:relative;overflow:hidden;}
+main::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-48deg,transparent,transparent 36px,rgba(241,211,2,.03) 36px,rgba(241,211,2,.03) 38px);}
+.content{position:relative;z-index:2;}
+
+.big-num{font-family:var(--font-d);font-size:clamp(120px,20vw,200px);font-weight:900;line-height:1;-webkit-text-stroke:3px var(--red);color:transparent;margin-bottom:8px;}
+h1{font-family:var(--font-d);font-size:clamp(28px,4vw,48px);font-weight:900;text-transform:uppercase;color:var(--white);margin-bottom:14px;}
+h1 span{color:var(--yellow);}
+p{font-size:16px;color:rgba(255,255,255,.45);max-width:420px;line-height:1.7;margin-bottom:36px;}
+
+.actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.btn-primary{background:var(--red);color:#fff;font-size:15px;font-weight:700;padding:13px 24px;border-radius:10px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .15s;text-decoration:none;}
+.btn-primary:hover{background:#9b1c20;}
+.btn-ghost{color:rgba(255,255,255,.5);font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:color .15s;text-decoration:none;}
+.btn-ghost:hover{color:#fff;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/">
+    <span class="logo-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+    <span class="brand-name">LeadSignal</span>
+  </a>
+</nav>
+
+<main>
+  <div class="content">
+    <div class="big-num">404</div>
+    <h1>Page <span>not found</span></h1>
+    <p>This page doesn't exist or the lead list you're looking for hasn't been scraped yet. Try searching directly in the tool.</p>
+    <div class="actions">
+      <a class="btn-primary" href="/app">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Search leads
+      </a>
+      <a class="btn-ghost" href="/">
+        ← Back to home
+      </a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
