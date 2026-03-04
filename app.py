@@ -109,29 +109,6 @@ threading.Thread(target=_warm_cache, daemon=True).start()
 def health():
     return "ok", 200
 
-@app.get("/debug-sitemap")
-def debug_sitemap():
-    cats = unique_categories()
-    try:
-        locs = unique_locations()
-    except Exception:
-        locs = []
-    return jsonify({
-        "cats_count": len(cats),
-        "locs_count": len(locs),
-        "cats_sample": cats[:3],
-        "locs_sample": locs[:3],
-        "total_urls": len(cats) * len(locs) + 3
-    })
-
-@app.get("/debug-locations")
-def debug_locations():
-    try:
-        locs = unique_locations()
-        return jsonify({"count": len(locs), "sample": locs[:5], "cache_ts": _cache["locations"]["ts"]})
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
 @app.route("/", methods=["GET", "HEAD"])
 def landing():
     if request.method == "HEAD":
