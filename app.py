@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template, Response
 from supabase import create_client
 import os
 import time
+import threading
 
 app = Flask(__name__)
 
@@ -30,7 +31,13 @@ def _get_sb():
         raise RuntimeError("Missing SUPABASE_URL or SUPABASE_ANON_KEY")
     _sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
     return _sb
-
+def _warm_cache():
+    try:
+        unique_locations()
+        print("Cache warmed: locations loaded")
+    except Exception as e:
+        print(f"Cache warm failed: {e}")
+threading.Thread(target=_warm_cache, daemon=True).start()
 def _retry(fn, tries=2, base_sleep=0.25):
     last = None
     for i in range(max(1, tries)):
