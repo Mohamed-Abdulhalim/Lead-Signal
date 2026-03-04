@@ -109,6 +109,14 @@ threading.Thread(target=_warm_cache, daemon=True).start()
 def health():
     return "ok", 200
 
+@app.get("/debug-locations")
+def debug_locations():
+    try:
+        locs = unique_locations()
+        return jsonify({"count": len(locs), "sample": locs[:5], "cache_ts": _cache["locations"]["ts"]})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 @app.route("/", methods=["GET", "HEAD"])
 def landing():
     if request.method == "HEAD":
