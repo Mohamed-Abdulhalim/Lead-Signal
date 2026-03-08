@@ -360,26 +360,6 @@ def robots_txt():
     )
     return Response(body, mimetype="text/plain")
 
-@app.get("/debug-sitemap-cache")
-def debug_sitemap_cache():
-    try:
-        sb = _get_sb()
-        # Try writing a test row
-        sb.table("sitemap_cache").upsert({"id": 1, "body": "test"}).execute()
-        # Try reading it back
-        res = sb.table("sitemap_cache").select("id,generated_at").eq("id", 1).execute()
-        return jsonify({"write": "ok", "read": res.data, "error": None})
-    except Exception as e:
-        return jsonify({"write": "failed", "read": None, "error": str(e)})
-
-@app.get("/generate-sitemap")
-def generate_sitemap():
-    try:
-        locs = unique_locations()
-        _write_sitemap(locs)
-        return jsonify({"ok": True, "urls": len(locs) * len(unique_categories()) + 3})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
