@@ -372,6 +372,15 @@ def debug_sitemap_cache():
     except Exception as e:
         return jsonify({"write": "failed", "read": None, "error": str(e)})
 
+@app.get("/generate-sitemap")
+def generate_sitemap():
+    try:
+        locs = unique_locations()
+        _write_sitemap(locs)
+        return jsonify({"ok": True, "urls": len(locs) * len(unique_categories()) + 3})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
 @app.route("/sitemap.xml")
 def sitemap_xml():
     try:
