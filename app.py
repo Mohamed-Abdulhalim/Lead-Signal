@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, Response
+from flask import Flask, jsonify, request, render_template, Response, redirect
 from supabase import create_client
 import os
 import time
@@ -360,6 +360,11 @@ def robots_txt():
     )
     return Response(body, mimetype="text/plain")
 
+@app.before_request
+def redirect_old_domain():
+    if request.host == "maps-scraper-gray.vercel.app":
+        new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal-app.vercel.app")
+        return redirect(new_url, code=301)
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
