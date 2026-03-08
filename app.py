@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, render_template, Response, redirect
 from supabase import create_client
 import os
 import time
-import threading
+# import threading
 import re
 
 app = Flask(__name__)
@@ -95,48 +95,48 @@ def _parse_slug(slug):
                     return cat, loc
     return None, None
 
-def _warm_cache():
-    try:
-        locs = unique_locations()
-        print("Cache warmed: locations loaded")
-        # Pre-generate sitemap file so it serves instantly
-        _write_sitemap(locs)
-        print("Sitemap pre-generated")
-    except Exception as e:
-        print(f"Cache warm failed: {e}")
+# def _warm_cache():
+#     try:
+#         locs = unique_locations()
+#         print("Cache warmed: locations loaded")
+#         # Pre-generate sitemap file so it serves instantly
+#         _write_sitemap(locs)
+#         print("Sitemap pre-generated")
+#     except Exception as e:
+#         print(f"Cache warm failed: {e}")
 
-def _write_sitemap(locs):
-    cats = unique_categories()
-    urls = [
-        ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
-        ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
-        ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
-    ]
-    for cat in cats:
-        for loc in locs:
-            slug = _make_slug(cat, loc)
-            urls.append((
-                f"https://leadsignal-app.vercel.app/leads/{slug}",
-                "weekly", "0.6"
-            ))
-    url_entries = "\n".join(
-        f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
-        for u, f, p in urls
-    )
-    body = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{url_entries}
-</urlset>"""
-    try:
-        # Force a fresh client in the background thread
-        fresh_sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-        fresh_sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
-        print("Sitemap saved to Supabase")
-    except Exception as e:
-        print(f"Sitemap save failed: {e}")
-    return body
+# def _write_sitemap(locs):
+#     cats = unique_categories()
+#     urls = [
+#         ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
+#         ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
+#         ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
+#     ]
+#     for cat in cats:
+#         for loc in locs:
+#             slug = _make_slug(cat, loc)
+#             urls.append((
+#                 f"https://leadsignal-app.vercel.app/leads/{slug}",
+#                 "weekly", "0.6"
+#             ))
+#     url_entries = "\n".join(
+#         f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
+#         for u, f, p in urls
+#     )
+#     body = f"""<?xml version="1.0" encoding="UTF-8"?>
+# <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+# {url_entries}
+# </urlset>"""
+#     try:
+#         # Force a fresh client in the background thread
+#         fresh_sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+#         fresh_sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
+#         print("Sitemap saved to Supabase")
+#     except Exception as e:
+#         print(f"Sitemap save failed: {e}")
+#     return body
 # Everything it needs is defined above — safe to call now
-threading.Thread(target=_warm_cache, daemon=True).start()
+# threading.Thread(target=_warm_cache, daemon=True).start()
 
 @app.get("/health")
 def health():
