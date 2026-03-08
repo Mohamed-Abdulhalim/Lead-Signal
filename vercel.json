@@ -6,5 +6,8 @@
         { "key": "Cache-Control", "value": "no-store, max-age=0" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" }
   ]
 }
