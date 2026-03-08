@@ -127,8 +127,13 @@ def _write_sitemap(locs):
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {url_entries}
 </urlset>"""
-    with open("generated_sitemap.xml", "w", encoding="utf-8") as f:
-        f.write(body)
+    try:
+        sb = _get_sb()
+        sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
+        print("Sitemap saved to Supabase")
+    except Exception as e:
+        print(f"Sitemap save failed: {e}")
+    return body
 # Everything it needs is defined above — safe to call now
 threading.Thread(target=_warm_cache, daemon=True).start()
 
@@ -384,19 +389,25 @@ def _write_sitemap(locs):
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    body = _sitemap_cache.get("body")
+    try:
+        sb = _get_sb()
+        res = sb.table("sitemap_cache").select("body").eq("id", 1).execute()
+        body = res.data[0]["body"] if res.data else None
+    except Exception:
+        body = None
+
     if not body:
-        # Cache miss — generate it now synchronously
-        try:
-            locs = unique_locations()
-            body = _write_sitemap(locs)
-        except Exception:
-            body = """<?xml version="1.0" encoding="UTF-8"?>
+        body = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://leadsignal-app.vercel.app/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://leadsignal-app.vercel.app/app</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>"""
 
