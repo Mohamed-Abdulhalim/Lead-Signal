@@ -356,40 +356,23 @@ def robots_txt():
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    cats = unique_categories()
     try:
-        locs = unique_locations()
-    except Exception:
-        locs = []
-    if not locs:
-        try:
-            locs = _fetch_locations()
-        except Exception:
-            locs = []
-
-    urls = [
-        ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
-        ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
-        ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
-    ]
-
-    for cat in cats:
-        for loc in locs:
-            slug = _make_slug(cat, loc)
-            urls.append((
-                f"https://leadsignal-app.vercel.app/leads/{slug}",
-                "weekly",
-                "0.6"
-            ))
-
-    url_entries = "\n".join(
-        f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
-        for u, f, p in urls
-    )
-
-    body = f"""<?xml version="1.0" encoding="UTF-8"?>
+        with open("generated_sitemap.xml", "r", encoding="utf-8") as f:
+            body = f.read()
+    except FileNotFoundError:
+        # File not generated yet — return minimal sitemap instantly
+        body = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{url_entries}
+  <url>
+    <loc>https://leadsignal-app.vercel.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://leadsignal-app.vercel.app/app</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>"""
 
     response = Response(body, mimetype="application/xml")
