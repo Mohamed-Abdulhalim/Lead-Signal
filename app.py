@@ -366,35 +366,35 @@ def redirect_old_domain():
         new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal-app.vercel.app")
         return redirect(new_url, code=301)
 
-@app.route("/sitemap.xml")
-def sitemap_xml():
-    try:
-        sb = _get_sb()
-        res = sb.table("sitemap_cache").select("body").eq("id", 1).execute()
-        body = res.data[0]["body"] if res.data else None
-    except Exception:
-        body = None
+# @app.route("/sitemap.xml")
+# def sitemap_xml():
+#     try:
+#         sb = _get_sb()
+#         res = sb.table("sitemap_cache").select("body").eq("id", 1).execute()
+#         body = res.data[0]["body"] if res.data else None
+#     except Exception:
+#         body = None
 
-    if not body:
-        body = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://leadsignal-app.vercel.app/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://leadsignal-app.vercel.app/app</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-</urlset>"""
+#     if not body:
+#         body = """<?xml version="1.0" encoding="UTF-8"?>
+# <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+#   <url>
+#     <loc>https://leadsignal-app.vercel.app/</loc>
+#     <changefreq>weekly</changefreq>
+#     <priority>1.0</priority>
+#   </url>
+#   <url>
+#     <loc>https://leadsignal-app.vercel.app/app</loc>
+#     <changefreq>weekly</changefreq>
+#     <priority>0.8</priority>
+#   </url>
+# </urlset>"""
 
-    response = Response(body, mimetype="application/xml")
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Surrogate-Control"] = "no-store"
-    return response
+#     response = Response(body, mimetype="application/xml")
+#     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+#     response.headers["Pragma"] = "no-cache"
+#     response.headers["Surrogate-Control"] = "no-store"
+#     return response
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
