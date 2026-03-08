@@ -97,11 +97,38 @@ def _parse_slug(slug):
 
 def _warm_cache():
     try:
-        unique_locations()
+        locs = unique_locations()
         print("Cache warmed: locations loaded")
+        # Pre-generate sitemap file so it serves instantly
+        _write_sitemap(locs)
+        print("Sitemap pre-generated")
     except Exception as e:
         print(f"Cache warm failed: {e}")
 
+def _write_sitemap(locs):
+    cats = unique_categories()
+    urls = [
+        ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
+        ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
+        ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
+    ]
+    for cat in cats:
+        for loc in locs:
+            slug = _make_slug(cat, loc)
+            urls.append((
+                f"https://leadsignal-app.vercel.app/leads/{slug}",
+                "weekly", "0.6"
+            ))
+    url_entries = "\n".join(
+        f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
+        for u, f, p in urls
+    )
+    body = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{url_entries}
+</urlset>"""
+    with open("generated_sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(body)
 # Everything it needs is defined above — safe to call now
 threading.Thread(target=_warm_cache, daemon=True).start()
 
