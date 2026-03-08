@@ -128,8 +128,9 @@ def _write_sitemap(locs):
 {url_entries}
 </urlset>"""
     try:
-        sb = _get_sb()
-        sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
+        # Force a fresh client in the background thread
+        fresh_sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+        fresh_sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
         print("Sitemap saved to Supabase")
     except Exception as e:
         print(f"Sitemap save failed: {e}")
