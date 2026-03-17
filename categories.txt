@@ -1,39 +1,56 @@
-clinics
-dentists
-dermatology
-physiotherapy
-nutrition center
 restaurants
 cafes
 coffee shop
 burger
 shawarma
+hotel
+catering
+bakery
+clinics
+dentists
+dermatology
+physiotherapy
+pharmacy
+hospital
+optician
 gym
 fitness center
 crossfit
 personal trainer
+yoga studio
 real estate
 property broker
-compound developer
-barber
-salon
-spa
-nail bar
-beauty center
-pet shop
-vet clinic
-grooming
-car service
-detailing
-car rental
-auto parts
+lawyers
+accountants
+architects
+insurance broker
+travel agency
 digital marketing agency
-printing house
 advertising
 coworking
+IT company
+web design
 training center
+school
+salon
+spa
+beauty center
+nail bar
+barber
+grooming
+wedding venue
+photographer
+videographer
+florist
+pet shop
+vet clinic
+car service
+car rental
+auto parts
+detailing
+cleaning service
+security company
 nursery
 kindergarten
 jewelry shop
 furniture store
-carpentry workshop
