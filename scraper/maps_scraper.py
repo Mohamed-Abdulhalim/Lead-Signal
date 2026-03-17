@@ -582,7 +582,90 @@ def scroll_results_pane(driver, seen: Optional[Set[str]] = None, category: str =
             break
 
 
-def build_search_url(query: str, location: str, hl: str = "en", gl: str = "eg") -> str:
+COUNTRY_GL = {
+    "united kingdom": "gb",
+    "uk": "gb",
+    "united arab emirates": "ae",
+    "uae": "ae",
+    "saudi arabia": "sa",
+    "egypt": "eg",
+    "usa": "us",
+    "united states": "us",
+    "canada": "ca",
+    "australia": "au",
+    "ireland": "ie",
+    "france": "fr",
+    "germany": "de",
+    "netherlands": "nl",
+    "spain": "es",
+    "italy": "it",
+    "switzerland": "ch",
+    "austria": "at",
+    "belgium": "be",
+    "sweden": "se",
+    "norway": "no",
+    "denmark": "dk",
+    "finland": "fi",
+    "portugal": "pt",
+    "greece": "gr",
+    "poland": "pl",
+    "czech republic": "cz",
+    "hungary": "hu",
+    "romania": "ro",
+    "qatar": "qa",
+    "bahrain": "bh",
+    "kuwait": "kw",
+    "oman": "om",
+    "jordan": "jo",
+    "turkey": "tr",
+    "india": "in",
+    "pakistan": "pk",
+    "bangladesh": "bd",
+    "sri lanka": "lk",
+    "singapore": "sg",
+    "malaysia": "my",
+    "thailand": "th",
+    "indonesia": "id",
+    "philippines": "ph",
+    "vietnam": "vn",
+    "japan": "jp",
+    "south korea": "kr",
+    "china": "cn",
+    "hong kong": "hk",
+    "taiwan": "tw",
+    "brazil": "br",
+    "mexico": "mx",
+    "colombia": "co",
+    "chile": "cl",
+    "argentina": "ar",
+    "peru": "pe",
+    "south africa": "za",
+    "kenya": "ke",
+    "nigeria": "ng",
+    "ghana": "gh",
+    "morocco": "ma",
+    "tunisia": "tn",
+    "senegal": "sn",
+    "new zealand": "nz",
+    "serbia": "rs",
+    "croatia": "hr",
+    "bulgaria": "bg",
+    "estonia": "ee",
+    "latvia": "lv",
+    "lithuania": "lt",
+}
+
+
+def get_gl_for_location(location: str) -> str:
+    loc_lower = location.lower()
+    for country, gl in COUNTRY_GL.items():
+        if country in loc_lower:
+            return gl
+    return "us"
+
+
+def build_search_url(query: str, location: str, hl: str = "en") -> str:
+    gl = get_gl_for_location(location)
     q = quote_plus(f"{query} in {location}")
     return f"https://www.google.com/maps/search/{q}?hl={hl}&gl={gl}"
 
