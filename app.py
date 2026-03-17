@@ -2,14 +2,23 @@ from flask import Flask, jsonify, request, render_template, Response, redirect
 from supabase import create_client
 import os
 import time
-# import threading
 import re
+import requests
 
 app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 LEADS_TABLE = (os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps").strip()
+LEMON_SQUEEZY_API_KEY = os.environ.get("LEMON_SQUEEZY_API_KEY", "").strip()
+
+PRODUCT_LIMITS = {
+    "4b42f716-b443-41a5-8c5e-6cacb17b6666": 500,
+    "8e857854-8226-494a-afca-072e8398da68": 2000,
+    "5afbd9d6-222a-4daf-a7ec-2270b8650125": 5000,
+}
+
+FREE_LIMIT = 10
 
 _sb = None
 
@@ -95,48 +104,27 @@ def _parse_slug(slug):
                     return cat, loc
     return None, None
 
-# def _warm_cache():
-#     try:
-#         locs = unique_locations()
-#         print("Cache warmed: locations loaded")
-#         # Pre-generate sitemap file so it serves instantly
-#         _write_sitemap(locs)
-#         print("Sitemap pre-generated")
-#     except Exception as e:
-#         print(f"Cache warm failed: {e}")
-
-# def _write_sitemap(locs):
-#     cats = unique_categories()
-#     urls = [
-#         ("https://leadsignal-app.vercel.app/", "weekly", "1.0"),
-#         ("https://leadsignal-app.vercel.app/app", "weekly", "0.8"),
-#         ("https://leadsignal-app.vercel.app/leads", "daily", "0.7"),
-#     ]
-#     for cat in cats:
-#         for loc in locs:
-#             slug = _make_slug(cat, loc)
-#             urls.append((
-#                 f"https://leadsignal-app.vercel.app/leads/{slug}",
-#                 "weekly", "0.6"
-#             ))
-#     url_entries = "\n".join(
-#         f"  <url>\n    <loc>{u}</loc>\n    <changefreq>{f}</changefreq>\n    <priority>{p}</priority>\n  </url>"
-#         for u, f, p in urls
-#     )
-#     body = f"""<?xml version="1.0" encoding="UTF-8"?>
-# <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-# {url_entries}
-# </urlset>"""
-#     try:
-#         # Force a fresh client in the background thread
-#         fresh_sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-#         fresh_sb.table("sitemap_cache").upsert({"id": 1, "body": body}).execute()
-#         print("Sitemap saved to Supabase")
-#     except Exception as e:
-#         print(f"Sitemap save failed: {e}")
-#     return body
-# Everything it needs is defined above — safe to call now
-# threading.Thread(target=_warm_cache, daemon=True).start()
+def _validate_license_key(key):
+    if not key or not LEMON_SQUEEZY_API_KEY:
+        return None
+    try:
+        res = requests.post(
+            "https://api.lemonsqueezy.com/v1/licenses/validate",
+            json={"license_key": key},
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            timeout=5
+        )
+        data = res.json()
+        if not data.get("valid"):
+            return None
+        product_id = str(data.get("meta", {}).get("product_id", ""))
+        limit = PRODUCT_LIMITS.get(product_id)
+        return limit
+    except Exception:
+        return None
 
 @app.get("/health")
 def health():
@@ -161,6 +149,17 @@ def tool():
         categories=unique_categories(),
         locations=locs
     )
+
+@app.post("/verify-key")
+def verify_key():
+    data = request.get_json() or {}
+    key = (data.get("license_key") or "").strip()
+    if not key:
+        return jsonify({"valid": False, "error": "missing_key"}), 400
+    limit = _validate_license_key(key)
+    if limit is None:
+        return jsonify({"valid": False, "error": "invalid_key"}), 200
+    return jsonify({"valid": True, "limit": limit})
 
 @app.post("/request")
 def submit_request():
@@ -278,7 +277,15 @@ def search():
     try:
         sb = _get_sb()
     except Exception:
-        return jsonify({"items": [], "page": 1, "per_page": 100, "total": 0, "error": "backend_not_ready"}), 503
+        return jsonify({"items": [], "page": 1, "per_page": 10, "total": 0, "error": "backend_not_ready"}), 503
+
+    license_key = (request.args.get("license_key") or "").strip()
+    if license_key:
+        row_limit = _validate_license_key(license_key)
+        if row_limit is None:
+            row_limit = FREE_LIMIT
+    else:
+        row_limit = FREE_LIMIT
 
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
@@ -286,8 +293,14 @@ def search():
     if page < 1:
         page = 1
 
-    per_page = 100
+    per_page = min(100, row_limit)
     offset = (page - 1) * per_page
+
+    if offset >= row_limit:
+        return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "capped": True, "row_limit": row_limit})
+
+    remaining = row_limit - offset
+    fetch_count = min(per_page, remaining)
 
     min_rating = request.args.get("min_rating", type=float)
     has_phone = request.args.get("has_phone") == "1"
@@ -323,7 +336,7 @@ def search():
     else:
         q = q.order("rating", desc=True)
 
-    q = q.range(offset, offset + per_page - 1)
+    q = q.range(offset, offset + fetch_count - 1)
 
     def _exec():
         return q.execute()
@@ -334,7 +347,8 @@ def search():
         return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "error": "query_failed"}), 502
 
     rows = res.data or []
-    total = res.count or len(rows)
+    total_in_db = res.count or len(rows)
+    capped_total = min(total_in_db, row_limit)
 
     items = []
     for row in rows:
@@ -348,7 +362,15 @@ def search():
             row["name"] = row["correct_name"]
         items.append(row)
 
-    return jsonify({"items": items, "page": page, "per_page": per_page, "total": total})
+    return jsonify({
+        "items": items,
+        "page": page,
+        "per_page": per_page,
+        "total": capped_total,
+        "total_in_db": total_in_db,
+        "row_limit": row_limit,
+        "capped": total_in_db > row_limit
+    })
 
 @app.route("/robots.txt")
 def robots_txt():
@@ -366,37 +388,5 @@ def redirect_old_domain():
         new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal-app.vercel.app")
         return redirect(new_url, code=301)
 
-# @app.route("/sitemap.xml")
-# def sitemap_xml():
-#     try:
-#         sb = _get_sb()
-#         res = sb.table("sitemap_cache").select("body").eq("id", 1).execute()
-#         body = res.data[0]["body"] if res.data else None
-#     except Exception:
-#         body = None
-
-#     if not body:
-#         body = """<?xml version="1.0" encoding="UTF-8"?>
-# <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-#   <url>
-#     <loc>https://leadsignal-app.vercel.app/</loc>
-#     <changefreq>weekly</changefreq>
-#     <priority>1.0</priority>
-#   </url>
-#   <url>
-#     <loc>https://leadsignal-app.vercel.app/app</loc>
-#     <changefreq>weekly</changefreq>
-#     <priority>0.8</priority>
-#   </url>
-# </urlset>"""
-
-#     response = Response(body, mimetype="application/xml")
-#     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-#     response.headers["Pragma"] = "no-cache"
-#     response.headers["Surrogate-Control"] = "no-store"
-#     return response
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
-
-
