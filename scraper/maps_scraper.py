@@ -175,39 +175,34 @@ def new_driver(headless: bool, proxy: Optional[str]):
     ua = random.choice(USER_AGENTS)
     lang = random.choice(ACCEPT_LANG)
     logging.info("Launching browser: UA=%s | Lang=%s | Headless=%s", ua, lang, headless)
-    opts = uc.ChromeOptions()
-    if headless:
-        opts.add_argument("--headless=new")
-    opts.add_argument("--disable-blink-features=AutomationControlled")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--user-agent=" + ua)
-    opts.add_argument("--accept-language=" + lang)
-    opts.add_argument("--lang=" + lang.split(",")[0])
-    opts.add_argument("--window-size=1280,1000")
-    opts.add_argument("--blink-settings=imagesEnabled=true")
-    opts.add_argument("--disable-features=Translate,IsolateOrigins,site-per-process")
-    if proxy:
-        opts.add_argument(f"--proxy-server={proxy}")
-        logging.info("Using proxy: %s", proxy)
-    #    major = get_chrome_major_runtime() or get_installed_chrome_major()
-    
-    
-    major = get_chrome_major_ci()
-    
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        detected = uc.find_chrome_executable()
-        if major:
-            try:
-                driver = uc.Chrome(options=opts, version_main=major)
-            except Exception:
-                driver = uc.Chrome(options=opts)
-    else:
-        driver = uc.Chrome(options=opts)
 
+    def build_opts():
+        opts = uc.ChromeOptions()
+        if headless:
+            opts.add_argument("--headless=new")
+        opts.add_argument("--disable-blink-features=AutomationControlled")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--user-agent=" + ua)
+        opts.add_argument("--accept-language=" + lang)
+        opts.add_argument("--lang=" + lang.split(",")[0])
+        opts.add_argument("--window-size=1280,1000")
+        opts.add_argument("--blink-settings=imagesEnabled=true")
+        opts.add_argument("--disable-features=Translate,IsolateOrigins,site-per-process")
+        if proxy:
+            opts.add_argument(f"--proxy-server={proxy}")
+        return opts
 
-
+    driver = None
+    for attempt in (1, 2):
+        try:
+            driver = uc.Chrome(options=build_opts(), use_subprocess=True)
+            break
+        except Exception as e:
+            logging.warning("Browser launch attempt %d failed: %s", attempt, e)
+            if attempt == 2:
+                raise
 
     try:
         driver.set_page_load_timeout(PAGELOAD_TIMEOUT)
