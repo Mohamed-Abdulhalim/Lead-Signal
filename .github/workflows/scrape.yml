@@ -56,7 +56,7 @@ jobs:
           state_file=".github/rotation_index.txt"
 
           mapfile -t cities <<'EOF'
-          # ── TIER 1: United Kingdom (15 cities — high buyer density) ──
+          # ── TIER 1: United Kingdom ──
           London, United Kingdom
           Manchester, United Kingdom
           Birmingham, United Kingdom
@@ -72,21 +72,21 @@ jobs:
           Southampton, United Kingdom
           Newcastle upon Tyne, United Kingdom
           Bradford, United Kingdom
-          # ── TIER 1: UAE (6 cities — high spend, English-speaking professionals) ──
+          # ── TIER 1: UAE ──
           Dubai, United Arab Emirates
           Abu Dhabi, United Arab Emirates
           Sharjah, United Arab Emirates
           Ajman, United Arab Emirates
           Ras Al Khaimah, United Arab Emirates
           Fujairah, United Arab Emirates
-          # ── TIER 1: Saudi Arabia (6 cities — fast growing agency market) ──
+          # ── TIER 1: Saudi Arabia ──
           Riyadh, Saudi Arabia
           Jeddah, Saudi Arabia
           Dammam, Saudi Arabia
           Khobar, Saudi Arabia
           Mecca, Saudi Arabia
           Medina, Saudi Arabia
-          # ── TIER 2: USA (top 20 cities by marketing agency density) ──
+          # ── TIER 2: USA ──
           New York, USA
           Los Angeles, USA
           Chicago, USA
@@ -168,13 +168,13 @@ jobs:
           Helsinki, Finland
           Lisbon, Portugal
           Porto, Portugal
-          # ── TIER 3: Middle East (other) ──
+          # ── TIER 3: Middle East ──
           Doha, Qatar
           Manama, Bahrain
           Kuwait City, Kuwait
           Muscat, Oman
           Amman, Jordan
-          # ── TIER 3: Egypt (fix thin cities) ──
+          # ── TIER 3: Egypt ──
           Cairo, Egypt
           Giza, Egypt
           Alexandria, Egypt
@@ -291,7 +291,7 @@ jobs:
           git commit -m "chore: advance rotation index to ${{ env.CITY_SAFE }}" || echo "No changes to commit"
           git push
 
-      - name: Run full pipeline for selected city
+      - name: Run scrape + clean + push (phone enrichment handled by enrich.yml)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
