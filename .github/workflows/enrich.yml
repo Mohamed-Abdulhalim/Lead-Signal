@@ -1,0 +1,136 @@
+name: Enrich Phones
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max rows to enrich in this run"
+        type: number
+        required: false
+        default: 500
+
+concurrency:
+  group: enrich
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip xvfb
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch rows missing phones from Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+        run: |
+          python - <<'EOF'
+          import os, csv, requests
+
+          url = os.environ["SUPABASE_URL"].rstrip("/")
+          key = os.environ["SUPABASE_SERVICE_ROLE"]
+          limit = int("${{ github.event.inputs.limit || '500' }}")
+
+          headers = {
+              "apikey": key,
+              "Authorization": f"Bearer {key}",
+              "Content-Type": "application/json",
+          }
+
+          resp = requests.get(
+              f"{url}/rest/v1/production_maps",
+              headers=headers,
+              params={
+                  "select": "id,profile_url,query_location,category,phone",
+                  "phone": "eq.",
+                  "order": "id.asc",
+                  "limit": limit,
+              },
+          )
+          resp.raise_for_status()
+          rows = resp.json()
+          print(f"Fetched {len(rows)} rows missing phones")
+
+          with open("to_enrich.csv", "w", encoding="utf-8-sig", newline="") as f:
+              w = csv.DictWriter(f, fieldnames=["id", "profile_url", "query_location", "category", "phone"])
+              w.writeheader()
+              w.writerows(rows)
+          EOF
+
+      - name: Run phone enricher
+        run: |
+          python scraper/phone_enricher.py \
+            --in to_enrich.csv \
+            --out enriched_phones.csv \
+            --limit ${{ github.event.inputs.limit || '500' }}
+
+      - name: Push enriched phones back to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+        run: |
+          python - <<'EOF'
+          import os, csv, requests
+
+          url = os.environ["SUPABASE_URL"].rstrip("/")
+          key = os.environ["SUPABASE_SERVICE_ROLE"]
+
+          headers = {
+              "apikey": key,
+              "Authorization": f"Bearer {key}",
+              "Content-Type": "application/json",
+              "Prefer": "return=minimal",
+          }
+
+          updated = 0
+          skipped = 0
+
+          with open("enriched_phones.csv", "r", encoding="utf-8-sig", newline="") as f:
+              for row in csv.DictReader(f):
+                  phone = (row.get("phone") or "").strip()
+                  row_id = (row.get("id") or "").strip()
+                  if not phone or not row_id:
+                      skipped += 1
+                      continue
+                  resp = requests.patch(
+                      f"{url}/rest/v1/production_maps",
+                      headers=headers,
+                      params={"id": f"eq.{row_id}"},
+                      json={"phone": phone, "phone_e164": phone},
+                  )
+                  if resp.status_code in (200, 204):
+                      updated += 1
+                  else:
+                      print(f"Failed to update id={row_id}: {resp.status_code} {resp.text}")
+
+          print(f"Done. Updated: {updated} | Skipped (no phone found): {skipped}")
+          EOF
+
+      - name: Upload enriched CSV artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enriched_phones
+          path: enriched_phones.csv
