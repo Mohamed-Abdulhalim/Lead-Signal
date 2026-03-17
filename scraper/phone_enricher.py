@@ -184,33 +184,36 @@ def get_chrome_major_ci():
 def new_driver(headless: bool):
     ua = random.choice(USER_AGENTS)
     logging.info("Launching phone-enricher browser: UA=%s | headless=%s", ua, headless)
-    opts = uc.ChromeOptions()
-    if headless:
-        opts.add_argument("--headless=new")
-    opts.add_argument("--disable-blink-features=AutomationControlled")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--user-agent=" + ua)
-    opts.add_argument("--window-size=1280,900")
-    opts.add_argument("--blink-settings=imagesEnabled=true")
-    major = get_chrome_major_ci()
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        if major:
-            try:
-                d = uc.Chrome(options=opts, version_main=major)
-            except Exception:
-                d = uc.Chrome(options=opts)
-        else:
-            d = uc.Chrome(options=opts)
-    else:
-        d = uc.Chrome(options=opts)
+
+    def build_opts():
+        opts = uc.ChromeOptions()
+        if headless:
+            opts.add_argument("--headless=new")
+        opts.add_argument("--disable-blink-features=AutomationControlled")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--user-agent=" + ua)
+        opts.add_argument("--window-size=1280,900")
+        opts.add_argument("--blink-settings=imagesEnabled=true")
+        return opts
+
+    driver = None
+    for attempt in (1, 2):
+        try:
+            driver = uc.Chrome(options=build_opts(), use_subprocess=True)
+            break
+        except Exception as e:
+            logging.warning("Browser launch attempt %d failed: %s", attempt, e)
+            if attempt == 2:
+                raise
+
     try:
-        d.set_page_load_timeout(PAGELOAD_TIMEOUT)
-        d.set_script_timeout(SCRIPT_TIMEOUT)
+        driver.set_page_load_timeout(PAGELOAD_TIMEOUT)
+        driver.set_script_timeout(SCRIPT_TIMEOUT)
     except Exception:
         pass
-    return d
+    return driver
 
 
 def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
