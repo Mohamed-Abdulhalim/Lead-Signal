@@ -35,14 +35,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Chrome
+      - name: Install Chrome 124 (pinned)
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip xvfb
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chrome-linux64.zip
+          unzip chrome-linux64.zip
+          sudo mv chrome-linux64 /opt/chrome
+          sudo ln -sf /opt/chrome/chrome /usr/bin/google-chrome
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chromedriver-linux64.zip
+          unzip chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+          google-chrome --version
+          chromedriver --version
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -291,7 +297,7 @@ jobs:
           git commit -m "chore: advance rotation index to ${{ env.CITY_SAFE }}" || echo "No changes to commit"
           git push
 
-      - name: Run scrape + clean + push (phone enrichment handled by enrich.yml)
+      - name: Run scrape + clean + enrich + push
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
