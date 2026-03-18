@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import csv, sys, os, time, random, unicodedata, re, argparse, platform, logging
+import csv, sys, os, time, random, unicodedata, re, argparse, logging
 from typing import Dict, Any, List, Optional
 
 import undetected_chromedriver as uc
@@ -14,11 +14,6 @@ try:
     HAS_PHONENUMBERS = True
 except ImportError:
     HAS_PHONENUMBERS = False
-
-try:
-    import winreg
-except Exception:
-    winreg = None
 
 from pathlib import Path
 
@@ -39,7 +34,6 @@ from config import (
 )
 
 DETAIL_PHONE_XP = "//button[.//div[contains(text(),'Phone') or contains(text(),'الهاتف') or contains(text(),'اتصال')]] | //a[contains(@href,'tel:')]"
-
 NBSP_REPL = {"\u00A0": " ", "\u202F": " "}
 
 LOCATION_TO_COUNTRY_CODE = {
@@ -164,23 +158,6 @@ def jitter(a=ENRICH_JITTER_MIN, b=ENRICH_JITTER_MAX):
     time.sleep(random.uniform(a, b))
 
 
-def get_chrome_major_ci():
-    try:
-        out = ""
-        for cmd in ("google-chrome --version", "chromium-browser --version", "chromium --version"):
-            out = os.popen(cmd).read().strip()
-            if out:
-                break
-        if not out:
-            return None
-        parts = out.split()
-        if len(parts) < 3:
-            return None
-        return int(parts[2].split(".")[0])
-    except Exception:
-        return None
-
-
 def new_driver(headless: bool):
     ua = random.choice(USER_AGENTS)
     logging.info("Launching phone-enricher browser: UA=%s | headless=%s", ua, headless)
@@ -254,28 +231,24 @@ def process(input_csv: str, output_csv: str, limit: Optional[int] = None, headle
     fieldnames, rows = read_csv(input_csv)
     logging.info("Loaded %d rows from input", len(rows))
 
+    fieldnames = list(fieldnames)
     if "phone" not in fieldnames:
-        fieldnames = list(fieldnames) + ["phone"]
+        fieldnames.append("phone")
     if "phone_e164" not in fieldnames:
-        fieldnames = list(fieldnames) + ["phone_e164"]
+        fieldnames.append("phone_e164")
+    if "phone_verified" not in fieldnames:
+        fieldnames.append("phone_verified")
 
-    missing_phone_rows = [
-        (idx, row) for idx, row in enumerate(rows)
-        if not (row.get("phone") or "").strip()
-    ]
-    logging.info("Rows missing phone: %d", len(missing_phone_rows))
-
-    if limit is not None:
-        missing_phone_rows = missing_phone_rows[:limit]
-        logging.info("Processing up to %d rows (limit applied)", limit)
+    rows_to_process = rows if limit is None else rows[:limit]
+    logging.info("Processing %d rows (all rows regardless of existing phone)", len(rows_to_process))
 
     driver = new_driver(headless=headless)
     updated = 0
 
     try:
-        for batch_idx, (row_idx, row) in enumerate(missing_phone_rows):
+        for batch_idx, row in enumerate(rows_to_process):
             if PHONE_RESTART_EVERY and batch_idx > 0 and batch_idx % PHONE_RESTART_EVERY == 0:
-                logging.info("Restarting browser after %d enriched rows", batch_idx)
+                logging.info("Restarting browser after %d rows", batch_idx)
                 try:
                     driver.quit()
                 except Exception:
@@ -284,26 +257,25 @@ def process(input_csv: str, output_csv: str, limit: Optional[int] = None, headle
 
             url = (row.get("profile_url") or "").strip()
             if not url:
+                row["phone_verified"] = "TRUE"
                 continue
 
             location = (row.get("query_location") or "").strip()
             raw_phone = get_phone_from_page(driver, url)
             jitter()
 
-            if not raw_phone:
-                continue
-
-            normalized = normalize_phone_international(raw_phone, location)
-            rows[row_idx]["phone"] = normalized
-            rows[row_idx]["phone_e164"] = normalized
+            normalized = normalize_phone_international(raw_phone, location) if raw_phone else ""
+            row["phone"] = normalized
+            row["phone_e164"] = normalized
+            row["phone_verified"] = "TRUE"
             updated += 1
 
             if updated % 20 == 0:
-                logging.info("Progress: enriched=%d / processed=%d", updated, batch_idx + 1)
+                logging.info("Progress: processed=%d / total=%d", batch_idx + 1, len(rows_to_process))
                 write_csv(output_csv, fieldnames, rows)
 
         write_csv(output_csv, fieldnames, rows)
-        logging.info("Phone enrichment done. Total rows updated: %d", updated)
+        logging.info("Phone enrichment done. Total rows processed: %d", updated)
 
     finally:
         try:
