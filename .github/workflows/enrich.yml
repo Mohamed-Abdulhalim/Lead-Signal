@@ -29,37 +29,29 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      
+
       - name: Install Chrome 124 (pinned)
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip xvfb
-      
-          # Remove system Chrome to avoid version conflicts
           sudo apt-get remove -y google-chrome-stable chromium-browser chromium || true
           sudo rm -f /usr/bin/google-chrome /usr/bin/chromium /usr/bin/chromium-browser
-      
-          # Install pinned Chrome 124
           wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chrome-linux64.zip
           unzip chrome-linux64.zip
           sudo mv chrome-linux64 /opt/chrome
           sudo ln -sf /opt/chrome/chrome /usr/bin/google-chrome
           sudo ln -sf /opt/chrome/chrome /usr/bin/google-chrome-stable
-      
-          # Install matching ChromeDriver 124
           wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chromedriver-linux64.zip
           unzip chromedriver-linux64.zip
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
-      
-          # Verify both are 124
           google-chrome --version
           chromedriver --version
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Fetch rows missing phones from Supabase
+      - name: Fetch unverified rows from Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
@@ -82,14 +74,14 @@ jobs:
               headers=headers,
               params={
                   "select": "id,profile_url,query_location,category,phone",
-                  "phone": "eq.",
+                  "phone_verified": "eq.false",
                   "order": "id.asc",
                   "limit": limit,
               },
           )
           resp.raise_for_status()
           rows = resp.json()
-          print(f"Fetched {len(rows)} rows missing phones")
+          print(f"Fetched {len(rows)} unverified rows")
 
           with open("to_enrich.csv", "w", encoding="utf-8-sig", newline="") as f:
               w = csv.DictWriter(f, fieldnames=["id", "profile_url", "query_location", "category", "phone"])
@@ -104,7 +96,7 @@ jobs:
             --out enriched_phones.csv \
             --limit ${{ github.event.inputs.limit || '500' }}
 
-      - name: Push enriched phones back to Supabase
+      - name: Push verified phones back to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
@@ -127,23 +119,27 @@ jobs:
 
           with open("enriched_phones.csv", "r", encoding="utf-8-sig", newline="") as f:
               for row in csv.DictReader(f):
-                  phone = (row.get("phone") or "").strip()
                   row_id = (row.get("id") or "").strip()
-                  if not phone or not row_id:
+                  if not row_id:
                       skipped += 1
                       continue
+                  phone = (row.get("phone") or "").strip()
                   resp = requests.patch(
                       f"{url}/rest/v1/production_maps",
                       headers=headers,
                       params={"id": f"eq.{row_id}"},
-                      json={"phone": phone, "phone_e164": phone},
+                      json={
+                          "phone": phone,
+                          "phone_e164": phone,
+                          "phone_verified": True,
+                      },
                   )
                   if resp.status_code in (200, 204):
                       updated += 1
                   else:
                       print(f"Failed to update id={row_id}: {resp.status_code} {resp.text}")
 
-          print(f"Done. Updated: {updated} | Skipped (no phone found): {skipped}")
+          print(f"Done. Verified: {updated} | Skipped: {skipped}")
           EOF
 
       - name: Upload enriched CSV artifact
