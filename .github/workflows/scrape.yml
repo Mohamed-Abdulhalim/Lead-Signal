@@ -39,14 +39,25 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip xvfb
+      
+          # Remove system Chrome to avoid version conflicts
+          sudo apt-get remove -y google-chrome-stable chromium-browser chromium || true
+          sudo rm -f /usr/bin/google-chrome /usr/bin/chromium /usr/bin/chromium-browser
+      
+          # Install pinned Chrome 124
           wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chrome-linux64.zip
           unzip chrome-linux64.zip
           sudo mv chrome-linux64 /opt/chrome
           sudo ln -sf /opt/chrome/chrome /usr/bin/google-chrome
+          sudo ln -sf /opt/chrome/chrome /usr/bin/google-chrome-stable
+      
+          # Install matching ChromeDriver 124
           wget -q https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chromedriver-linux64.zip
           unzip chromedriver-linux64.zip
           sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
+      
+          # Verify both are 124
           google-chrome --version
           chromedriver --version
 
