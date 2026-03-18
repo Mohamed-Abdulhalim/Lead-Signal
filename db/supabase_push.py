@@ -57,6 +57,7 @@ def clean_row(row: Dict[str, Any]) -> Dict[str, Any]:
     r["opening_hours"] = (row.get("opening_hours") or "").strip()
     r["social_links"] = (row.get("social_links") or "").strip()
     r["rating"] = to_float(row.get("rating"))
+    r["phone_verified"] = False
     return r
 
 
