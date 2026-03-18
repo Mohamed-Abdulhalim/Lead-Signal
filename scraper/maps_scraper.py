@@ -197,7 +197,7 @@ def new_driver(headless: bool, proxy: Optional[str]):
     driver = None
     for attempt in (1, 2):
         try:
-            driver = uc.Chrome(options=build_opts(), use_subprocess=True)
+            driver = uc.Chrome(options=build_opts(), version_main=124, use_subprocess=True)
             break
         except Exception as e:
             logging.warning("Browser launch attempt %d failed: %s", attempt, e)
