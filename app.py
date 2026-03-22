@@ -216,7 +216,7 @@ def leads_page(slug):
             .select("name,correct_name,category,phone,website,address_line,rating,profile_url")
             .eq("category", category)
             .ilike("query_location", f"{location}%")
-            .order("rating", desc=True)
+            .order("rating", desc=True, nulls_last=True)
             .limit(10)
             .execute()
         )
@@ -328,13 +328,13 @@ def search():
             q = q.ilike("address_line", f"%{addr}%")
 
     if sort == "rating_desc":
-        q = q.order("rating", desc=True)
+        q = q.order("rating", desc=True, nulls_last=True)
     elif sort == "name_asc":
-        q = q.order("name")
+        q = q.order("name", nulls_last=True)
     elif sort == "reviews_desc":
-        q = q.order("rating", desc=True)
+        q = q.order("rating", desc=True, nulls_last=True)
     else:
-        q = q.order("rating", desc=True)
+        q = q.order("rating", desc=True, nulls_last=True)
 
     q = q.range(offset, offset + fetch_count - 1)
 
