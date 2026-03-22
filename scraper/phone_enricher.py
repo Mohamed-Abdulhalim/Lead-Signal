@@ -207,7 +207,10 @@ def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
         )
     except TimeoutException:
         return ""
-    raw = el.get_attribute("href") or el.text or ""
+    href = el.get_attribute("href") or ""
+    if href.startswith("tel:"):
+        return href
+    raw = el.text or href
     return raw.strip()
 
 
