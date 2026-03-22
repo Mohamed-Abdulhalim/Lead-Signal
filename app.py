@@ -346,7 +346,7 @@ def search():
 
     try:
         res = _retry(_exec, tries=2, base_sleep=0.25)
-    except Exception as e:
+    except Exception:
         return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "error": "query_failed"}), 502
 
     rows = res.data or []
