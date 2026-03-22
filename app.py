@@ -352,7 +352,7 @@ def search():
 
     items = []
     for row in rows:
-        row = {k: ("" if v is None else v) for k, v in row.items()}
+        row = {k: ("" if v is None else (str(v) if isinstance(v, bool) else v)) for k, v in row.items()}
         raw = (row.get("photo_urls") or "").strip()
         photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
         if not row.get("main_photo_url") and photos:
