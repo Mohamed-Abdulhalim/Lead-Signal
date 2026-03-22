@@ -213,10 +213,10 @@ def leads_page(slug):
     try:
         res = (
             sb.table(LEADS_TABLE)
-            .select("name,correct_name,category,phone,website,address_line,rating,profile_url")
+            .select("name,correct_name,category,phone,website,address_line,rating::text,profile_url")
             .eq("category", category)
             .ilike("query_location", f"{location}%")
-            .order("rating", desc=True, nulls_last=True)
+            .order("rating", desc=True)
             .limit(10)
             .execute()
         )
@@ -309,7 +309,7 @@ def search():
     sort = (request.args.get("sort", type=str) or "").strip()
 
     q = sb.table(LEADS_TABLE).select(
-        "id,name,correct_name,category,query_location,address_line,phone,website,rating,opening_hours,social_links,photo_urls,profile_url",
+        "id,name,correct_name,category,query_location,address_line,phone,website,rating::text,opening_hours,social_links,photo_urls,profile_url",
         count="exact"
     )
 
