@@ -309,7 +309,7 @@ def search():
     sort = (request.args.get("sort", type=str) or "").strip()
 
     q = sb.table(LEADS_TABLE).select(
-        "id,name,correct_name,category,query_location,address_line,phone,website,rating::text,opening_hours,social_links,photo_urls,profile_url",
+        "id,name,correct_name,category,query_location,address_line,phone,website,rating,opening_hours,social_links,photo_urls,profile_url",
         count="exact"
     )
 
@@ -355,7 +355,7 @@ def search():
 
     items = []
     for row in rows:
-        row = {k: ("" if v is None else (str(v) if isinstance(v, bool) else v)) for k, v in row.items()}
+        row = {k: ("" if v is None else (str(v) if isinstance(v, (bool, float, int)) else v)) for k, v in row.items()}
         raw = (row.get("photo_urls") or "").strip()
         photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
         if not row.get("main_photo_url") and photos:
