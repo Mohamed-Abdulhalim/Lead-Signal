@@ -210,8 +210,7 @@ def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
     href = el.get_attribute("href") or ""
     if href.startswith("tel:"):
         return href
-    raw = el.text or href
-    return raw.strip()
+    return (el.text or href).strip()
 
 
 def read_csv(path: str):
