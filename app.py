@@ -308,7 +308,10 @@ def search():
     address_contains = request.args.get("address_contains", type=str)
     sort = (request.args.get("sort", type=str) or "").strip()
 
-    q = sb.table(LEADS_TABLE).select("*", count="exact")
+    q = sb.table(LEADS_TABLE).select(
+        "id,name,correct_name,category,query_location,address_line,phone,website,rating,opening_hours,social_links,photo_urls,profile_url",
+        count="exact"
+    )
 
     if category:
         q = q.eq("category", category)
@@ -328,13 +331,13 @@ def search():
             q = q.ilike("address_line", f"%{addr}%")
 
     if sort == "rating_desc":
-        q = q.order("rating", desc=True, nulls_last=True)
+        q = q.order("rating", desc=True)
     elif sort == "name_asc":
-        q = q.order("name", nulls_last=True)
+        q = q.order("name")
     elif sort == "reviews_desc":
-        q = q.order("rating", desc=True, nulls_last=True)
+        q = q.order("rating", desc=True)
     else:
-        q = q.order("rating", desc=True, nulls_last=True)
+        q = q.order("rating", desc=True)
 
     q = q.range(offset, offset + fetch_count - 1)
 
