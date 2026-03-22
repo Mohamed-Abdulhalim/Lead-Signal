@@ -271,7 +271,7 @@ def looks_like_hours(s: str) -> bool:
 def strong_phone_extract(s: str) -> str:
     if not s:
         return ""
-    m = re.search(r"(?:\+?20)?0?\d{8,11}", re.sub(r"[^\d+]", "", s))
+    m = re.search(r"\+?\d{7,15}", re.sub(r"[^\d+]", "", s))
     return m.group(0) if m else ""
 
 
