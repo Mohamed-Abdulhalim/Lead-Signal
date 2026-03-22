@@ -213,7 +213,7 @@ def leads_page(slug):
     try:
         res = (
             sb.table(LEADS_TABLE)
-            .select("name,correct_name,category,phone,website,address_line,rating,reviews_count,profile_url")
+            .select("name,correct_name,category,phone,website,address_line,rating,profile_url")
             .eq("category", category)
             .ilike("query_location", f"{location}%")
             .order("rating", desc=True)
@@ -332,7 +332,7 @@ def search():
     elif sort == "name_asc":
         q = q.order("name")
     elif sort == "reviews_desc":
-        q = q.order("reviews_count", desc=True)
+        q = q.order("rating", desc=True)
     else:
         q = q.order("rating", desc=True)
 
