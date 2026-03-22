@@ -267,7 +267,6 @@ def looks_like_hours(s: str) -> bool:
         return False
     return bool(re.search(r"Open|Closed|Closes|Opens|يفتح|مفتوح|مغلق|٢٤ ساعة|24 hours", s, re.I))
 
-
 def strong_phone_extract(s: str) -> str:
     if not s:
         return ""
