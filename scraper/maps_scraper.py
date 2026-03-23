@@ -728,6 +728,23 @@ def harvest_category(driver, category: str, location: str, csv_path: str, seen: 
                 detail = extract_detail(driver)
             except Exception:
                 detail = {}
+
+            # Guard: if panel name clearly doesn't match card name, discard
+            # only the phone — never the row itself
+            card_name_norm = norm_name_for_compare(basic.get("name", ""))
+            detail_name_norm = norm_name_for_compare(detail.get("name", ""))
+            if (
+                card_name_norm
+                and detail_name_norm
+                and card_name_norm not in detail_name_norm
+                and detail_name_norm not in card_name_norm
+            ):
+                logging.warning(
+                    "PANEL_MISMATCH: card='%s' panel='%s' url=%s — discarding detail phone",
+                    basic.get("name"), detail.get("name"), profile_url,
+                )
+                detail["phone"] = ""
+
             name = detail.get("name") or basic.get("name") or ""
             slug_guess = slug_from_profile_url(profile_url)
             nm_norm = norm_name_for_compare(name)
