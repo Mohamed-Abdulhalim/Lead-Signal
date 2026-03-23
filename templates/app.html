@@ -401,7 +401,7 @@ details.faq-item[open] summary::after { content: '−'; }
         <a class="btn-ghost" href="#faq">How it works <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
       </div>
       <div class="hero-stats">
-        <div class="stat-item"><div class="stat-number" data-count="200000">0</div><div class="stat-label">Rows processed</div></div>
+        <div class="stat-item"><div class="stat-number" data-count="200000" data-stat="row_count">0</div><div class="stat-label">Rows processed</div></div>
         <div class="stat-item"><div class="stat-number" data-count="92" data-suffix="%">0%</div><div class="stat-label">Phone coverage</div></div>
         <div class="stat-item"><div class="stat-number">Global</div><div class="stat-label">Any city worldwide</div></div>
       </div>
@@ -796,19 +796,38 @@ function clearUpgradeWall() {
 }
 
 /* ── Counter animation ── */
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(en => {
-    if (!en.isIntersecting) return;
-    const el = en.target;
-    const target = +el.dataset.count;
-    const suffix = el.dataset.suffix || '';
-    let v = 0;
-    const step = Math.max(1, Math.round(target / 60));
-    const t = setInterval(() => { v += step; if (v >= target) { v = target; clearInterval(t); } el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix; }, 16);
-    obs.unobserve(el);
-  });
-}, { threshold: .5 });
-document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+async function initCounters() {
+  // Try to fetch live row count from backend
+  try {
+    const res = await fetch('/stats');
+    const data = await res.json();
+    if (data.row_count) {
+      const el = document.querySelector('[data-stat="row_count"]');
+      if (el) el.dataset.count = data.row_count;
+    }
+  } catch (_) {
+    // silently fall back to hardcoded value
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      const target = +el.dataset.count;
+      const suffix = el.dataset.suffix || '';
+      let v = 0;
+      const step = Math.max(1, Math.round(target / 60));
+      const t = setInterval(() => {
+        v += step;
+        if (v >= target) { v = target; clearInterval(t); }
+        el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
+      }, 16);
+      obs.unobserve(el);
+    });
+  }, { threshold: .5 });
+  document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+}
+initCounters();
 
 const fadeObs = new IntersectionObserver(entries => { entries.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); }); }, { threshold: .15 });
 document.querySelectorAll('.fade-up').forEach(el => fadeObs.observe(el));
