@@ -201,16 +201,27 @@ def get_phone_from_page(driver, url: str, timeout: int = 8) -> str:
     except WebDriverException as e:
         logging.warning("Navigation failed for %s: %s", url, e)
         return ""
-    try:
-        el = WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located((By.XPATH, DETAIL_PHONE_XP))
-        )
-    except TimeoutException:
-        return ""
-    href = el.get_attribute("href") or ""
-    if href.startswith("tel:"):
-        return href
-    return (el.text or href).strip()
+# Try data-item-id first — most reliable, number is in the attribute itself
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        for xp in [
+            "//button[contains(@data-item-id,'phone:tel')]",
+            "//button[contains(@aria-label,'Phone') and @data-item-id]",
+            DETAIL_PHONE_XP,
+        ]:
+            try:
+                els = driver.find_elements(By.XPATH, xp)
+                for el in els:
+                    item_id = el.get_attribute("data-item-id") or ""
+                    if "phone:tel:" in item_id:
+                        return item_id.split("phone:tel:")[-1].strip()
+                    href = el.get_attribute("href") or ""
+                    if href.startswith("tel:"):
+                        return href.replace("tel:", "").strip()
+            except Exception:
+                continue
+        time.sleep(0.3)
+    return ""
 
 
 def read_csv(path: str):
