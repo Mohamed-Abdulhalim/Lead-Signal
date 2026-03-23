@@ -67,6 +67,8 @@ jobs:
               "apikey": key,
               "Authorization": f"Bearer {key}",
               "Content-Type": "application/json",
+              "Range-Unit": "items",
+              "Range": f"0-{limit - 1}"
           }
 
           resp = requests.get(
@@ -75,8 +77,7 @@ jobs:
               params={
                   "select": "id,profile_url,query_location,category,phone",
                   "phone_verified": "eq.false",
-                  "order": "id.asc",
-                  "limit": limit,
+                  "order": "id.asc"
               },
           )
           resp.raise_for_status()
