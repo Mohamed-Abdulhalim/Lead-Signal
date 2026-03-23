@@ -394,11 +394,27 @@ def extract_detail(driver) -> Dict[str, str]:
     address = addr
     plus_code = plus
     try:
-        el = driver.find_element(By.XPATH, DETAIL_PHONE_XP)
-        p = el.get_attribute("href") or safe_text(el)
-        if p.startswith("tel:"):
-            p = p.replace("tel:", "")
-        phone = strong_phone_extract(p) or p.strip()
+        # Primary: data-item-id carries the number directly in the attribute
+        phone_el = None
+        for xp in [
+            "//button[contains(@data-item-id,'phone:tel')]",
+            "//button[contains(@aria-label,'Phone') and @data-item-id]",
+            DETAIL_PHONE_XP,
+        ]:
+            try:
+                phone_el = driver.find_element(By.XPATH, xp)
+                break
+            except Exception:
+                continue
+        if phone_el is not None:
+            item_id = phone_el.get_attribute("data-item-id") or ""
+            if "phone:tel:" in item_id:
+                phone = item_id.split("phone:tel:")[-1].strip()
+            else:
+                p = phone_el.get_attribute("href") or safe_text(phone_el)
+                if p.startswith("tel:"):
+                    p = p.replace("tel:", "")
+                phone = strong_phone_extract(p) or p.strip()
     except Exception:
         pass
     try:
