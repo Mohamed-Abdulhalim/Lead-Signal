@@ -2,7 +2,7 @@ name: Enrich Phones
 
 on:
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 */2 * * *"
   workflow_dispatch:
     inputs:
       limit:
@@ -61,7 +61,7 @@ jobs:
 
           url = os.environ["SUPABASE_URL"].rstrip("/")
           key = os.environ["SUPABASE_SERVICE_ROLE"]
-          limit = int("${{ github.event.inputs.limit || '500' }}")
+          limit = int("${{ github.event.inputs.limit || '2000' }}")
 
           headers = {
               "apikey": key,
