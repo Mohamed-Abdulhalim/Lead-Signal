@@ -9,7 +9,7 @@ on:
         description: "Max rows to enrich in this run"
         type: number
         required: false
-        default: 500
+        default: 2000
 
 concurrency:
   group: enrich
@@ -94,7 +94,7 @@ jobs:
           python scraper/phone_enricher.py \
             --in to_enrich.csv \
             --out enriched_phones.csv \
-            --limit ${{ github.event.inputs.limit || '500' }}
+            --limit ${{ github.event.inputs.limit || '2000' }}
 
       - name: Push verified phones back to Supabase
         env:
