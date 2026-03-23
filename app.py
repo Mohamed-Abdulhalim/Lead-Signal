@@ -129,6 +129,14 @@ def _validate_license_key(key):
 @app.get("/health")
 def health():
     return "ok", 200
+@app.get("/stats")
+def stats():
+    try:
+        sb = _get_sb()
+        res = sb.table(LEADS_TABLE).select("profile_url", count="exact").execute()
+        return jsonify({"row_count": res.count or 0})
+    except Exception:
+        return jsonify({"row_count": 0})
 
 @app.route("/", methods=["GET", "HEAD"])
 def landing():
