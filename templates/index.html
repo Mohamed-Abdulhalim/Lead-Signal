@@ -657,7 +657,7 @@ footer {
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat">
-      <div class="stat-n" data-count="200000">0</div>
+      <div class="stat-n" data-count="200000" data-stat="row_count">0</div>
       <div class="stat-l">Rows processed</div>
     </div>
     <div class="stat">
@@ -915,23 +915,38 @@ footer {
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* Counter animation */
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(en => {
-    if (!en.isIntersecting) return;
-    const el = en.target;
-    const target = +el.dataset.count;
-    const suffix = el.dataset.suffix || '';
-    let v = 0;
-    const step = Math.max(1, Math.round(target / 60));
-    const t = setInterval(() => {
-      v += step;
-      if (v >= target) { v = target; clearInterval(t); }
-      el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
-    }, 16);
-    obs.unobserve(el);
-  });
-}, { threshold: .5 });
-document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+async function initCounters() {
+  // Try to fetch live row count from backend
+  try {
+    const res = await fetch('/stats');
+    const data = await res.json();
+    if (data.row_count) {
+      const el = document.querySelector('[data-stat="row_count"]');
+      if (el) el.dataset.count = data.row_count;
+    }
+  } catch (_) {
+    // silently fall back to hardcoded value
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      const target = +el.dataset.count;
+      const suffix = el.dataset.suffix || '';
+      let v = 0;
+      const step = Math.max(1, Math.round(target / 60));
+      const t = setInterval(() => {
+        v += step;
+        if (v >= target) { v = target; clearInterval(t); }
+        el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
+      }, 16);
+      obs.unobserve(el);
+    });
+  }, { threshold: .5 });
+  document.querySelectorAll('[data-count]').forEach(el => obs.observe(el));
+}
+initCounters();
 
 /* Reveal on scroll */
 const revealObs = new IntersectionObserver(entries => {
