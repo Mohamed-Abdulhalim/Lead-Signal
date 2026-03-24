@@ -131,7 +131,6 @@ jobs:
                       params={"id": f"eq.{row_id}"},
                       json={
                           "phone": phone,
-                          "phone_e164": phone,
                           "phone_verified": True,
                       },
                   )
