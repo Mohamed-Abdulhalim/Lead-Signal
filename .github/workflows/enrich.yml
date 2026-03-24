@@ -51,13 +51,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # ↓↓↓ THIS IS THE ONLY STEP THAT CHANGED ↓↓↓
       - name: Fetch unverified rows from Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
         run: |
           python - <<'EOF'
-          import os, csv, requests
+          import os, csv, requests, time
 
           url = os.environ["SUPABASE_URL"].rstrip("/")
           key = os.environ["SUPABASE_SERVICE_ROLE"]
@@ -69,18 +70,24 @@ jobs:
               "Authorization": f"Bearer {key}",
               "Content-Type": "application/json",
               "Range-Unit": "items",
-              "Range": f"0-{limit - 1}"
+              "Range": f"0-{limit - 1}",
           }
 
-          resp = requests.get(
-              f"{url}/rest/v1/production_maps",
-              headers=headers,
-              params={
-                  "select": "id,profile_url,query_location,category,phone",
-                  "phone_verified": "eq.false",
-                  "order": "id.asc"
-              },
-          )
+          params = {
+              "select": "id,profile_url,query_location,category,phone",
+              "phone_verified": "eq.false",
+              "order": "id.asc",
+          }
+
+          resp = None
+          for attempt in range(1, 4):
+              resp = requests.get(f"{url}/rest/v1/production_maps", headers=headers, params=params)
+              print(f"Attempt {attempt}: HTTP {resp.status_code}")
+              if resp.status_code == 200:
+                  break
+              print(f"Response body: {resp.text[:500]}")
+              time.sleep(5 * attempt)
+
           resp.raise_for_status()
           rows = resp.json()
           print(f"Fetched {len(rows)} unverified rows")
@@ -90,13 +97,14 @@ jobs:
               w.writeheader()
               w.writerows(rows)
           EOF
+      # ↑↑↑ END OF CHANGED STEP ↑↑↑
 
       - name: Run phone enricher
         run: |
           python scraper/phone_enricher.py \
             --in to_enrich.csv \
             --out enriched_phones.csv \
-            --limit ${{ github.event.inputs.limit || '2000' }}
+            --limit ${{ github.event.inputs.limit || 2000 }}
 
       - name: Push verified phones back to Supabase
         env:
