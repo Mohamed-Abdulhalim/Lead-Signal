@@ -61,7 +61,8 @@ jobs:
 
           url = os.environ["SUPABASE_URL"].rstrip("/")
           key = os.environ["SUPABASE_SERVICE_ROLE"]
-          limit = int("${{ github.event.inputs.limit || '2000' }}")
+          raw_limit = "${{ github.event.inputs.limit }}"
+          limit = int(raw_limit) if raw_limit.strip().isdigit() else 2000
 
           headers = {
               "apikey": key,
