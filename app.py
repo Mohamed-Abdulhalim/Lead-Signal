@@ -347,14 +347,14 @@ def robots_txt():
         "User-agent: *\n"
         "Disallow:\n"
         "\n"
-        "Sitemap: https://leadsignal-app.vercel.app/sitemap.xml\n"
+        "Sitemap: https://leadsignal.halim.pro/sitemap.xml\n"
     )
     return Response(body, mimetype="text/plain")
 
 @app.before_request
 def redirect_old_domain():
     if request.host == "maps-scraper-gray.vercel.app":
-        new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal-app.vercel.app")
+        new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal.halim.pro")
         return redirect(new_url, code=301)
 
 if __name__ == "__main__":
