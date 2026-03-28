@@ -390,7 +390,7 @@ details.faq-item[open] summary::after { content: '−'; }
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-content">
-      <div class="hero-eyebrow"><span></span> Google Maps Lead Extractor</div>
+      <div class="hero-eyebrow"><span></span> B2B Lead Database</div>
       <h1 class="hero-headline">Find<br><em>Business</em><br>Leads<br><span class="outlined">Fast.</span></h1>
       <p class="hero-sub">Search by category and location. Extract phone numbers, websites, addresses, ratings, and export clean CSV files — no manual searching required.</p>
       <div class="hero-actions">
@@ -598,8 +598,7 @@ details.faq-item[open] summary::after { content: '−'; }
     </div>
     <div class="faq-list">
       <details class="faq-item"><summary>What data comes with each lead?</summary><div class="faq-body">Name, category, phone(s), website, socials (when found), rating, reviews count, address, and a direct Google Maps profile link.</div></details>
-      <details class="faq-item"><summary>Is the free tier really free?</summary><div class="faq-body">Yes — you can search and export up to 10 leads per search for free, no account required. For larger exports (500, 2,000, or 5,000 leads), purchase a one-time credit pack and activate it with your license key.</div></details>
-      <details class="faq-item"><summary>How do license keys work?</summary><div class="faq-body">After purchasing a credit pack, you'll receive a license key by email. Paste it into the "Have a license key?" bar on the search page to unlock your full export limit. Keys don't expire.</div></details>
+      <details class="faq-item"><summary>Is the free tier really free?</summary><div class="faq-body">Yes — you can search and preview up to 10 results per search for free, no account required. Paid export plans with higher limits are coming soon. Enter your email in the request form to be notified when they launch.</div></details>
       <details class="faq-item"><summary>What's the best way to search?</summary><div class="faq-body">Use broad category names like <strong>dentist</strong>, <strong>cafe</strong>, or <strong>gym</strong> rather than brand names. For location, use <strong>City, Country</strong> format (e.g. <em>Riyadh, Saudi Arabia</em>) for best results.</div></details>
       <details class="faq-item"><summary>Can I export to CSV?</summary><div class="faq-body">Yes — after running a search, click "Preview &amp; Export CSV" to choose your columns, apply deduplication, and download the file.</div></details>
     </div>
@@ -664,12 +663,6 @@ details.faq-item[open] summary::after { content: '−'; }
 
 <script>
 document.getElementById('year').textContent = new Date().getFullYear();
-
-const CHECKOUT_URLS = {
-  starter:  'https://leadsignal-io.lemonsqueezy.com/checkout/buy/4b42f716-b443-41a5-8c5e-6cacb17b6666',
-  pro:      'https://leadsignal-io.lemonsqueezy.com/checkout/buy/8e857854-8226-494a-afca-072e8398da68',
-  business: 'https://leadsignal-io.lemonsqueezy.com/checkout/buy/5afbd9d6-222a-4daf-a7ec-2270b8650125',
-};
 
 const FREE_LIMIT = 10;
 const LICENSE_STORAGE_KEY = 'ls_license_key';
@@ -738,57 +731,7 @@ updateLicenseUI();
 
 /* ── Upgrade wall ── */
 function renderUpgradeWall(totalInDb) {
-  const container = $('upgrade-wall-container');
-  container.innerHTML = `
-    <div class="upgrade-wall">
-      <div class="upgrade-wall-inner">
-        <div class="upgrade-eyebrow"><span></span> Free limit reached</div>
-        <h3>Unlock <em>${totalInDb ? totalInDb.toLocaleString() : 'all'}</em> results</h3>
-        <p>You've seen the free preview. Purchase a one-time credit pack to export the full list — no subscription, no expiry.</p>
-        <div class="pricing-cards">
-          <div class="pricing-card">
-            <div class="pricing-card-name">Starter</div>
-            <div class="pricing-card-price"><sup>$</sup>9</div>
-            <div class="pricing-card-leads">500 leads</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">Full CSV export</div>
-              <div class="pricing-card-feature">All data fields</div>
-              <div class="pricing-card-feature">No expiry</div>
-            </div>
-            <a class="btn-buy" href="${CHECKOUT_URLS.starter}" target="_blank" rel="noopener">Buy — $9</a>
-          </div>
-          <div class="pricing-card featured">
-            <div class="pricing-card-badge">Most popular</div>
-            <div class="pricing-card-name">Pro</div>
-            <div class="pricing-card-price"><sup>$</sup>19</div>
-            <div class="pricing-card-leads">2,000 leads</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">Full CSV export</div>
-              <div class="pricing-card-feature">All data fields</div>
-              <div class="pricing-card-feature">No expiry</div>
-            </div>
-            <a class="btn-buy" href="${CHECKOUT_URLS.pro}" target="_blank" rel="noopener">Buy — $19</a>
-          </div>
-          <div class="pricing-card">
-            <div class="pricing-card-name">Business</div>
-            <div class="pricing-card-price"><sup>$</sup>39</div>
-            <div class="pricing-card-leads">5,000 leads</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">Full CSV export</div>
-              <div class="pricing-card-feature">All data fields</div>
-              <div class="pricing-card-feature">No expiry</div>
-            </div>
-            <a class="btn-buy" href="${CHECKOUT_URLS.business}" target="_blank" rel="noopener">Buy — $39</a>
-          </div>
-        </div>
-        <div class="upgrade-note">One-time payment. <strong>License key delivered by email instantly.</strong></div>
-        <div class="have-key-link" id="have-key-scroll">Already bought? Paste your key above ↑</div>
-      </div>
-    </div>`;
-  document.getElementById('have-key-scroll')?.addEventListener('click', () => {
-    $('license-key-input').focus();
-    $('license-bar').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+
 }
 
 function clearUpgradeWall() {
