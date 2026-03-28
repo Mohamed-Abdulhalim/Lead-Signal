@@ -3,7 +3,6 @@ from supabase import create_client
 import os
 import time
 import re
-import requests
 
 app = Flask(__name__)
 
