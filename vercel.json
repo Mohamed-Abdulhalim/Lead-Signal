@@ -8,6 +8,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/public/site_map.xml" }
+    { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" }
   ]
 }
