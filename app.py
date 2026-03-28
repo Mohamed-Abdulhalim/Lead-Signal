@@ -10,13 +10,7 @@ app = Flask(__name__)
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 LEADS_TABLE = (os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps").strip()
-LEMON_SQUEEZY_API_KEY = os.environ.get("LEMON_SQUEEZY_API_KEY", "").strip()
 
-PRODUCT_LIMITS = {
-    "4b42f716-b443-41a5-8c5e-6cacb17b6666": 500,
-    "8e857854-8226-494a-afca-072e8398da68": 2000,
-    "5afbd9d6-222a-4daf-a7ec-2270b8650125": 5000,
-}
 
 FREE_LIMIT = 10
 
@@ -104,28 +98,6 @@ def _parse_slug(slug):
                     return cat, loc
     return None, None
 
-def _validate_license_key(key):
-    if not key or not LEMON_SQUEEZY_API_KEY:
-        return None
-    try:
-        res = requests.post(
-            "https://api.lemonsqueezy.com/v1/licenses/validate",
-            json={"license_key": key},
-            headers={
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            },
-            timeout=5
-        )
-        data = res.json()
-        if not data.get("valid"):
-            return None
-        product_id = str(data.get("meta", {}).get("product_id", ""))
-        limit = PRODUCT_LIMITS.get(product_id)
-        return limit
-    except Exception:
-        return None
-
 @app.get("/health")
 def health():
     return "ok", 200
@@ -160,14 +132,7 @@ def tool():
 
 @app.post("/verify-key")
 def verify_key():
-    data = request.get_json() or {}
-    key = (data.get("license_key") or "").strip()
-    if not key:
-        return jsonify({"valid": False, "error": "missing_key"}), 400
-    limit = _validate_license_key(key)
-    if limit is None:
-        return jsonify({"valid": False, "error": "invalid_key"}), 200
-    return jsonify({"valid": True, "limit": limit})
+    return jsonify({"valid": False, "error": "disabled"}), 404
 
 @app.post("/request")
 def submit_request():
@@ -287,13 +252,7 @@ def search():
     except Exception:
         return jsonify({"items": [], "page": 1, "per_page": 10, "total": 0, "error": "backend_not_ready"}), 503
 
-    license_key = (request.args.get("license_key") or "").strip()
-    if license_key:
-        row_limit = _validate_license_key(license_key)
-        if row_limit is None:
-            row_limit = FREE_LIMIT
-    else:
-        row_limit = FREE_LIMIT
+    row_limit = FREE_LIMIT
 
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
