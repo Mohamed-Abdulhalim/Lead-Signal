@@ -609,8 +609,8 @@ details.faq-item[open] summary::after { content: '−'; }
   <div class="footer-inner">
     <div class="footer-brand">LeadSignal</div>
     <div class="footer-links">
-      <a href="#" id="link-privacy">Privacy</a>
-      <a href="#" id="link-terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/refund">Refund Policy</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
     </div>
@@ -731,7 +731,67 @@ updateLicenseUI();
 
 /* ── Upgrade wall ── */
 function renderUpgradeWall(totalInDb) {
-
+  const total = totalInDb ? totalInDb.toLocaleString() : 'all';
+  $('upgrade-wall-container').innerHTML = `
+    <div class="upgrade-wall" id="upgrade-wall">
+      <div class="upgrade-wall-inner">
+        <div class="upgrade-eyebrow"><span></span> Upgrade to unlock</div>
+        <h3>You've seen the <em>free preview.</em><br>Get the full list.</h3>
+        <p>${total} businesses found. The free tier shows 10. Upgrade once, export everything — phones, websites, addresses, CSV ready.</p>
+ 
+        <div class="pricing-cards">
+ 
+          <div class="pricing-card">
+            <div class="pricing-card-name">Starter</div>
+            <div class="pricing-card-price"><sup>$</sup>9</div>
+            <div class="pricing-card-leads">500 exports</div>
+            <div class="pricing-card-features">
+              <div class="pricing-card-feature">500 lead exports</div>
+              <div class="pricing-card-feature">Phone + website + address</div>
+              <div class="pricing-card-feature">CSV download</div>
+              <div class="pricing-card-feature">One-time payment</div>
+            </div>
+            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-starter" target="_blank" rel="noopener">Get Starter</a>
+          </div>
+ 
+          <div class="pricing-card featured">
+            <div class="pricing-card-badge">Most popular</div>
+            <div class="pricing-card-name">Pro</div>
+            <div class="pricing-card-price"><sup>$</sup>29</div>
+            <div class="pricing-card-leads">5,000 exports</div>
+            <div class="pricing-card-features">
+              <div class="pricing-card-feature">5,000 lead exports</div>
+              <div class="pricing-card-feature">All data fields</div>
+              <div class="pricing-card-feature">Filters + deduplication</div>
+              <div class="pricing-card-feature">One-time payment</div>
+            </div>
+            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-pro" target="_blank" rel="noopener">Get Pro</a>
+          </div>
+ 
+          <div class="pricing-card">
+            <div class="pricing-card-name">Agency</div>
+            <div class="pricing-card-price"><sup>$</sup>79</div>
+            <div class="pricing-card-leads">Unlimited exports</div>
+            <div class="pricing-card-features">
+              <div class="pricing-card-feature">Unlimited exports</div>
+              <div class="pricing-card-feature">All data fields</div>
+              <div class="pricing-card-feature">Priority data requests</div>
+              <div class="pricing-card-feature">One-time payment</div>
+            </div>
+            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-agency" target="_blank" rel="noopener">Get Agency</a>
+          </div>
+ 
+        </div>
+ 
+        <p class="upgrade-note">After purchase, you receive a license key by email. <strong>Paste it in the key field above</strong> to unlock instantly.</p>
+        <div style="margin-top:14px">
+          <span class="have-key-link" onclick="document.getElementById('license-key-input').focus();document.getElementById('license-bar').scrollIntoView({behavior:'smooth',block:'center'})">
+            Already have a key? Click here to activate it ↑
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function clearUpgradeWall() {
@@ -1146,8 +1206,7 @@ $('nav-link-faq').addEventListener('click', e => { e.preventDefault(); $('faq').
 $('nav-link-home').addEventListener('click', e => { e.preventDefault(); window.scrollTo({ top:0, behavior:'smooth' }); });
 $('cta-go').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); catInput.focus(); });
 $('hero-cta').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); catInput.focus(); });
-$('link-privacy')?.addEventListener('click', e => { e.preventDefault(); showToast('Privacy page coming soon'); });
-$('link-terms')?.addEventListener('click', e => { e.preventDefault(); showToast('Terms page coming soon'); });
+
 
 /* ── Auto-search from URL ── */
 function autoSearch() {
