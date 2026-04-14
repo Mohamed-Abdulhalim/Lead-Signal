@@ -109,6 +109,13 @@ def stats():
     except Exception:
         return jsonify({"row_count": 0})
 
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/refund')
+def refund():
+    return render_template('refund.html')
 @app.route("/", methods=["GET", "HEAD"])
 def landing():
     if request.method == "HEAD":
