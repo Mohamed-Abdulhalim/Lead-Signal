@@ -258,22 +258,17 @@ def search():
     except Exception:
         return jsonify({"items": [], "page": 1, "per_page": 10, "total": 0, "error": "backend_not_ready"}), 503
 
-    row_limit = FREE_LIMIT
+    
 
     category = request.args.get("category", type=str)
     location = request.args.get("location", type=str)
     page = request.args.get("page", default=1, type=int)
     if page < 1:
         page = 1
-
-    per_page = min(100, row_limit)
+        
+    per_page = 20
     offset = (page - 1) * per_page
-
-    if offset >= row_limit:
-        return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "capped": True, "row_limit": row_limit})
-
-    remaining = row_limit - offset
-    fetch_count = min(per_page, remaining)
+    fetch_count = per_page
 
     min_rating = request.args.get("min_rating", type=float)
     has_phone = request.args.get("has_phone") == "1"
@@ -324,7 +319,6 @@ def search():
 
     rows = res.data or []
     total_in_db = res.count or len(rows)
-    capped_total = min(total_in_db, row_limit)
 
     items = []
     for row in rows:
@@ -342,10 +336,9 @@ def search():
         "items": items,
         "page": page,
         "per_page": per_page,
-        "total": capped_total,
+        "total": total_in_db,
         "total_in_db": total_in_db,
-        "row_limit": row_limit,
-        "capped": total_in_db > row_limit
+        "capped": False
     })
 
 @app.route("/robots.txt")
