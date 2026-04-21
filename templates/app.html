@@ -454,15 +454,6 @@ details.faq-item[open] summary::after { content: '−'; }
     </form>
 
 
-    <div class="license-bar" id="license-bar">
-      <span class="license-bar-label">🔑 Have a license key?</span>
-      <div class="license-input-wrap">
-        <input class="license-input" id="license-key-input" type="text" placeholder="Paste your key here to unlock full export"/>
-        <button class="btn-activate" id="btn-activate" type="button">Activate</button>
-      </div>
-      <div class="license-status" id="license-status-ok"><span class="license-dot"></span> <span id="license-status-text">Unlocked</span></div>
-      <div class="license-status error" id="license-status-err"><span class="license-dot"></span> Invalid key</div>
-    </div>
 
     <div class="quick-pills" aria-label="Quick examples">
       <button class="pill" type="button" data-example="restaurants|Dubai, United Arab Emirates"><strong>Restaurants</strong> in Dubai</button>
@@ -558,7 +549,6 @@ details.faq-item[open] summary::after { content: '−'; }
   </div>
 
   <div id="results" class="results-grid" aria-live="polite" aria-busy="false"></div>
-  <div id="upgrade-wall-container"></div>
   <div id="pagination" class="pagination" aria-live="polite"></div>
 </div>
 
@@ -664,10 +654,6 @@ details.faq-item[open] summary::after { content: '−'; }
 <script>
 document.getElementById('year').textContent = new Date().getFullYear();
 
-const FREE_LIMIT = 10;
-const LICENSE_STORAGE_KEY = 'ls_license_key';
-const LICENSE_LIMIT_KEY   = 'ls_license_limit';
-
 const $  = id => document.getElementById(id);
 const toast  = $('toast');
 const loader = $('loader');
@@ -677,57 +663,8 @@ function loading(on) { loader.classList.toggle('show', !!on); }
 function debounce(fn, delay) { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), delay); }; }
 
 /* ── License key state ── */
-let activeLicenseKey  = localStorage.getItem(LICENSE_STORAGE_KEY) || '';
-let activeLicenseLimit = parseInt(localStorage.getItem(LICENSE_LIMIT_KEY) || '0', 10) || FREE_LIMIT;
 
-function updateLicenseUI() {
-  const okEl  = $('license-status-ok');
-  const errEl = $('license-status-err');
-  const txtEl = $('license-status-text');
-  okEl.style.display = 'none';
-  errEl.style.display = 'none';
-  if (activeLicenseKey && activeLicenseLimit > FREE_LIMIT) {
-    txtEl.textContent = `${activeLicenseLimit.toLocaleString()} leads unlocked`;
-    okEl.style.display = 'flex';
-    $('license-key-input').value = activeLicenseKey;
-  }
-}
 
-async function activateLicenseKey(key) {
-  if (!key) return;
-  loading(true);
-  try {
-    const res = await fetch('/verify-key', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ license_key: key })
-    });
-    const data = await res.json();
-    if (data.valid && data.limit) {
-      activeLicenseKey   = key;
-      activeLicenseLimit = data.limit;
-      localStorage.setItem(LICENSE_STORAGE_KEY, key);
-      localStorage.setItem(LICENSE_LIMIT_KEY, String(data.limit));
-      updateLicenseUI();
-      showToast(`✓ Key activated — ${data.limit.toLocaleString()} leads unlocked`);
-    } else {
-      $('license-status-err').style.display = 'flex';
-      setTimeout(() => { $('license-status-err').style.display = 'none'; }, 3000);
-    }
-  } catch {
-    showToast('Could not verify key. Try again.');
-  } finally {
-    loading(false);
-  }
-}
-
-$('btn-activate').addEventListener('click', () => {
-  const key = $('license-key-input').value.trim();
-  activateLicenseKey(key);
-});
-$('license-key-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('btn-activate').click(); } });
-
-updateLicenseUI();
 
 /* ── Upgrade wall ── */
 function renderUpgradeWall(totalInDb) {
@@ -1000,7 +937,6 @@ async function doSearch(state) {
     if ((state.address_contains||'').trim()) params.set('address_contains', state.address_contains.trim());
     if ((state.sort||'').trim())   params.set('sort', state.sort.trim());
     if (state.page > 1)            params.set('page', String(state.page));
-    if (activeLicenseKey && activeLicenseLimit > FREE_LIMIT) params.set('license_key', activeLicenseKey);
 
     const r = await fetch(`/search?${params}`);
     let data = {};
@@ -1037,18 +973,12 @@ async function doSearch(state) {
     const blurFrom = isCapped ? FREE_LIMIT : rows.length + 1;
     rows.forEach((x, i) => resultsEl.appendChild(renderResult(x, i >= blurFrom)));
 
-    if (isCapped) {
-      renderUpgradeWall(lastTotalInDb);
-    } else {
-      renderPagination();
-    }
+    renderPagination();
 
     filtersEl.classList.remove('hidden');
     const start = (currentPage - 1) * perPage + 1;
     const end   = Math.min(lastTotal, currentPage * perPage);
-    resultsMetaEl.textContent = isCapped
-      ? `Showing ${rows.length} of ${lastTotalInDb.toLocaleString()} results — upgrade to see all`
-      : `Showing ${start}–${end} of ${lastTotal} results`;
+    resultsMetaEl.textContent = `Showing ${start}–${end} of ${lastTotal} results`;
 
     resultsSummary.style.display = 'inline-flex';
     resultsSummaryText.textContent = String(lastTotalInDb);
