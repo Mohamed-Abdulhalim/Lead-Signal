@@ -667,73 +667,9 @@ function debounce(fn, delay) { let t; return function(...a) { clearTimeout(t); t
 
 
 /* ── Upgrade wall ── */
-function renderUpgradeWall(totalInDb) {
-  const total = totalInDb ? totalInDb.toLocaleString() : 'all';
-  $('upgrade-wall-container').innerHTML = `
-    <div class="upgrade-wall" id="upgrade-wall">
-      <div class="upgrade-wall-inner">
-        <div class="upgrade-eyebrow"><span></span> Upgrade to unlock</div>
-        <h3>You've seen the <em>free preview.</em><br>Get the full list.</h3>
-        <p>${total} businesses found. The free tier shows 10. Upgrade once, export everything — phones, websites, addresses, CSV ready.</p>
- 
-        <div class="pricing-cards">
- 
-          <div class="pricing-card">
-            <div class="pricing-card-name">Starter</div>
-            <div class="pricing-card-price"><sup>$</sup>9</div>
-            <div class="pricing-card-leads">500 exports</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">500 lead exports</div>
-              <div class="pricing-card-feature">Phone + website + address</div>
-              <div class="pricing-card-feature">CSV download</div>
-              <div class="pricing-card-feature">One-time payment</div>
-            </div>
-            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-starter" target="_blank" rel="noopener">Get Starter</a>
-          </div>
- 
-          <div class="pricing-card featured">
-            <div class="pricing-card-badge">Most popular</div>
-            <div class="pricing-card-name">Pro</div>
-            <div class="pricing-card-price"><sup>$</sup>29</div>
-            <div class="pricing-card-leads">5,000 exports</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">5,000 lead exports</div>
-              <div class="pricing-card-feature">All data fields</div>
-              <div class="pricing-card-feature">Filters + deduplication</div>
-              <div class="pricing-card-feature">One-time payment</div>
-            </div>
-            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-pro" target="_blank" rel="noopener">Get Pro</a>
-          </div>
- 
-          <div class="pricing-card">
-            <div class="pricing-card-name">Agency</div>
-            <div class="pricing-card-price"><sup>$</sup>79</div>
-            <div class="pricing-card-leads">Unlimited exports</div>
-            <div class="pricing-card-features">
-              <div class="pricing-card-feature">Unlimited exports</div>
-              <div class="pricing-card-feature">All data fields</div>
-              <div class="pricing-card-feature">Priority data requests</div>
-              <div class="pricing-card-feature">One-time payment</div>
-            </div>
-            <a class="btn-buy" href="https://halim.gumroad.com/l/leadsignal-agency" target="_blank" rel="noopener">Get Agency</a>
-          </div>
- 
-        </div>
- 
-        <p class="upgrade-note">After purchase, you receive a license key by email. <strong>Paste it in the key field above</strong> to unlock instantly.</p>
-        <div style="margin-top:14px">
-          <span class="have-key-link" onclick="document.getElementById('license-key-input').focus();document.getElementById('license-bar').scrollIntoView({behavior:'smooth',block:'center'})">
-            Already have a key? Click here to activate it ↑
-          </span>
-        </div>
-      </div>
-    </div>
-  `;
-}
+function renderUpgradeWall(totalInDb) {}
 
-function clearUpgradeWall() {
-  $('upgrade-wall-container').innerHTML = '';
-}
+function clearUpgradeWall() {}
 
 /* ── Counter animation ── */
 async function initCounters() {
@@ -970,8 +906,7 @@ async function doSearch(state) {
       return;
     }
 
-    const blurFrom = isCapped ? FREE_LIMIT : rows.length + 1;
-    rows.forEach((x, i) => resultsEl.appendChild(renderResult(x, i >= blurFrom)));
+    rows.forEach((x) => resultsEl.appendChild(renderResult(x, false)));;
 
     renderPagination();
 
