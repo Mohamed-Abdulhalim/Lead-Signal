@@ -392,7 +392,7 @@ details.faq-item[open] summary::after { content: '−'; }
     <div class="hero-content">
       <div class="hero-eyebrow"><span></span> B2B Lead Database</div>
       <h1 class="hero-headline">Find<br><em>Business</em><br>Leads<br><span class="outlined">Fast.</span></h1>
-      <p class="hero-sub">Search by category and location. Extract phone numbers, websites, addresses, ratings, and export clean CSV files — no manual searching required.</p>
+      <p class="hero-sub">Pick a category and a city. Browse businesses with phone numbers, websites, addresses and ratings, then export the results as a clean CSV.</p>
       <div class="hero-actions">
         <a class="btn-primary" href="#search" id="hero-cta">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -401,9 +401,9 @@ details.faq-item[open] summary::after { content: '−'; }
         <a class="btn-ghost" href="#faq">How it works <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
       </div>
       <div class="hero-stats">
-        <div class="stat-item"><div class="stat-number" data-count="200000" data-stat="row_count">0</div><div class="stat-label">Rows processed</div></div>
-        <div class="stat-item"><div class="stat-number" data-count="92" data-suffix="%">0%</div><div class="stat-label">Phone coverage</div></div>
-        <div class="stat-item"><div class="stat-number">Global</div><div class="stat-label">Any city worldwide</div></div>
+        <div class="stat-item"><div class="stat-number" data-count="700000" data-stat="row_count">0</div><div class="stat-label">Businesses indexed</div></div>
+        <div class="stat-item"><div class="stat-number" data-count="83" data-suffix="%" data-stat="phone_pct">0%</div><div class="stat-label">With phone numbers</div></div>
+        <div class="stat-item"><div class="stat-number" data-count="330" data-stat="locations">0</div><div class="stat-label">Cities covered</div></div>
       </div>
     </div>
     <div class="hero-mockup" aria-hidden="true">
@@ -432,17 +432,17 @@ details.faq-item[open] summary::after { content: '−'; }
     <form id="search-form" class="search-row" action="/search" method="GET">
       <div class="field">
         <label class="field-label" for="category">Category</label>
-        <div class="input-wrap">
-          <input class="field-input" id="category" name="category" placeholder="e.g. dental clinic, gym, café" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-categories"/>
-          <div class="ac-menu" id="ac-categories" role="listbox" aria-label="Category suggestions"></div>
-        </div>
+        <select class="field-input" id="category" name="category">
+          <option value="">All categories</option>
+          {% for c in categories %}<option value="{{ c }}">{{ c|title }}</option>{% endfor %}
+        </select>
       </div>
       <div class="field">
         <label class="field-label" for="location">Location</label>
-        <div class="input-wrap">
-          <input class="field-input" id="location" name="location" placeholder="e.g. Nasr City, Cairo" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-locations"/>
-          <div class="ac-menu" id="ac-locations" role="listbox" aria-label="Location suggestions"></div>
-        </div>
+        <select class="field-input" id="location" name="location" required>
+          <option value="">Choose a city</option>
+          {% for l in locations %}<option value="{{ l }}">{{ l }}</option>{% endfor %}
+        </select>
       </div>
       <div class="field">
         <label class="sr-only" for="btn-search">Search</label>
@@ -457,10 +457,10 @@ details.faq-item[open] summary::after { content: '−'; }
 
     <div class="quick-pills" aria-label="Quick examples">
       <button class="pill" type="button" data-example="restaurants|Dubai, United Arab Emirates"><strong>Restaurants</strong> in Dubai</button>
-      <button class="pill" type="button" data-example="gyms|Berlin, Germany"><strong>Gyms</strong> in Berlin</button>
+      <button class="pill" type="button" data-example="gym|Berlin, Germany"><strong>Gyms</strong> in Berlin</button>
       <button class="pill" type="button" data-example="clinics|Riyadh, Saudi Arabia"><strong>Clinics</strong> in Riyadh</button>
       <button class="pill" type="button" data-example="cafes|Paris, France"><strong>Cafes</strong> in Paris</button>
-      <button class="pill" type="button" data-example="dental clinic|Cairo, Egypt"><strong>Dentists</strong> in Cairo</button>
+      <button class="pill" type="button" data-example="dentists|Dubai, United Arab Emirates"><strong>Dentists</strong> in Dubai</button>
     </div>
 
     <div class="status-row" aria-live="polite">
@@ -495,8 +495,7 @@ details.faq-item[open] summary::after { content: '−'; }
       <div class="field">
         <label class="field-label" for="sort-by">Sort by</label>
         <select class="filter-select" id="sort-by">
-          <option value="">Best match</option>
-          <option value="rating_desc">Rating (high → low)</option>
+          <option value="">Rating (high → low)</option>
           <option value="reviews_desc">Reviews (high → low)</option>
           <option value="name_asc">Name (A → Z)</option>
         </select>
@@ -515,35 +514,11 @@ details.faq-item[open] summary::after { content: '−'; }
     <div class="empty-top">
       <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
       <h3>No results found</h3>
-      <p>Try a broader category like <strong>restaurant</strong> or use <strong>City, Country</strong> format for location.</p>
+      <p>No businesses match this search. Try another category for this city, or remove some filters.</p>
       <div class="quick-pills" style="justify-content:center">
-        <button class="pill" type="button" data-example="restaurant|Cairo, Egypt"><strong>Restaurant</strong> in Cairo</button>
-        <button class="pill" type="button" data-example="hospital|London, UK"><strong>Hospital</strong> in London</button>
-        <button class="pill" type="button" data-example="cafe|Istanbul, Turkey"><strong>Cafe</strong> in Istanbul</button>
-      </div>
-    </div>
-    <div class="empty-request">
-      <div class="empty-request-inner">
-        <div id="req-form-body">
-          <div class="empty-req-eyebrow"><span></span> We can get this data for you</div>
-          <h4>Don't see what you need?</h4>
-          <p class="req-sub">Request it free — we'll scrape it and email you when it's live. Usually within 48 hours.</p>
-          <div class="req-row">
-            <div><label class="req-field-label" for="req-location">📍 Location</label><input class="req-inp" id="req-location" type="text" placeholder="e.g. Lagos, Nigeria"/></div>
-            <div><label class="req-field-label" for="req-category">🏢 Category</label><input class="req-inp" id="req-category" type="text" placeholder="e.g. physiotherapist"/></div>
-          </div>
-          <div class="req-email-wrap"><label class="req-field-label" for="req-email">✉️ Your email</label><input class="req-inp" id="req-email" type="email" placeholder="you@company.com"/></div>
-          <button class="btn-req" id="req-submit" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-            Submit request — it's free
-          </button>
-          <p class="req-fine">No spam. <strong>One email when your data is ready.</strong></p>
-        </div>
-        <div class="req-sent" id="req-sent">
-          <div class="req-sent-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <h4>Request received!</h4>
-          <p>We'll scrape it and email you when it's live — usually within 48 hours.</p>
-        </div>
+        <button class="pill" type="button" data-example="restaurants|Cairo, Egypt"><strong>Restaurants</strong> in Cairo</button>
+        <button class="pill" type="button" data-example="hospital|London, United Kingdom"><strong>Hospitals</strong> in London</button>
+        <button class="pill" type="button" data-example="cafes|Istanbul, Turkey"><strong>Cafes</strong> in Istanbul</button>
       </div>
     </div>
   </div>
@@ -566,7 +541,7 @@ details.faq-item[open] summary::after { content: '−'; }
       </div>
       <div class="data-item">
         <div class="data-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-        <div class="data-item-text"><h4>Websites &amp; socials</h4><p>Business websites and social profile links when available.</p></div>
+        <div class="data-item-text"><h4>Websites</h4><p>Business website links when the listing has one.</p></div>
       </div>
       <div class="data-item">
         <div class="data-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
@@ -587,10 +562,10 @@ details.faq-item[open] summary::after { content: '−'; }
       <h2 class="section-title" style="color:var(--black)">Common <em style="color:var(--red)">questions</em></h2>
     </div>
     <div class="faq-list">
-      <details class="faq-item"><summary>What data comes with each lead?</summary><div class="faq-body">Name, category, phone(s), website, socials (when found), rating, reviews count, address, and a direct Google Maps profile link.</div></details>
-      <details class="faq-item"><summary>Is the free tier really free?</summary><div class="faq-body">Yes — you can search and preview up to 10 results per search for free, no account required. Paid export plans with higher limits are coming soon. Enter your email in the request form to be notified when they launch.</div></details>
-      <details class="faq-item"><summary>What's the best way to search?</summary><div class="faq-body">Use broad category names like <strong>dentist</strong>, <strong>cafe</strong>, or <strong>gym</strong> rather than brand names. For location, use <strong>City, Country</strong> format (e.g. <em>Riyadh, Saudi Arabia</em>) for best results.</div></details>
-      <details class="faq-item"><summary>Can I export to CSV?</summary><div class="faq-body">Yes — after running a search, click "Preview &amp; Export CSV" to choose your columns, apply deduplication, and download the file.</div></details>
+      <details class="faq-item"><summary>What data comes with each lead?</summary><div class="faq-body">Name, category, phone, website, rating, review count (for recently collected listings), address, and a direct Google Maps profile link.</div></details>
+      <details class="faq-item"><summary>Is it free?</summary><div class="faq-body">Yes. LeadSignal is a free portfolio project. Each search shows up to the top 100 results, sorted by rating, and you can export what you see to CSV.</div></details>
+      <details class="faq-item"><summary>What's the best way to search?</summary><div class="faq-body">Choose a city from the list, then optionally a category. Use the filters to keep only listings with a phone number or a website, or a minimum rating.</div></details>
+      <details class="faq-item"><summary>Can I export to CSV?</summary><div class="faq-body">Yes — after running a search, click "Preview &amp; Export CSV" to choose your columns, apply deduplication, and download the current page of results.</div></details>
     </div>
   </div>
 </section>
@@ -600,9 +575,9 @@ details.faq-item[open] summary::after { content: '−'; }
     <div class="footer-brand">LeadSignal</div>
     <div class="footer-links">
       <a href="/privacy">Privacy</a>
-      <a href="/refund">Refund Policy</a>
+      <a href="https://halim.pro" target="_blank" rel="noopener">Portfolio</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
-      <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Mohamed-Abdulhalim/lead-signal" target="_blank" rel="noopener">Source</a>
     </div>
     <div class="footer-copy">© <span id="year"></span> LeadSignal · Built by Mohamed Abdelhalim · Data sourced from publicly available business listings. Not affiliated with Google.</div>
   </div>
@@ -662,14 +637,6 @@ function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); 
 function loading(on) { loader.classList.toggle('show', !!on); }
 function debounce(fn, delay) { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), delay); }; }
 
-/* ── License key state ── */
-
-
-
-/* ── Upgrade wall ── */
-function renderUpgradeWall(totalInDb) {}
-
-function clearUpgradeWall() {}
 
 /* ── Counter animation ── */
 async function initCounters() {
@@ -677,10 +644,10 @@ async function initCounters() {
   try {
     const res = await fetch('/stats');
     const data = await res.json();
-    if (data.row_count) {
-      const el = document.querySelector('[data-stat="row_count"]');
-      if (el) el.dataset.count = data.row_count;
-    }
+    ['row_count', 'phone_pct', 'locations'].forEach(k => {
+      const el = document.querySelector(`[data-stat="${k}"]`);
+      if (el && data[k]) el.dataset.count = data[k];
+    });
   } catch (_) {
     // silently fall back to hardcoded value
   }
@@ -720,8 +687,6 @@ const emptyEl            = $('empty');
 const paginationEl       = $('pagination');
 const catInput           = $('category');
 const locInput           = $('location');
-const catMenu            = $('ac-categories');
-const locMenu            = $('ac-locations');
 const ratingFilterEl     = $('filter-rating');
 const hasPhoneEl         = $('filter-has-phone');
 const hasWebsiteEl       = $('filter-has-website');
@@ -732,7 +697,7 @@ let lastResults = [], currentPage = 1, totalPages = 1, lastTotal = 0, lastTotalI
 
 function setStatus(label) { statusText.innerHTML = `<b>Status:</b> ${label}`; }
 
-function normalizeCategory(v) { const s = (v || '').trim(); return /^all(\s*categories)?$/i.test(s) ? '' : s; }
+function normalizeCategory(v) { return (v || '').trim(); }
 function readUrl() {
   const p = new URL(location.href).searchParams;
   return { category: normalizeCategory(p.get('category') || ''), location: (p.get('location') || '').trim(), min_rating: p.get('min_rating') || '', has_phone: p.get('has_phone') || '', has_website: p.get('has_website') || '', address_contains: p.get('address_contains') || '', sort: p.get('sort') || '', page: parseInt(p.get('page') || '1', 10) || 1 };
@@ -763,42 +728,6 @@ function collectState(page) {
   return { category: normalizeCategory(catInput.value), location: (locInput.value||'').trim(), min_rating: ratingFilterEl?.value||'', has_phone: hasPhoneEl?.checked?'1':'', has_website: hasWebsiteEl?.checked?'1':'', address_contains: (addrEl?.value||'').trim(), sort: sortEl?.value||'', page: page ?? 1 };
 }
 
-/* ── Autocomplete ── */
-function initAutocomplete(inputEl, items, menuEl) {
-  let active = -1;
-  function close() { menuEl.classList.remove('show'); menuEl.innerHTML = ''; active = -1; inputEl.setAttribute('aria-expanded', 'false'); }
-  function open(list) {
-    menuEl.innerHTML = '';
-    if (!list.length) { const d = document.createElement('div'); d.className = 'ac-empty'; d.textContent = 'No matches'; menuEl.appendChild(d); menuEl.classList.add('show'); inputEl.setAttribute('aria-expanded', 'true'); return; }
-    list.slice(0, 12).forEach((it, idx) => { const d = document.createElement('div'); d.className = 'ac-item'; d.setAttribute('role', 'option'); d.textContent = it; d.addEventListener('mousedown', e => { e.preventDefault(); inputEl.value = it; close(); }); menuEl.appendChild(d); });
-    menuEl.classList.add('show'); inputEl.setAttribute('aria-expanded', 'true');
-  }
-  function update() { const q = (inputEl.value||'').trim().toLowerCase(); if (!q) { close(); return; } open(items.filter(x => String(x||'').toLowerCase().includes(q))); }
-  inputEl.addEventListener('input', debounce(update, 80));
-  inputEl.addEventListener('blur', () => setTimeout(close, 120));
-  inputEl.addEventListener('keydown', e => {
-    if (!menuEl.classList.contains('show')) return;
-    const opts = [...menuEl.querySelectorAll('.ac-item')];
-    if (!opts.length) return;
-    if      (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(opts.length - 1, active + 1); }
-    else if (e.key === 'ArrowUp')   { e.preventDefault(); active = Math.max(0, active - 1); }
-    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); opts[active].dispatchEvent(new MouseEvent('mousedown')); return; }
-    else if (e.key === 'Escape')    { e.preventDefault(); close(); return; }
-    opts.forEach((o, i) => o.setAttribute('aria-selected', i === active ? 'true' : 'false'));
-  });
-}
-
-let CATS = [], LOCS = [];
-function wireAC() { initAutocomplete(catInput, ['All categories', ...CATS.filter(Boolean)], catMenu); initAutocomplete(locInput, LOCS.filter(Boolean), locMenu); }
-function fetchMeta(attempt = 1) {
-  fetch('/meta').then(r => r.json()).then(d => {
-    CATS = Array.isArray(d.categories) ? d.categories : [];
-    LOCS = Array.isArray(d.locations)  ? d.locations  : [];
-    if (!LOCS.length && attempt < 3) setTimeout(() => fetchMeta(attempt + 1), 3000);
-    else wireAC();
-  }).catch(() => { if (attempt < 3) setTimeout(() => fetchMeta(attempt + 1), 3000); else wireAC(); });
-}
-fetchMeta();
 
 /* ── Render helpers ── */
 function renderSkeleton(n = 6) {
@@ -827,7 +756,7 @@ function renderResult(item, isBlurred) {
   const tags = document.createElement('div'); tags.className = 'r-tags';
   const addTag = txt => { if (!txt) return; const t = document.createElement('span'); t.className = 'r-tag'; t.textContent = txt; tags.appendChild(t); };
   addTag(item.category || '');
-  if (item.rating) addTag(`★ ${item.rating} (${item.reviews_count || 0})`);
+  if (item.rating) addTag(item.reviews_count ? `★ ${item.rating} · ${item.reviews_count} reviews` : `★ ${item.rating}`);
   addTag(item.address_line || item.address || '');
   left.appendChild(name); left.appendChild(tags);
   const actions = document.createElement('div'); actions.className = 'r-actions';
@@ -856,7 +785,6 @@ async function doSearch(state) {
   emptyEl.style.display = 'none';
   paginationEl.innerHTML = '';
   resultsMetaEl.textContent = '';
-  clearUpgradeWall();
   resultsEl.appendChild(renderSkeleton(8));
   resultsSummary.style.display = 'none';
   exportChip.style.display = 'none';
@@ -880,8 +808,14 @@ async function doSearch(state) {
 
     if (!r.ok) {
       resultsEl.innerHTML = '';
+      if (data.error === 'location_required') {
+        setStatus('Choose a city first.');
+        filtersEl.classList.add('hidden');
+        locInput.focus();
+        return;
+      }
       emptyEl.style.display = 'block';
-      setStatus(data.error === 'backend_not_ready' ? 'Backend waking up — try again in a few seconds.' : 'Search failed. Try again.');
+      setStatus(data.error === 'backend_not_ready' ? 'Backend waking up, try again in a few seconds.' : 'Search failed. Try again.');
       filtersEl.classList.add('hidden');
       return;
     }
@@ -892,14 +826,13 @@ async function doSearch(state) {
     const perPage = data.per_page || rows.length || 10;
     lastTotal     = data.total || rows.length;
     lastTotalInDb = data.total_in_db || lastTotal;
-    totalPages    = perPage ? Math.max(1, Math.ceil(lastTotal / perPage)) : 1;
+    totalPages    = data.total_pages || (perPage ? Math.max(1, Math.ceil(lastTotal / perPage)) : 1);
     const isCapped = !!data.capped;
 
     resultsEl.innerHTML = '';
 
     if (!rows.length) {
       emptyEl.style.display = 'block';
-      prefillRequestForm();
       setStatus('No results');
       resultsMetaEl.textContent = '0 results';
       filtersEl.classList.add('hidden');
@@ -913,7 +846,9 @@ async function doSearch(state) {
     filtersEl.classList.remove('hidden');
     const start = (currentPage - 1) * perPage + 1;
     const end   = Math.min(lastTotal, currentPage * perPage);
-    resultsMetaEl.textContent = `Showing ${start}–${end} of ${lastTotal} results`;
+    resultsMetaEl.textContent = isCapped
+      ? `Showing ${start}–${end} of ${lastTotal.toLocaleString()} results (top ${data.max_rows} by rating shown)`
+      : `Showing ${start}–${end} of ${lastTotal.toLocaleString()} results`;
 
     resultsSummary.style.display = 'inline-flex';
     resultsSummaryText.textContent = String(lastTotalInDb);
@@ -992,7 +927,13 @@ function getSelectedCols() {
 
 function rowToValues(r, cols) {
   const map = { 'place name': r.correct_name||r.name||'', 'category': r.category||'', 'location': r.query_location||'', 'address': r.address_line||r.address||'', 'phone': r.phone_e164||r.phone||'', 'maps link': r.profile_url||'', 'website': r.website||'' };
-  return cols.map(c => map[c] ?? '');
+  return cols.map(c => csvSafe(map[c] ?? ''));
+}
+
+function csvSafe(v) {
+  const s = String(v ?? '');
+  if (/^[=@\t\r]/.test(s) || /^[+\-](?![\d\s().-]+$)/.test(s)) return "'" + s;
+  return s;
 }
 
 function renderExport() {
@@ -1032,38 +973,6 @@ $('btn-refresh-export').addEventListener('click', renderExport);
 exportDedupe.addEventListener('change', renderExport);
 modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 window.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('show')) closeModal(); });
-
-/* ── Inline request form ── */
-function prefillRequestForm() {
-  const cat = (catInput.value||'').trim();
-  const loc = (locInput.value||'').trim();
-  const reqLoc = document.getElementById('req-location');
-  const reqCat = document.getElementById('req-category');
-  if (reqLoc && loc) reqLoc.value = loc;
-  if (reqCat && cat) reqCat.value = cat;
-}
-
-const reqSubmit   = document.getElementById('req-submit');
-const reqSent     = document.getElementById('req-sent');
-const reqFormBody = document.getElementById('req-form-body');
-
-if (reqSubmit) {
-  reqSubmit.addEventListener('click', async () => {
-    const location = (document.getElementById('req-location').value||'').trim();
-    const category = (document.getElementById('req-category').value||'').trim();
-    const email    = (document.getElementById('req-email').value||'').trim();
-    const emailEl  = document.getElementById('req-email');
-    const locEl    = document.getElementById('req-location');
-    if (!email) { emailEl.classList.add('error'); emailEl.focus(); setTimeout(() => emailEl.classList.remove('error'), 1800); return; }
-    if (!location && !category) { locEl.classList.add('error'); locEl.focus(); setTimeout(() => locEl.classList.remove('error'), 1800); return; }
-    reqSubmit.disabled = true; reqSubmit.textContent = 'Sending…';
-    try {
-      const res = await fetch('/request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location, category, email }) });
-      if (res.ok) { reqFormBody.style.display = 'none'; reqSent.style.display = 'block'; }
-      else throw new Error();
-    } catch { reqSubmit.disabled = false; reqSubmit.textContent = 'Submit request — it\'s free'; reqSubmit.style.background = '#ef4444'; setTimeout(() => { reqSubmit.style.background = ''; }, 2500); }
-  });
-}
 
 /* ── Nav links ── */
 $('nav-link-search').addEventListener('click', e => { e.preventDefault(); $('search').scrollIntoView({ behavior:'smooth', block:'start' }); });

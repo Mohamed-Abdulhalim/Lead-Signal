@@ -2,7 +2,7 @@ name: Scrape
 
 on:
   schedule:
-    - cron: "0 */04 * * *"
+    - cron: "17 3 * * *"
   workflow_dispatch:
     inputs:
       reset:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   run:
@@ -27,8 +27,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -64,13 +62,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Pick city for this run (using persistent rotation)
+      - name: Pick city for this run (rotation state kept in Supabase)
         id: pick
         shell: bash
         env:
           RESET: ${{ github.event.inputs.reset }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
         run: |
-          state_file=".github/rotation_index.txt"
+          api="${SUPABASE_URL%/}/rest/v1/pipeline_state"
+          auth=(-H "apikey: $SUPABASE_SERVICE_ROLE" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE")
 
           mapfile -t cities <<'EOF'
           # ── TIER 1: United Kingdom ──
@@ -278,11 +279,10 @@ jobs:
 
           if [[ "$RESET" == "true" ]]; then
             idx=0
-          elif [[ -f "$state_file" ]]; then
-            read -r idx < "$state_file" || idx=0
           else
-            idx=0
+            idx=$(curl -fsS "${auth[@]}" "$api?key=eq.scrape_rotation_index&select=value" | python -c "import json,sys; d=json.load(sys.stdin); print(d[0]['value'] if d else 0)") || idx=0
           fi
+          [[ "$idx" =~ ^[0-9]+$ ]] || idx=0
 
           if (( idx < 0 || idx >= count )); then
             idx=0
@@ -294,19 +294,13 @@ jobs:
           echo "CITY_SAFE=$safe" >> "$GITHUB_ENV"
 
           next_idx=$(( (idx + 1) % count ))
-          mkdir -p "$(dirname "$state_file")"
-          echo "$next_idx" > "$state_file"
+          curl -fsS -X POST "${auth[@]}" -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates,return=minimal" \
+            "$api?on_conflict=key" \
+            -d "{\"key\":\"scrape_rotation_index\",\"value\":\"$next_idx\",\"updated_at\":\"$(date -u +%FT%TZ)\"}" \
+            || echo "::warning::Could not save rotation index"
 
           echo "Picked city: $city (index $idx of $count). Next index will be $next_idx."
-
-      - name: Persist rotation index
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .github/rotation_index.txt
-          git commit -m "chore: advance rotation index to ${{ env.CITY_SAFE }}" || echo "No changes to commit"
-          git push
 
       - name: Run scrape + clean + enrich + push
         env:

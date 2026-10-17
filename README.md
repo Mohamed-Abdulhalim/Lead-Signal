@@ -1,149 +1,104 @@
-# Lead Signal – Automated Google Maps Scraper & Lead Pipeline
+# LeadSignal
 
-A production-grade pipeline that turns Google Maps into clean, structured business leads.  
-**Scrape → Clean → Enrich → Upsert → View in a live dashboard.**
+A Google Maps lead pipeline and search tool. A scheduled scraper collects business listings city by city, a cleaning and enrichment stage normalizes them, everything lands in Postgres (Supabase), and a Flask app on Vercel lets anyone browse and export the results.
 
-Built for real-world use: scalable scraping, automated cleaning, deduplication, enrichment, and a live Supabase-powered UI deployed on Vercel.
+Live: [leadsignal.halim.pro](https://leadsignal.halim.pro)
 
----
+LeadSignal is a portfolio project. It is free to use and is not a commercial product.
 
-## ✨ Highlights (Enterprise-Level Features)
+## At a glance
 
-### **Full Google Maps Extraction**
-- Scrapes **names, phones, websites, addresses, ratings, reviews, photos, categories**, and detailed profile info.  
-- Uses **Selenium + undetected-chromedriver**, rotating user-agents/languages, random delays, and periodic browser restarts to avoid bans.
+- About 715,000 business listings across roughly 330 cities and 60 categories
+- 83% of listings have a phone number
+- A new city is scraped every day by GitHub Actions, with no manual steps
+- About 11,000 indexable city and category pages generated from the data
 
-### **Industrial-Grade Cleaning & Normalization**
-- Standardizes **phone numbers**, **addresses**, **URLs**, and **social links**.  
-- Extracts price data when available.  
-- Removes duplicate businesses and duplicate photos.  
-- Produces a clean, analysis-ready dataset.
+## How it works
 
-### **Phone Enrichment Layer**
-- Revisits profiles missing contact numbers and extracts phones from the business detail page.
-
-### **Supabase Cloud Database (Upsert Logic)**
-- Cleaned data is upserted into PostgreSQL (Supabase).  
-- Unique key: **profile URL** → no duplicates ever.  
-- Batch inserts for performance.
-
-### **CI/CD Automation**
-- GitHub Actions runs the full pipeline on a schedule.  
-- Automatically rotates cities each run.  
-- Fully hands-off operation.
-
-### **Live Dashboard UI**
-- Flask backend + Vercel hosting.  
-- Filter by category and location.  
-- Fast pagination, mobile-friendly UI.
-
-### **Security Built-In**
-- No credentials in code.  
-- `.env.example` included.  
-- Production secrets stored in GitHub Secrets.
-
----
-
-## 🛠️ Tech Stack
-- **Python 3.11**  
-- Selenium, undetected-chromedriver  
-- Supabase (PostgreSQL)  
-- GitHub Actions  
-- Flask (API + dashboard)  
-- HTML / JS frontend (Vercel)
-
----
-
-## 📂 Project Structure
-
-```
-maps-scraper/
-├── maps.py                # Main scraper → results.csv
-├── csv_cleaner.py         # Cleans & normalizes → Cleaned.csv
-├── phone_enricher.py      # Fills missing phones → Enriched.csv
-├── supabase_push.py       # Upserts into Supabase
-├── app.py                 # Flask API + dashboard
-├── templates/
-│   └── index.html         # Dashboard UI
-├── categories.txt
-├── requirements.txt
-└── .github/workflows/
-    └── scrape.yml         # CI/CD pipeline
+```mermaid
+flowchart LR
+    A[GitHub Actions<br/>daily schedule] --> B[maps_scraper.py<br/>Selenium + undetected-chromedriver]
+    B --> C[csv_cleaner.py<br/>normalize, dedupe]
+    C --> D[phone_enricher.py<br/>revisit profiles, E.164 phones]
+    D --> E[supabase_push.py<br/>batch upsert on profile_url]
+    E --> F[(Postgres<br/>production_maps)]
+    F -- statement trigger --> G[(lead_combos<br/>per city/category counts)]
+    G --> H[Flask app on Vercel]
+    F --> H
 ```
 
----
+1. **Pick a city.** The workflow keeps its position in a 170+ city rotation in a `pipeline_state` table, so runs never commit to the repo.
+2. **Scrape.** For every category in `categories.txt`, the scraper searches Google Maps for that city, scrolls the result list, and opens each profile for name, phone, website, address, rating, review count and hours. User agents and languages rotate and the browser restarts every few queries.
+3. **Clean.** Maps URLs are collapsed to a stable `place_id` form, websites lose tracking parameters, ratings and review counts are parsed, and duplicates are removed.
+4. **Enrich.** Profiles without a phone are revisited, and every phone is normalized to E.164 with `phonenumbers`, using the country of the searched city.
+5. **Load.** Rows are upserted in batches with `profile_url` as the conflict key, so re-scraping a city refreshes listings instead of duplicating them.
 
-## ⚙️ Local Setup
+## Database design
 
-### **1. Install dependencies**
+The main table is `production_maps`. Two decisions keep the public site fast on a small Postgres instance:
+
+- **`lead_combos`** holds one row per category and city with total, phone and website counts. A statement-level `AFTER INSERT` trigger with a transition table keeps it current, so the app never has to count or `DISTINCT` over hundreds of thousands of rows. The location list, the landing page stats, the SEO pages and the sitemap all read from it.
+- **Search indexes** match the query shape exactly: `(category, query_location, rating DESC NULLS LAST)` and `(query_location, rating DESC NULLS LAST)`. Searches use exact location matches from a dropdown instead of `ILIKE`, so a page of results is an index range scan.
+
+Row level security is on for every table. The public role can read listings and the aggregate tables and nothing else.
+
+`db/schema.sql` has the full schema.
+
+## The web app
+
+- `/app`: search by city and category, filter by rating, phone, website or address, sort, and export the visible results to CSV. Each search returns the top 100 results by rating.
+- `/leads/<category>-<city>`: server-rendered pages with real counts and a sample of listings. Pages for combinations with fewer than 20 listings are marked `noindex`.
+- `/sitemap.xml`: generated from `lead_combos`.
+
+## Tech stack
+
+Python 3.11, Selenium, undetected-chromedriver, pandas, phonenumbers, Supabase (Postgres), Flask, Vercel, GitHub Actions.
+
+## Project layout
+
+```
+app.py                     Flask app (search API, pages, sitemap)
+pipeline.py                Runs scrape, clean, enrich, push for one city
+scraper/maps_scraper.py    Google Maps scraper
+scraper/phone_enricher.py  Phone recovery and normalization
+cleaner/csv_cleaner.py     Cleaning and deduplication
+db/supabase_push.py        Batch upsert into Supabase
+db/schema.sql              Database schema, functions, trigger, policies
+templates/                 Landing page, search tool, SEO pages
+tests/                     pytest suite for the app and the cleaner
+.github/workflows/         Daily scrape and CI
+```
+
+## Running locally
+
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-### **2. Create `.env`**
-```
-SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE=...
-```
+Run the pipeline for one city (needs Chrome, plus `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE` in the environment):
 
-### **3. Run the pipeline**
 ```bash
-py maps.py --categories-file categories.txt --location "Cairo, Egypt" --max-places 20 --output results.csv --headless
-py csv_cleaner.py --in results.csv --out Cleaned.csv
-py phone_enricher.py --in Cleaned.csv --out Enriched.csv
-py supabase_push.py Enriched.csv
+py pipeline.py --location "Cairo, Egypt" --categories-file categories.txt --max-places 20
 ```
 
-### **4. Run the dashboard**
+Run the web app (needs `SUPABASE_URL` and `SUPABASE_ANON_KEY`):
+
 ```bash
-export SUPABASE_URL=...
-export SUPABASE_ANON_KEY=...
 py app.py
 ```
 
-Visit: **http://localhost:5000**
+Run the tests:
 
----
+```bash
+py -m pytest
+```
 
-## 🕒 Automation (GitHub Actions)
+## Notes and limitations
 
-The scheduled workflow handles:
+- The data comes from public Google Maps listings. Scraping Google Maps is against Google's terms of service, which is one reason this project stays a free demo.
+- Some listings belong to sole traders, whose details can count as personal data under the GDPR. Listings are removed on request.
+- Review counts are only stored for listings collected or refreshed after October 2026.
 
-- Headless scraping  
-- Cleaning  
-- Phone enrichment  
-- Upsert to Supabase  
-- Automatic city rotation  
+## Author
 
-Manual triggering:  
-**GitHub → Actions → Run workflow**
-
----
-
-## 💡 Use Cases
-- Sales lead generation  
-- Local business intelligence  
-- Market research  
-- Directory apps & location-based platforms  
-- Automated client data collection for agencies/consultants
-
----
-
-## 🔮 Roadmap
-- Excel / Notion export  
-- Email enrichment  
-- Rating / “open now” filters  
-- Multi-region scraping  
-- Advanced analytics dashboard  
-
----
-
-## 📜 License
-MIT License.
-
----
-
-## 🙋‍♂️ Author
-**Mohamed Abdulhalim**  
-Data scraping, automation, Supabase & Python development.  
-LinkedIn: https://www.linkedin.com/in/halim99/
+Mohamed Abdulhalim, [halim.pro](https://halim.pro) · [LinkedIn](https://www.linkedin.com/in/halim99/)

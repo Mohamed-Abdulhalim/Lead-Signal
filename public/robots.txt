@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://leadsignal-app.vercel.app/sitemap.xml

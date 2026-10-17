@@ -561,7 +561,6 @@ footer {
     </a>
     <div class="nav-links">
       <a href="#how">How it works</a>
-      <a href="#request">Request data</a>
       <a href="#data">Data</a>
       <a href="#faq">FAQ</a>
     </div>
@@ -657,16 +656,16 @@ footer {
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat">
-      <div class="stat-n" data-count="200000" data-stat="row_count">0</div>
-      <div class="stat-l">Rows processed</div>
+      <div class="stat-n" data-count="700000" data-stat="row_count">0</div>
+      <div class="stat-l">Businesses indexed</div>
     </div>
     <div class="stat">
-      <div class="stat-n" data-count="92" data-suffix="%">0%</div>
-      <div class="stat-l">Phone coverage</div>
+      <div class="stat-n" data-count="83" data-suffix="%" data-stat="phone_pct">0%</div>
+      <div class="stat-l">With phone numbers</div>
     </div>
     <div class="stat">
-      <div class="stat-n">Global</div>
-      <div class="stat-l">Any city worldwide</div>
+      <div class="stat-n" data-count="330" data-stat="locations">0</div>
+      <div class="stat-l">Cities covered</div>
     </div>
     <div class="stat">
       <div class="stat-n">CSV</div>
@@ -689,7 +688,7 @@ footer {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         </div>
         <h3>Search</h3>
-        <p>Enter a business category — <em>dentist</em>, <em>gym</em>, <em>café</em> — and a city. LeadSignal queries data across your entire target area.</p>
+        <p>Pick a city and a business category, like <em>dentists</em>, <em>gym</em> or <em>cafes</em>. LeadSignal searches its index of collected listings for that area.</p>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-num">2</div>
@@ -706,47 +705,6 @@ footer {
         </div>
         <h3>Export</h3>
         <p>Filter by rating, phone availability, or address. Deduplicate. Pick your columns. Download a clean CSV — ready to drop into your CRM or outreach tool.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- REQUEST SECTION -->
-<section class="request-section" id="request">
-  <div class="request-inner">
-    <div class="reveal">
-      <div class="request-badge">✦ Shape the product</div>
-      <h2 class="section-h">Don't see your city<br>or <span>niche?</span></h2>
-      <p class="section-p">Tell us what you need. We prioritize new locations and categories based on real requests — and we'll notify you the moment your data goes live.</p>
-    </div>
-    <div class="request-card reveal">
-      <div id="req-form-wrap">
-        <div class="req-grid">
-          <div class="req-field">
-            <label class="req-label" for="req-location">📍 Location you need</label>
-            <input class="req-input" id="req-location" type="text" placeholder="e.g. Lagos, Nigeria"/>
-          </div>
-          <div class="req-field">
-            <label class="req-label" for="req-category">🏢 Business category</label>
-            <input class="req-input" id="req-category" type="text" placeholder="e.g. physiotherapist"/>
-          </div>
-        </div>
-        <div class="req-field req-email-row">
-          <label class="req-label" for="req-email">✉️ Your email — we'll notify you when it's live</label>
-          <input class="req-input" id="req-email" type="email" placeholder="you@company.com"/>
-        </div>
-        <button class="btn-request" id="req-submit" type="button">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-          Submit request
-        </button>
-        <p class="req-note">We prioritize based on demand. <strong>Most locations go live within 48 hours.</strong> No spam — one email when your data is ready.</p>
-      </div>
-      <div class="req-success" id="req-success">
-        <div class="req-success-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h3>Request received!</h3>
-        <p>We'll get to work on it and email you as soon as the data is live. Usually within 48 hours.</p>
       </div>
     </div>
   </div>
@@ -817,7 +775,7 @@ footer {
         </div>
         <div class="field-item">
           <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-          <div><h4>Website & socials</h4><p>Direct URL when listed on Maps.</p></div>
+          <div><h4>Website</h4><p>Direct URL when listed on Maps.</p></div>
         </div>
         <div class="field-item">
           <div class="field-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
@@ -858,15 +816,15 @@ footer {
     <div class="faq-list">
       <details class="faq">
         <summary>What data comes with each lead?</summary>
-        <div class="faq-body">Business name, category, phone number (cleaned), website, social links when available, rating, review count, full address, and a direct Google Maps profile link.</div>
+        <div class="faq-body">Business name, category, phone number (cleaned), website, rating, review count for recently collected listings, full address, and a direct Google Maps profile link.</div>
       </details>
       <details class="faq">
         <summary>Is it free to try?</summary>
-        <div class="faq-body">Yes — the tool is free to try.</div>
+        <div class="faq-body">Yes. LeadSignal is a free portfolio project by Mohamed Abdulhalim. Each search shows the top 100 results by rating, and you can export them to CSV.</div>
       </details>
       <details class="faq">
-        <summary>What categories and locations work best?</summary>
-        <div class="faq-body">Use broad category names like <strong>dentist</strong>, <strong>café</strong>, or <strong>gym</strong> rather than specific brand names. For location, use <strong>City, Country</strong> format — e.g. <em>Riyadh, Saudi Arabia</em> — for best results.</div>
+        <summary>Which cities and categories are covered?</summary>
+        <div class="faq-body">Around 330 cities across the UK, the Gulf, North America, Europe, Egypt and Asia, in about 60 business categories. An automated pipeline adds new listings daily. The full list of cities is in the search tool.</div>
       </details>
       <details class="faq">
         <summary>Can I filter before exporting?</summary>
@@ -889,15 +847,16 @@ footer {
   <div class="footer-inner">
     <div>
       <div class="footer-brand-name">LeadSignal</div>
-      <p class="footer-desc">B2B lead tool for sales teams, agencies, freelancers, and researchers. Built by a data engineer, for people who need clean data fast.</p>
+      <p class="footer-desc">A Google Maps lead pipeline and search tool, built end to end by Mohamed Abdulhalim: scraping, cleaning, enrichment, Postgres and the web app.</p>
     </div>
     <div class="footer-links">
       <a href="#how">How it works</a>
       <a href="#data">Data</a>
       <a href="#faq">FAQ</a>
       <a href="/app">Tool</a>
+      <a href="https://halim.pro" target="_blank" rel="noopener">Portfolio</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
-      <a href="https://github.com/Mohamed-Abdulhalim" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Mohamed-Abdulhalim/lead-signal" target="_blank" rel="noopener">Source</a>
       <a href="https://startupfa.me/s/leadsignal?utm_source=leadsignal-app.vercel.app" target="_blank">
         <img src="https://startupfa.me/badges/featured-badge.webp" alt="LeadSignal - Featured on Startup Fame" width="171" height="54" style="vertical-align:middle"/>
       </a>
@@ -920,10 +879,10 @@ async function initCounters() {
   try {
     const res = await fetch('/stats');
     const data = await res.json();
-    if (data.row_count) {
-      const el = document.querySelector('[data-stat="row_count"]');
-      if (el) el.dataset.count = data.row_count;
-    }
+    ['row_count', 'phone_pct', 'locations'].forEach(k => {
+      const el = document.querySelector(`[data-stat="${k}"]`);
+      if (el && data[k]) el.dataset.count = data[k];
+    });
   } catch (_) {
     // silently fall back to hardcoded value
   }
@@ -954,54 +913,6 @@ const revealObs = new IntersectionObserver(entries => {
 }, { threshold: .12 });
 document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
-/* Request form */
-const reqSubmit   = document.getElementById('req-submit');
-const reqSuccess  = document.getElementById('req-success');
-const reqFormWrap = document.getElementById('req-form-wrap');
-
-reqSubmit.addEventListener('click', async () => {
-  const location = document.getElementById('req-location').value.trim();
-  const category = document.getElementById('req-category').value.trim();
-  const email    = document.getElementById('req-email').value.trim();
-
-  if (!email) {
-    document.getElementById('req-email').focus();
-    document.getElementById('req-email').style.borderColor = '#ef4444';
-    setTimeout(() => document.getElementById('req-email').style.borderColor = '', 1800);
-    return;
-  }
-  if (!location && !category) {
-    document.getElementById('req-location').focus();
-    document.getElementById('req-location').style.borderColor = '#ef4444';
-    setTimeout(() => document.getElementById('req-location').style.borderColor = '', 1800);
-    return;
-  }
-
-  reqSubmit.disabled = true;
-  reqSubmit.textContent = 'Sending…';
-
-  try {
-    const res = await fetch('/request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ location, category, email })
-    });
-    if (res.ok) {
-      reqFormWrap.style.display = 'none';
-      reqSuccess.style.display  = 'block';
-    } else {
-      throw new Error('server error');
-    }
-  } catch {
-    reqSubmit.disabled = false;
-    reqSubmit.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Try again`;
-    reqSubmit.style.background = '#ef4444';
-    setTimeout(() => {
-      reqSubmit.style.background = '';
-      reqSubmit.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit request`;
-    }, 2500);
-  }
-});
 </script>
 </body>
 </html>

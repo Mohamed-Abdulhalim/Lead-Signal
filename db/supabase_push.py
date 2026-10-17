@@ -34,6 +34,15 @@ def to_float(v: str):
         return None
 
 
+def to_int(v: str):
+    if v is None or str(v).strip() == "":
+        return None
+    try:
+        return int(float(str(v).replace(",", "").strip()))
+    except Exception:
+        return None
+
+
 def read_csv(path: str) -> List[Dict[str, Any]]:
     logging.info("Reading CSV from %s", path)
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
@@ -48,15 +57,14 @@ def clean_row(row: Dict[str, Any]) -> Dict[str, Any]:
     r["name"] = (row.get("name") or "").strip()
     r["correct_name"] = (row.get("correct_name") or "").strip()
     r["profile_url"] = (row.get("profile_url") or "").strip()
-    r["photo_urls"] = (row.get("photo_urls") or "").strip()
     r["category"] = (row.get("category") or "").strip()
     r["query_location"] = (row.get("query_location") or "").strip()
     r["address_line"] = (row.get("address_line") or "").strip()
     r["phone"] = (row.get("phone") or "").strip()
     r["website"] = (row.get("website") or "").strip()
     r["opening_hours"] = (row.get("opening_hours") or "").strip()
-    r["social_links"] = (row.get("social_links") or "").strip()
     r["rating"] = to_float(row.get("rating"))
+    r["reviews_count"] = to_int(row.get("reviews_count"))
     verified = to_bool(row.get("phone_verified"))
     r["phone_verified"] = verified if verified is not None else False
     return r

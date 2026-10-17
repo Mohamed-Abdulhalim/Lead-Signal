@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{{ page_title }}</title>
 <meta name="description" content="{{ meta_description }}">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="{% if noindex %}noindex,follow{% else %}index,follow{% endif %}">
 <link rel="canonical" href="https://leadsignal.halim.pro/leads/{{ slug }}"/>
 <meta property="og:title" content="{{ page_title }}">
 <meta property="og:description" content="{{ meta_description }}">
@@ -312,7 +312,7 @@ footer {
     </a>
     <a class="btn-nav" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      See all {{ total }} results
+      Open in search tool
     </a>
   </div>
 </nav>
@@ -331,7 +331,7 @@ footer {
     <h1>{{ category_title }}<br><span>in {{ location_display }}</span></h1>
     <p class="hero-sub">
       <strong>{{ total }} businesses</strong> found in {{ location_raw }} — with phone numbers, websites, addresses and ratings.
-      Export the full list to CSV instantly, no signup required.
+      Browse the top-rated listings and export them to CSV, no signup required.
     </p>
     <div class="hero-stats">
       <div>
@@ -352,7 +352,7 @@ footer {
     </div>
     <a class="btn-cta" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Export all {{ total }} to CSV — free
+      Search &amp; export in the tool
     </a>
   </div>
 </section>
@@ -366,14 +366,14 @@ footer {
         <h2 class="section-title">{{ category_title }}<br><span>in {{ location_display }}</span></h2>
       </div>
       <a class="see-all" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
-        See all {{ total }} results
+        Open in the search tool
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
 
     <div class="results-grid">
       {% for r in sample_results %}
-      <div class="result-card{% if loop.index > 5 %} blurred{% endif %}">
+      <div class="result-card">
         <div>
           <div class="r-name">{{ r.correct_name or r.name }}</div>
           <div class="r-tags">
@@ -383,7 +383,6 @@ footer {
             {% if r.address_line %}<span class="r-tag">{{ r.address_line }}</span>{% endif %}
           </div>
         </div>
-        {% if not loop.index > 5 %}
         <div class="r-actions">
           {% if r.phone %}
           <a class="r-action" href="tel:{{ r.phone }}">
@@ -404,18 +403,17 @@ footer {
           </a>
           {% endif %}
         </div>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
 
     <!-- Unlock CTA -->
     <div class="unlock-band">
-      <h3>See all <span>{{ total }} {{ category_title }}</span><br>in {{ location_raw }}</h3>
-      <p>The full list includes phone numbers, websites, addresses, ratings and Google Maps links — export to CSV in one click.</p>
+      <h3>Browse <span>{{ total }} {{ category_title }}</span><br>in {{ location_raw }}</h3>
+      <p>Filter by rating, phone or website, sort the top results, and export them to CSV with phone numbers, websites, addresses and Google Maps links.</p>
       <a class="btn-cta" href="/app?category={{ category_raw | urlencode }}&location={{ location_raw | urlencode }}">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        Unlock full list
+        Open the search tool
       </a>
     </div>
   </div>
@@ -426,9 +424,25 @@ footer {
 <section class="related-section">
   <div class="container">
     <div class="section-eyebrow">Related searches</div>
-    <h2 class="section-title" style="font-size:clamp(24px,3vw,36px);margin-bottom:4px">More leads nearby</h2>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,36px);margin-bottom:4px">{{ category_title }} in other cities</h2>
     <div class="related-grid">
       {% for rel in related %}
+      <a class="related-card" href="/leads/{{ rel.slug }}">
+        <div class="related-card-text">{{ rel.label }}</div>
+        <svg class="related-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% if nearby %}
+<section class="related-section" style="padding-top:0">
+  <div class="container">
+    <div class="section-eyebrow">Same city</div>
+    <h2 class="section-title" style="font-size:clamp(24px,3vw,36px);margin-bottom:4px">More leads in {{ location_display }}</h2>
+    <div class="related-grid">
+      {% for rel in nearby %}
       <a class="related-card" href="/leads/{{ rel.slug }}">
         <div class="related-card-text">{{ rel.label }}</div>
         <svg class="related-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -445,9 +459,9 @@ footer {
     <div class="about-inner">
       <div>
         <div class="about-eyebrow">About LeadSignal</div>
-        <h2 class="about-h">B2B Database<br>Lead Database</h2>
+        <h2 class="about-h">Business<br>Lead Database</h2>
         <p class="about-p">LeadSignal is a tool that finds structured business contact data by category and location, and exports it as a clean CSV.</p>
-        <p class="about-p">No signup required to preview results. Upgrade once to unlock full CSV export.</p>
+        <p class="about-p">A free portfolio project by <a href="https://halim.pro" style="color:inherit;text-decoration:underline">Mohamed Abdulhalim</a>. An automated pipeline scrapes, cleans and enriches listings into Postgres every day.</p>
         <a class="btn-cta" href="/app" style="margin-top:8px;display:inline-flex">
           Try LeadSignal free
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -455,13 +469,13 @@ footer {
       </div>
       <div class="about-features">
         <div class="about-feat"><span class="about-feat-dot"></span>Phone numbers — cleaned and normalized</div>
-        <div class="about-feat"><span class="about-feat-dot"></span>Websites and social links</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>Website links</div>
         <div class="about-feat"><span class="about-feat-dot"></span>Full addresses and Google Maps links</div>
         <div class="about-feat"><span class="about-feat-dot"></span>Ratings and review counts</div>
         <div class="about-feat"><span class="about-feat-dot"></span>Filter by rating, phone, website</div>
         <div class="about-feat"><span class="about-feat-dot"></span>Deduplicate before exporting</div>
-        <div class="about-feat"><span class="about-feat-dot"></span>One-click CSV export — no row limits</div>
-        <div class="about-feat"><span class="about-feat-dot"></span>Works for any city worldwide</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>One-click CSV export</div>
+        <div class="about-feat"><span class="about-feat-dot"></span>About 330 cities, 60 categories</div>
       </div>
     </div>
   </div>
@@ -475,6 +489,7 @@ footer {
       <a href="/">Home</a>
       <a href="/app">Tool</a>
       <a href="/#faq">FAQ</a>
+      <a href="https://halim.pro" target="_blank" rel="noopener">Portfolio</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
     </div>
   </div>

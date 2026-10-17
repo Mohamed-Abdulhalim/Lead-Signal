@@ -1,30 +1,41 @@
-from flask import Flask, jsonify, request, render_template, Response, redirect
-from supabase import create_client
+import math
 import os
-import time
 import re
+import time
+from xml.sax.saxutils import escape as xml_escape
+
+from flask import Flask, Response, jsonify, redirect, render_template, request
+from supabase import create_client
 
 app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 LEADS_TABLE = (os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps").strip()
+SITE_URL = "https://leadsignal.halim.pro"
+OLD_HOST = "maps-scraper-gray.vercel.app"
 
+PER_PAGE = 20
+MAX_PAGES = 5
+SITEMAP_MIN_ROWS = 20
+META_TTL = 900
+COMBOS_TTL = 3600
+STATS_TTL = 900
 
-FREE_LIMIT = 10
+SEARCH_COLUMNS = (
+    "id,name,correct_name,category,query_location,address_line,"
+    "phone,website,rating,reviews_count,opening_hours,profile_url"
+)
+SAMPLE_COLUMNS = "name,correct_name,category,phone,website,address_line,rating,reviews_count,profile_url"
+SORTS = {
+    "rating_desc": ["rating.desc.nullslast", "reviews_count.desc.nullslast"],
+    "reviews_desc": ["reviews_count.desc.nullslast", "rating.desc.nullslast"],
+    "name_asc": ["name"],
+}
 
 _sb = None
+_cache = {}
 
-try:
-    with open("categories.txt", encoding="utf-8") as f:
-        HARDCODED_CATEGORIES = sorted({line.strip() for line in f if line.strip()})
-except Exception:
-    HARDCODED_CATEGORIES = []
-
-_cache = {
-    "locations": {"ts": 0.0, "value": []},
-    "categories": {"ts": 0.0, "value": HARDCODED_CATEGORIES},
-}
 
 def _get_sb():
     global _sb
@@ -34,6 +45,7 @@ def _get_sb():
         raise RuntimeError("Missing SUPABASE_URL or SUPABASE_ANON_KEY")
     _sb = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
     return _sb
+
 
 def _retry(fn, tries=2, base_sleep=0.25):
     last = None
@@ -46,193 +58,203 @@ def _retry(fn, tries=2, base_sleep=0.25):
                 time.sleep(base_sleep * (2 ** i))
     raise last
 
-def unique_categories():
-    return _cache["categories"]["value"]
 
-def _fetch_locations():
-    sb = _get_sb()
-    res = (
-        sb.table("distinct_query_locations")
-        .select("query_location")
-        .order("query_location")
-        .execute()
-    )
-    rows = res.data or []
-    values = []
-    for r in rows:
-        v = (r.get("query_location") or "").strip()
-        if v:
-            values.append(v)
-    return values
-
-def unique_locations(ttl_seconds=900):
+def _cached(key, ttl, loader, fallback):
     now = time.time()
-    bucket = _cache["locations"]
-    if bucket["value"] and (now - bucket["ts"]) < ttl_seconds:
-        return bucket["value"]
-    values = _retry(_fetch_locations, tries=2, base_sleep=0.3)
-    bucket["value"] = values
-    bucket["ts"] = now
-    return values
+    hit = _cache.get(key)
+    if hit and (now - hit[0]) < ttl:
+        return hit[1]
+    try:
+        value = _retry(loader)
+    except Exception:
+        return hit[1] if hit else fallback
+    _cache[key] = (now, value)
+    return value
+
+
+def _rpc(name, params=None):
+    return _get_sb().rpc(name, params or {}).execute().data
+
 
 def _slugify(text):
-    text = text.lower().strip()
-    text = re.sub(r'[^\w\s-]', '', text)
-    text = re.sub(r'[\s_]+', '-', text)
-    text = re.sub(r'-+', '-', text)
-    return text.strip('-')
+    text = (text or "").lower().strip()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_]+", "-", text)
+    text = re.sub(r"-+", "-", text)
+    return text.strip("-")
+
 
 def _make_slug(category, location):
     return f"{_slugify(category)}-{_slugify(location)}"
 
-def _parse_slug(slug):
-    cats = unique_categories()
-    locs = unique_locations()
-    for cat in sorted(cats, key=len, reverse=True):
-        cat_slug = _slugify(cat)
-        if slug.startswith(cat_slug + '-'):
-            loc_slug = slug[len(cat_slug) + 1:]
-            for loc in locs:
-                if _slugify(loc) == loc_slug:
-                    return cat, loc
-    return None, None
+
+def _safe_url(value):
+    v = (value or "").strip()
+    if not v:
+        return ""
+    if v.lower().startswith(("http://", "https://")):
+        return v
+    if re.match(r"^[\w.-]+\.[a-z]{2,}(/.*)?$", v, re.I):
+        return "https://" + v
+    return ""
+
+
+def _label(category, location):
+    return f"{category.title()} in {location}"
+
+
+def lead_meta():
+    def load():
+        data = _rpc("get_lead_meta") or {}
+        return {
+            "categories": [c for c in data.get("categories") or [] if c],
+            "locations": [l for l in data.get("locations") or [] if l],
+        }
+
+    return _cached("meta", META_TTL, load, {"categories": [], "locations": []})
+
+
+def lead_stats():
+    return _cached("stats", STATS_TTL, lambda: _rpc("lead_stats") or {}, {})
+
+
+def combo_index():
+    def load():
+        rows = _rpc("get_lead_combos", {"min_n": 1}) or []
+        by_slug = {}
+        by_category = {}
+        by_location = {}
+        for category, location, n, n_phone, n_web in rows:
+            combo = {
+                "category": category,
+                "location": location,
+                "n": n,
+                "n_phone": n_phone,
+                "n_web": n_web,
+                "slug": _make_slug(category, location),
+                "label": _label(category, location),
+            }
+            by_slug[combo["slug"]] = combo
+            by_category.setdefault(category, []).append(combo)
+            by_location.setdefault(location, []).append(combo)
+        return {"by_slug": by_slug, "by_category": by_category, "by_location": by_location}
+
+    return _cached("combos", COMBOS_TTL, load, {"by_slug": {}, "by_category": {}, "by_location": {}})
+
+
+def indexable_combos():
+    combos = [c for c in combo_index()["by_slug"].values() if c["n"] >= SITEMAP_MIN_ROWS]
+    combos.sort(key=lambda c: (c["category"], c["location"]))
+    return combos
+
+
+def _clean_item(row):
+    item = {k: ("" if v is None else v) for k, v in row.items()}
+    if item.get("correct_name"):
+        item["name"] = item["correct_name"]
+    item["website"] = _safe_url(item.get("website"))
+    item["profile_url"] = _safe_url(item.get("profile_url"))
+    return item
+
+
+@app.before_request
+def redirect_old_domain():
+    if request.host == OLD_HOST:
+        return redirect(request.url.replace(OLD_HOST, "leadsignal.halim.pro"), code=301)
+
 
 @app.get("/health")
 def health():
     return "ok", 200
+
+
 @app.get("/stats")
 def stats():
-    try:
-        sb = _get_sb()
-        res = sb.table(LEADS_TABLE).select("profile_url", count="exact").execute()
-        return jsonify({"row_count": res.count or 0})
-    except Exception:
-        return jsonify({"row_count": 0})
+    s = lead_stats()
+    resp = jsonify({
+        "row_count": int(s.get("row_count") or 0),
+        "phone_pct": int(s.get("phone_pct") or 0),
+        "locations": int(s.get("locations") or 0),
+        "categories": int(s.get("categories") or 0),
+    })
+    resp.headers["Cache-Control"] = "public, max-age=300, s-maxage=900"
+    return resp
 
-@app.route('/privacy')
+
+@app.route("/privacy")
 def privacy():
-    return render_template('privacy.html')
+    return render_template("privacy.html")
 
-@app.route('/refund')
-def refund():
-    return render_template('refund.html')
+
 @app.route("/", methods=["GET", "HEAD"])
 def landing():
     if request.method == "HEAD":
         return "", 200
     return render_template("index.html")
 
+
 @app.route("/app", methods=["GET", "HEAD"])
 def tool():
     if request.method == "HEAD":
         return "", 200
-    try:
-        locs = unique_locations()
-    except Exception:
-        locs = []
-    return render_template(
-        "app.html",
-        categories=unique_categories(),
-        locations=locs
-    )
+    meta = lead_meta()
+    return render_template("app.html", categories=meta["categories"], locations=meta["locations"])
 
-@app.post("/verify-key")
-def verify_key():
-    return jsonify({"valid": False, "error": "disabled"}), 404
-
-@app.post("/request")
-def submit_request():
-    data = request.get_json()
-    location = (data.get("location") or "").strip()
-    category = (data.get("category") or "").strip()
-    email    = (data.get("email") or "").strip()
-    if not (location or category) or not email:
-        return jsonify({"error": "missing_fields"}), 400
-    sb = _get_sb()
-    sb.table("lead_requests").insert({
-        "location": location,
-        "category": category,
-        "email":    email
-    }).execute()
-    return jsonify({"ok": True})
 
 @app.get("/meta")
 def meta():
-    try:
-        locs = unique_locations()
-    except Exception:
-        locs = []
-    return jsonify({"categories": unique_categories(), "locations": locs})
+    resp = jsonify(lead_meta())
+    resp.headers["Cache-Control"] = "public, max-age=300, s-maxage=900"
+    return resp
+
 
 @app.get("/leads")
 def leads_index():
-    cats = unique_categories()
-    locs = unique_locations()
-    combos = []
-    for cat in cats:
-        for loc in locs:
-            combos.append({
-                "slug": _make_slug(cat, loc),
-                "label": f"{cat.title()} in {loc}"
-            })
+    combos = [{"slug": c["slug"], "label": c["label"]} for c in indexable_combos()]
     return render_template("leads_index.html", combos=combos)
+
 
 @app.get("/leads/<slug>")
 def leads_page(slug):
-    try:
-        category, location = _parse_slug(slug)
-    except Exception:
-        category, location = None, None
-
-    if not category or not location:
+    combo = combo_index()["by_slug"].get(slug)
+    if not combo:
         return render_template("404.html"), 404
 
-    sb = _get_sb()
+    category = combo["category"]
+    location = combo["location"]
 
     try:
-        res = (
-            sb.table(LEADS_TABLE)
-            .select("name,correct_name,category,phone,website,address_line,rating,profile_url")
+        q = (
+            _get_sb()
+            .table(LEADS_TABLE)
+            .select(SAMPLE_COLUMNS)
             .eq("category", category)
-            .ilike("query_location", f"{location}%")
-            .order("rating", desc=True)
+            .eq("query_location", location)
+            .order("rating.desc.nullslast")
             .limit(10)
-            .execute()
         )
-        sample_results = res.data or []
+        sample_results = [_clean_item(r) for r in (_retry(q.execute).data or [])]
     except Exception:
         sample_results = []
 
-    try:
-        count_res = (
-            sb.table(LEADS_TABLE)
-            .select("id", count="exact")
-            .eq("category", category)
-            .ilike("query_location", f"{location}%")
-            .execute()
-        )
-        total = count_res.count or len(sample_results)
-    except Exception:
-        total = len(sample_results)
+    idx = combo_index()
+    related = [
+        {"slug": c["slug"], "label": c["label"]}
+        for c in sorted(idx["by_category"].get(category, []), key=lambda c: -c["n"])
+        if c["slug"] != slug and c["n"] >= SITEMAP_MIN_ROWS
+    ][:8]
+    nearby = [
+        {"slug": c["slug"], "label": c["label"]}
+        for c in sorted(idx["by_location"].get(location, []), key=lambda c: -c["n"])
+        if c["slug"] != slug and c["n"] >= SITEMAP_MIN_ROWS
+    ][:8]
 
-    phone_count   = sum(1 for r in sample_results if r.get("phone"))
-    website_count = sum(1 for r in sample_results if r.get("website"))
-
-    locs = unique_locations()
-    related = []
-    for loc in locs:
-        if loc == location:
-            continue
-        related.append({"slug": _make_slug(category, loc), "label": f"{category.title()} in {loc}"})
-        if len(related) >= 8:
-            break
-
-    category_title   = category.title()
-    location_display = location.split(",")[0]
-    page_title       = f"{category_title} in {location} — Phone Numbers, Websites & Addresses | LeadSignal"
+    category_title = category.title()
+    total = combo["n"]
+    page_title = f"{category_title} in {location}: Phone Numbers, Websites & Addresses | LeadSignal"
     meta_description = (
-        f"Free list of {category_title.lower()} in {location} with phone numbers, websites, "
-        f"addresses and ratings. {total} businesses found. Export to CSV instantly — no signup."
+        f"{total} {category_title.lower()} in {location} with phone numbers, websites, "
+        f"addresses and ratings. Preview the list and export a sample to CSV."
     )
 
     return render_template(
@@ -241,121 +263,117 @@ def leads_page(slug):
         category_raw=category,
         category_title=category_title,
         location_raw=location,
-        location_display=location_display,
+        location_display=location.split(",")[0],
         page_title=page_title,
         meta_description=meta_description,
         sample_results=sample_results,
         total=total,
-        phone_count=phone_count,
-        website_count=website_count,
+        phone_count=combo["n_phone"],
+        website_count=combo["n_web"],
         related=related,
+        nearby=nearby,
+        noindex=total < SITEMAP_MIN_ROWS,
     )
+
+
+def _build_search(location, category, filters, sort, count):
+    q = _get_sb().table(LEADS_TABLE).select(SEARCH_COLUMNS, count=count).eq("query_location", location)
+    if category:
+        q = q.eq("category", category)
+    if filters["min_rating"] is not None:
+        q = q.gte("rating", filters["min_rating"])
+    if filters["has_phone"]:
+        q = q.not_.is_("phone", None).neq("phone", "")
+    if filters["has_website"]:
+        q = q.not_.is_("website", None).neq("website", "")
+    if filters["address_contains"]:
+        q = q.ilike("address_line", f"%{filters['address_contains']}%")
+    for o in SORTS.get(sort, SORTS["rating_desc"]):
+        q = q.order(o)
+    return q
+
 
 @app.get("/search")
 def search():
-    try:
-        sb = _get_sb()
-    except Exception:
-        return jsonify({"items": [], "page": 1, "per_page": 10, "total": 0, "error": "backend_not_ready"}), 503
+    category = (request.args.get("category") or "").strip()
+    location = (request.args.get("location") or "").strip()
+    page = max(1, min(request.args.get("page", default=1, type=int) or 1, MAX_PAGES))
+    sort = (request.args.get("sort") or "rating_desc").strip()
 
-    
+    if not location:
+        return jsonify({"items": [], "page": 1, "per_page": PER_PAGE, "total": 0, "error": "location_required"}), 400
 
-    category = request.args.get("category", type=str)
-    location = request.args.get("location", type=str)
-    page = request.args.get("page", default=1, type=int)
-    if page < 1:
-        page = 1
-        
-    per_page = 20
-    offset = (page - 1) * per_page
-    fetch_count = per_page
+    address = re.sub(r"[%_*()]", " ", (request.args.get("address_contains") or "")).strip()[:60]
+    filters = {
+        "min_rating": request.args.get("min_rating", type=float),
+        "has_phone": request.args.get("has_phone") == "1",
+        "has_website": request.args.get("has_website") == "1",
+        "address_contains": address,
+    }
+    plain = filters["min_rating"] is None and not filters["has_phone"] and not filters["has_website"] and not address
 
-    min_rating = request.args.get("min_rating", type=float)
-    has_phone = request.args.get("has_phone") == "1"
-    has_website = request.args.get("has_website") == "1"
-    address_contains = request.args.get("address_contains", type=str)
-    sort = (request.args.get("sort", type=str) or "").strip()
-
-    q = sb.table(LEADS_TABLE).select(
-        "id,name,correct_name,category,query_location,address_line,phone,website,rating,opening_hours,social_links,photo_urls,profile_url",
-        count="exact"
-    )
-
-    if category:
-        q = q.eq("category", category)
-    if location:
-        loc = location.strip()
-        if loc:
-            q = q.ilike("query_location", f"{loc}%")
-    if min_rating is not None:
-        q = q.gte("rating", min_rating)
-    if has_phone:
-        q = q.not_.is_("phone", None).neq("phone", "")
-    if has_website:
-        q = q.not_.is_("website", None).neq("website", "")
-    if address_contains:
-        addr = address_contains.strip()
-        if addr:
-            q = q.ilike("address_line", f"%{addr}%")
-
-    if sort == "rating_desc":
-        q = q.order("rating", desc=True)
-    elif sort == "name_asc":
-        q = q.order("name")
-    elif sort == "reviews_desc":
-        q = q.order("rating", desc=True)
-    else:
-        q = q.order("rating", desc=True)
-
-    q = q.range(offset, offset + fetch_count - 1)
-
-    def _exec():
-        return q.execute()
+    offset = (page - 1) * PER_PAGE
 
     try:
-        res = _retry(_exec, tries=2, base_sleep=0.25)
+        _get_sb()
     except Exception:
-        return jsonify({"items": [], "page": page, "per_page": per_page, "total": 0, "error": "query_failed"}), 502
+        return jsonify({"items": [], "page": page, "per_page": PER_PAGE, "total": 0, "error": "backend_not_ready"}), 503
 
-    rows = res.data or []
-    total_in_db = res.count or len(rows)
+    try:
+        if plain:
+            q = _build_search(location, category, filters, sort, None).range(offset, offset + PER_PAGE - 1)
+            rows = _retry(q.execute).data or []
+            combos = combo_index()["by_location"].get(location, [])
+            total = sum(c["n"] for c in combos if not category or c["category"] == category)
+            if not total:
+                total = offset + len(rows)
+        else:
+            q = _build_search(location, category, filters, sort, "exact").range(offset, offset + PER_PAGE - 1)
+            try:
+                res = _retry(q.execute, tries=1)
+            except Exception:
+                q = _build_search(location, category, filters, sort, "planned").range(offset, offset + PER_PAGE - 1)
+                res = _retry(q.execute)
+            rows = res.data or []
+            total = res.count or (offset + len(rows))
+    except Exception:
+        return jsonify({"items": [], "page": page, "per_page": PER_PAGE, "total": 0, "error": "query_failed"}), 502
 
-    items = []
-    for row in rows:
-        row = {k: ("" if v is None else (str(v) if isinstance(v, (bool, float, int)) else v)) for k, v in row.items()}
-        raw = (row.get("photo_urls") or "").strip()
-        photos = [u.strip() for u in raw.split(",") if u.strip().startswith("http")]
-        if not row.get("main_photo_url") and photos:
-            row["main_photo_url"] = photos[0]
-        row["photos"] = photos
-        if row.get("correct_name"):
-            row["name"] = row["correct_name"]
-        items.append(row)
-
+    total_pages = max(1, min(math.ceil(total / PER_PAGE), MAX_PAGES))
     return jsonify({
-        "items": items,
+        "items": [_clean_item(r) for r in rows],
         "page": page,
-        "per_page": per_page,
-        "total": total_in_db,
-        "total_in_db": total_in_db,
-        "capped": False
+        "per_page": PER_PAGE,
+        "total": total,
+        "total_in_db": total,
+        "total_pages": total_pages,
+        "capped": total > MAX_PAGES * PER_PAGE,
+        "max_rows": MAX_PAGES * PER_PAGE,
     })
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/app", f"{SITE_URL}/leads"]
+    urls += [f"{SITE_URL}/leads/{c['slug']}" for c in indexable_combos()]
+    body = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    body += [f"<url><loc>{xml_escape(u)}</loc></url>" for u in urls]
+    body.append("</urlset>")
+    resp = Response("\n".join(body), mimetype="application/xml")
+    resp.headers["Cache-Control"] = "public, max-age=3600, s-maxage=86400"
+    return resp
+
 
 @app.route("/robots.txt")
 def robots_txt():
-    body = (
-        "User-agent: *\n"
-        "Disallow:\n"
-        "\n"
-        "Sitemap: https://leadsignal.halim.pro/sitemap.xml\n"
-    )
+    body = "User-agent: *\nDisallow: /search\nDisallow: /meta\nDisallow: /stats\n\nSitemap: " + SITE_URL + "/sitemap.xml\n"
     return Response(body, mimetype="text/plain")
 
-@app.before_request
-def redirect_old_domain():
-    if request.host == "maps-scraper-gray.vercel.app":
-        new_url = request.url.replace("maps-scraper-gray.vercel.app", "leadsignal.halim.pro")
-        return redirect(new_url, code=301)
+
+@app.errorhandler(404)
+def not_found(_):
+    return render_template("404.html"), 404
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
