@@ -1,6 +1,6 @@
 # LeadSignal
 
-A Google Maps lead pipeline and search tool. A scheduled scraper collects business listings city by city, a cleaning and enrichment stage normalizes them, everything lands in Postgres (Supabase), and a Flask app on Vercel lets anyone browse and export the results.
+A Google Maps lead pipeline and search tool. A scraper collected business listings city by city, a cleaning and enrichment stage normalizes them, everything lands in Postgres (Supabase), and a Flask app on Vercel lets anyone browse and export the results.
 
 Live: [leadsignal.halim.pro](https://leadsignal.halim.pro)
 
@@ -10,14 +10,14 @@ LeadSignal is a portfolio project. It is free to use and is not a commercial pro
 
 - About 715,000 business listings across roughly 330 cities and 60 categories
 - 83% of listings have a phone number
-- A new city is scraped every day by GitHub Actions, with no manual steps
+- Collection ran daily on GitHub Actions, one city per run, with no manual steps. The schedule is switched off and the dataset is frozen; the workflow can still be started by hand
 - About 11,000 indexable city and category pages generated from the data
 
 ## How it works
 
 ```mermaid
 flowchart LR
-    A[GitHub Actions<br/>daily schedule] --> B[maps_scraper.py<br/>Selenium + undetected-chromedriver]
+    A[GitHub Actions<br/>manual trigger] --> B[maps_scraper.py<br/>Selenium + undetected-chromedriver]
     B --> C[csv_cleaner.py<br/>normalize, dedupe]
     C --> D[phone_enricher.py<br/>revisit profiles, E.164 phones]
     D --> E[supabase_push.py<br/>batch upsert on profile_url]
@@ -66,7 +66,7 @@ db/supabase_push.py        Batch upsert into Supabase
 db/schema.sql              Database schema, functions, trigger, policies
 templates/                 Landing page, search tool, SEO pages
 tests/                     pytest suite for the app and the cleaner
-.github/workflows/         Daily scrape and CI
+.github/workflows/         Manual scrape, DB maintenance and CI
 ```
 
 ## Running locally
