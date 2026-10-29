@@ -16,6 +16,8 @@ COMBOS = [
     ["gym", "Cairo, Egypt", 150, 140, 90],
     ["gym", "London, United Kingdom", 300, 280, 250],
     ["florist", "London, United Kingdom", 3, 3, 1],
+    ["gym", "Texas, USA", 40, 35, 30],
+    ["cafes", "Zamalek, Egypt", 25, 20, 5],
 ]
 
 ROWS = [
@@ -190,8 +192,61 @@ def test_stats_and_meta(http):
 
 def test_app_page_renders_dropdowns(http):
     html = http.get("/app").get_data(as_text=True)
-    assert '<option value="London, United Kingdom">' in html
+    assert '<option value="London, United Kingdom" data-label="London" data-n="303">' in html
     assert '<option value="gym">Gym</option>' in html
+    assert '<optgroup label="Egypt">' in html
+    assert "leadsignal.app" not in html
+
+
+def test_location_groups_come_only_from_combos(fake):
+    groups = app_module.location_groups()
+    countries = [g["country"] for g in groups]
+    assert countries == ["Egypt", "USA", "United Kingdom"]
+    egypt = {i["value"]: i for i in groups[0]["items"]}
+    assert set(egypt) == {"Cairo, Egypt", "Zamalek, Egypt"}
+    assert egypt["Cairo, Egypt"]["n"] == 172
+    assert egypt["Zamalek, Egypt"]["label"] == "Zamalek (Cairo district)"
+    assert groups[1]["items"][0]["label"] == "Texas (whole state)"
+
+
+def test_categories_endpoint_lists_city_categories_with_counts(http):
+    body = http.get("/categories?location=London,%20United%20Kingdom").get_json()
+    assert [(i["category"], i["n"]) for i in body["items"]] == [("florist", 3), ("gym", 300)]
+    assert body["total"] == 303
+    assert http.get("/categories?location=Nowhere").get_json()["items"] == []
+    assert http.get("/categories").status_code == 400
+
+
+def test_export_returns_top_rows_in_one_query(http, fake):
+    body = http.get("/search?location=Cairo,%20Egypt&page=3&export=1").get_json()
+    rng = [c for c in fake.queries[-1] if c[0] == "range"][0]
+    assert rng[1] == (0, 99)
+    assert body["page"] == 1
+
+
+def test_featured_combos_skip_missing_and_thin(fake):
+    picks = app_module.featured_combos(3)
+    assert len(picks) == 3
+    assert len({p["location"] for p in picks}) == 3
+    assert all(p["n"] >= app_module.SITEMAP_MIN_ROWS for p in picks)
+
+
+def test_landing_renders_stats_server_side(http):
+    html = http.get("/").get_data(as_text=True)
+    assert ">475<" in html
+    assert ">93%<" in html
+    assert 'data-count' not in html
+    assert "Alpha Gym" in html
+    assert "Abdelhalim" not in html
+
+
+def test_landing_falls_back_when_backend_down(http, fake):
+    def boom(*a, **k):
+        raise RuntimeError("down")
+
+    fake.rpc = boom
+    html = http.get("/").get_data(as_text=True)
+    assert "715,000" in html
 
 
 def test_stats_survives_backend_failure(http, fake):

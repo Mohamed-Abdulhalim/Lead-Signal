@@ -17,6 +17,7 @@ OLD_HOST = "maps-scraper-gray.vercel.app"
 
 PER_PAGE = 20
 MAX_PAGES = 5
+EXPORT_ROWS = PER_PAGE * MAX_PAGES
 SITEMAP_MIN_ROWS = 20
 META_TTL = 900
 COMBOS_TTL = 3600
@@ -31,6 +32,32 @@ SORTS = {
     "rating_desc": ["rating.desc.nullslast", "reviews_count.desc.nullslast"],
     "reviews_desc": ["reviews_count.desc.nullslast", "rating.desc.nullslast"],
     "name_asc": ["name"],
+}
+
+FALLBACK_STATS = {"row_count": 715000, "phone_pct": 83, "locations": 330, "categories": 60}
+FEATURED = [
+    ("dentists", "Dubai, United Arab Emirates"),
+    ("restaurants", "Cairo, Egypt"),
+    ("gym", "London, United Kingdom"),
+    ("cafes", "Istanbul, Turkey"),
+    ("clinics", "Riyadh, Saudi Arabia"),
+    ("real estate", "Toronto, Canada"),
+]
+US_STATES = {
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+    "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+    "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+    "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+    "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
+    "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
+    "Washington", "West Virginia", "Wisconsin", "Wyoming",
+}
+CITY_DISTRICTS = {
+    "Heliopolis, Egypt": "Cairo",
+    "Maadi, Egypt": "Cairo",
+    "Nasr City, Egypt": "Cairo",
+    "New Cairo, Egypt": "Cairo",
+    "Zamalek, Egypt": "Cairo",
 }
 
 _sb = None
@@ -118,6 +145,120 @@ def lead_stats():
     return _cached("stats", STATS_TTL, lambda: _rpc("lead_stats") or {}, {})
 
 
+def display_stats():
+    s = lead_stats()
+    out = {}
+    for key, fallback in FALLBACK_STATS.items():
+        try:
+            value = int(s.get(key) or 0)
+        except (TypeError, ValueError):
+            value = 0
+        out[key] = value or fallback
+    out["pages"] = len(indexable_combos())
+    return out
+
+
+def _split_location(location):
+    if ", " in location:
+        place, country = location.rsplit(", ", 1)
+        return place, country
+    return location, "Other"
+
+
+def _location_label(location, place):
+    if location in CITY_DISTRICTS:
+        return f"{place} ({CITY_DISTRICTS[location]} district)"
+    if location.endswith(", USA") and place in US_STATES:
+        return f"{place} (whole state)"
+    return place
+
+
+def location_groups():
+    by_location = combo_index()["by_location"]
+    groups = {}
+    for location, combos in by_location.items():
+        total = sum(c["n"] for c in combos)
+        if total <= 0:
+            continue
+        place, country = _split_location(location)
+        groups.setdefault(country, []).append({
+            "value": location,
+            "label": _location_label(location, place),
+            "n": total,
+        })
+    if not groups:
+        for location in lead_meta()["locations"]:
+            place, country = _split_location(location)
+            groups.setdefault(country, []).append({"value": location, "label": _location_label(location, place), "n": 0})
+    out = []
+    for country in sorted(groups):
+        items = sorted(groups[country], key=lambda i: i["label"].lower())
+        out.append({"country": country, "items": items, "n": sum(i["n"] for i in items)})
+    return out
+
+
+def categories_for(location):
+    combos = combo_index()["by_location"].get(location, [])
+    items = [{"category": c["category"], "label": c["category"].title(), "n": c["n"], "n_phone": c["n_phone"]} for c in combos if c["n"] > 0]
+    items.sort(key=lambda c: c["label"])
+    return items
+
+
+def featured_combos(limit=5):
+    by_slug = combo_index()["by_slug"]
+    picks = []
+    seen_locations = set()
+    for category, location in FEATURED:
+        combo = by_slug.get(_make_slug(category, location))
+        if combo and combo["n"] >= SITEMAP_MIN_ROWS and location not in seen_locations:
+            picks.append(combo)
+            seen_locations.add(location)
+    if len(picks) < limit:
+        for combo in sorted(by_slug.values(), key=lambda c: -c["n"]):
+            if combo["location"] in seen_locations:
+                continue
+            picks.append(combo)
+            seen_locations.add(combo["location"])
+            if len(picks) >= limit:
+                break
+    return [
+        {
+            "category": c["category"],
+            "location": c["location"],
+            "category_title": c["category"].title(),
+            "place": _split_location(c["location"])[0],
+            "n": c["n"],
+        }
+        for c in picks[:limit]
+    ]
+
+
+def landing_sample():
+    picks = featured_combos(1)
+    if not picks:
+        return None
+    combo = picks[0]
+
+    def load():
+        q = (
+            _get_sb()
+            .table(LEADS_TABLE)
+            .select(SAMPLE_COLUMNS)
+            .eq("category", combo["category"])
+            .eq("query_location", combo["location"])
+            .not_.is_("phone", None)
+            .order("rating.desc.nullslast")
+            .order("reviews_count.desc.nullslast")
+            .limit(4)
+        )
+        return [_clean_item(r) for r in (q.execute().data or [])]
+
+    rows = _cached("landing_sample", COMBOS_TTL, load, [])
+    if not rows:
+        return None
+    return {"combo": combo, "rows": rows}
+
+
 def combo_index():
     def load():
         rows = _rpc("get_lead_combos", {"min_n": 1}) or []
@@ -190,7 +331,7 @@ def privacy():
 def landing():
     if request.method == "HEAD":
         return "", 200
-    return render_template("index.html")
+    return render_template("index.html", stats=display_stats(), sample=landing_sample())
 
 
 @app.route("/app", methods=["GET", "HEAD"])
@@ -198,7 +339,25 @@ def tool():
     if request.method == "HEAD":
         return "", 200
     meta = lead_meta()
-    return render_template("app.html", categories=meta["categories"], locations=meta["locations"])
+    return render_template(
+        "app.html",
+        categories=meta["categories"],
+        location_groups=location_groups(),
+        featured=featured_combos(5),
+        stats=display_stats(),
+        max_rows=EXPORT_ROWS,
+    )
+
+
+@app.get("/categories")
+def categories():
+    location = (request.args.get("location") or "").strip()
+    if not location:
+        return jsonify({"location": "", "items": [], "error": "location_required"}), 400
+    items = categories_for(location)
+    resp = jsonify({"location": location, "items": items, "total": sum(i["n"] for i in items)})
+    resp.headers["Cache-Control"] = "public, max-age=300, s-maxage=3600"
+    return resp
 
 
 @app.get("/meta")
@@ -299,6 +458,10 @@ def search():
     location = (request.args.get("location") or "").strip()
     page = max(1, min(request.args.get("page", default=1, type=int) or 1, MAX_PAGES))
     sort = (request.args.get("sort") or "rating_desc").strip()
+    export = request.args.get("export") == "1"
+    if export:
+        page = 1
+    size = EXPORT_ROWS if export else PER_PAGE
 
     if not location:
         return jsonify({"items": [], "page": 1, "per_page": PER_PAGE, "total": 0, "error": "location_required"}), 400
@@ -321,18 +484,18 @@ def search():
 
     try:
         if plain:
-            q = _build_search(location, category, filters, sort, None).range(offset, offset + PER_PAGE - 1)
+            q = _build_search(location, category, filters, sort, None).range(offset, offset + size - 1)
             rows = _retry(q.execute).data or []
             combos = combo_index()["by_location"].get(location, [])
             total = sum(c["n"] for c in combos if not category or c["category"] == category)
             if not total:
                 total = offset + len(rows)
         else:
-            q = _build_search(location, category, filters, sort, "exact").range(offset, offset + PER_PAGE - 1)
+            q = _build_search(location, category, filters, sort, "exact").range(offset, offset + size - 1)
             try:
                 res = _retry(q.execute, tries=1)
             except Exception:
-                q = _build_search(location, category, filters, sort, "planned").range(offset, offset + PER_PAGE - 1)
+                q = _build_search(location, category, filters, sort, "planned").range(offset, offset + size - 1)
                 res = _retry(q.execute)
             rows = res.data or []
             total = res.count or (offset + len(rows))
@@ -347,8 +510,8 @@ def search():
         "total": total,
         "total_in_db": total,
         "total_pages": total_pages,
-        "capped": total > MAX_PAGES * PER_PAGE,
-        "max_rows": MAX_PAGES * PER_PAGE,
+        "capped": total > EXPORT_ROWS,
+        "max_rows": EXPORT_ROWS,
     })
 
 
@@ -366,7 +529,7 @@ def sitemap():
 
 @app.route("/robots.txt")
 def robots_txt():
-    body = "User-agent: *\nDisallow: /search\nDisallow: /meta\nDisallow: /stats\n\nSitemap: " + SITE_URL + "/sitemap.xml\n"
+    body = "User-agent: *\nDisallow: /search\nDisallow: /meta\nDisallow: /stats\nDisallow: /categories\n\nSitemap: " + SITE_URL + "/sitemap.xml\n"
     return Response(body, mimetype="text/plain")
 
 
