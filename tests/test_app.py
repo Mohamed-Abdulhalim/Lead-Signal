@@ -237,7 +237,8 @@ def test_landing_renders_stats_server_side(http):
     assert ">93%<" in html
     assert 'data-count' not in html
     assert "Alpha Gym" in html
-    assert "Abdelhalim" not in html
+    assert "Mohamed Abdelhalim" in html
+    assert "Mohamed Abdulhalim" not in html
 
 
 def test_landing_falls_back_when_backend_down(http, fake):
@@ -267,3 +268,24 @@ def test_safe_url():
 def test_slugify_matches_existing_urls():
     assert app_module._make_slug("IT company", "Düsseldorf, Germany") == "it-company-düsseldorf-germany"
     assert app_module._make_slug("car rental", "Suez, Egypt") == "car-rental-suez-egypt"
+
+
+@pytest.mark.parametrize("path", ["/", "/app", "/leads/gym-cairo-egypt", "/privacy"])
+def test_no_portfolio_wording_and_correct_name(http, path):
+    html = http.get(path).get_data(as_text=True)
+    assert "portfolio" not in html.lower()
+    assert "Mohamed Abdulhalim" not in html
+    assert "Mohamed Abdelhalim" in html
+
+
+@pytest.mark.parametrize("path", ["/", "/app", "/leads/gym-cairo-egypt"])
+def test_data_date_is_shown(http, path):
+    html = http.get(path).get_data(as_text=True)
+    assert app_module.DATA_AS_OF in html
+    assert app_module.DATA_AS_OF == "October 15, 2026"
+
+
+def test_landing_faq_explains_data_age(http):
+    html = http.get("/").get_data(as_text=True)
+    assert "Is the data up to date?" in html
+    assert "Collection stopped on October 15, 2026" in html

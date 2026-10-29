@@ -4,13 +4,13 @@ A Google Maps lead pipeline and search tool. A scraper collected business listin
 
 Live: [leadsignal.halim.pro](https://leadsignal.halim.pro)
 
-LeadSignal is a portfolio project. It is free to use and is not a commercial product.
+LeadSignal is free to use and has no paid plans. The dataset is a snapshot: collection stopped on October 15, 2026.
 
 ## At a glance
 
 - About 715,000 business listings across roughly 330 cities and 60 categories
 - 83% of listings have a phone number
-- Collection ran daily on GitHub Actions, one city per run, with no manual steps. The schedule is switched off and the dataset is frozen; the workflow can still be started by hand
+- Collection ran daily on GitHub Actions, one city per run, with no manual steps. Collection stopped on October 15, 2026, so the dataset is frozen; the workflow can still be started by hand
 - About 11,000 indexable city and category pages generated from the data
 
 ## How it works
@@ -102,4 +102,4 @@ py -m pytest
 
 ## Author
 
-Mohamed Abdulhalim, [halim.pro](https://halim.pro) · [LinkedIn](https://www.linkedin.com/in/halim99/)
+Mohamed Abdelhalim, [halim.pro](https://halim.pro) · [LinkedIn](https://www.linkedin.com/in/halim99/)
