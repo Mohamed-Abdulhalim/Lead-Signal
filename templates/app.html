@@ -48,7 +48,7 @@ svg { display: block; }
 .top-links a { padding: 8px 12px; border-radius: 6px; color: rgba(255,255,255,.6); font-size: 14px; font-weight: 600; transition: color .15s, background .15s; }
 .top-links a:hover { color: var(--white); background: rgba(255,255,255,.08); }
 
-.search-band { background: var(--black); color: var(--white); padding: 32px 0 28px; position: relative; overflow: hidden; }
+.search-band { background: var(--black); color: var(--white); padding: 32px 0 28px; position: relative; z-index: 5; }
 .search-band::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, transparent, transparent 38px, rgba(241,211,2,.04) 38px, rgba(241,211,2,.04) 40px); pointer-events: none; }
 .search-band .wrap { position: relative; }
 .band-title { font-family: var(--font-display); font-size: clamp(30px, 4.4vw, 46px); font-weight: 900; text-transform: uppercase; line-height: 1; letter-spacing: -.3px; }
@@ -68,7 +68,7 @@ select.control { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://
 
 .combo { position: relative; }
 .combo-input { padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
-.combo-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #fff; color: var(--black); border: 1.5px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); max-height: 340px; overflow-y: auto; z-index: 50; display: none; overscroll-behavior: contain; }
+.combo-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #fff; color: var(--black); border: 1.5px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); max-height: min(360px, 60vh); overflow-y: auto; z-index: 50; display: none; overscroll-behavior: contain; }
 .combo-list.show { display: block; }
 .combo-group { position: sticky; top: 0; background: var(--offwhite); font-size: 11px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding: 7px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
 .combo-opt { padding: 10px 14px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
@@ -492,7 +492,22 @@ html:not(.js) .combo { display: none; }
     locList.appendChild(frag);
   }
 
-  function openCombo() { renderCombo(locInput.value === locDisplay(locSelect.value) ? '' : locInput.value); locList.classList.add('show'); locInput.setAttribute('aria-expanded', 'true'); }
+  function openCombo() {
+    renderCombo(locInput.value === locDisplay(locSelect.value) ? '' : locInput.value);
+    locList.classList.add('show');
+    locInput.setAttribute('aria-expanded', 'true');
+    const current = comboItems.findIndex(o => o.dataset.value === locSelect.value);
+    if (current >= 0) highlight(current);
+    else locList.scrollTop = 0;
+  }
+  function revealOption(opt) {
+    const header = locList.querySelector('.combo-group');
+    const pad = header ? header.offsetHeight : 0;
+    const top = opt.offsetTop - pad;
+    const bottom = opt.offsetTop + opt.offsetHeight;
+    if (top < locList.scrollTop) locList.scrollTop = top;
+    else if (bottom > locList.scrollTop + locList.clientHeight) locList.scrollTop = bottom - locList.clientHeight;
+  }
   function closeCombo() { locList.classList.remove('show'); locInput.setAttribute('aria-expanded', 'false'); locInput.removeAttribute('aria-activedescendant'); }
   function highlight(i) {
     if (!comboItems.length) return;
@@ -500,7 +515,7 @@ html:not(.js) .combo { display: none; }
     comboItems.forEach((o, j) => o.setAttribute('aria-selected', j === comboIndex ? 'true' : 'false'));
     const active = comboItems[comboIndex];
     locInput.setAttribute('aria-activedescendant', active.id);
-    active.scrollIntoView({ block: 'nearest' });
+    revealOption(active);
   }
 
   async function chooseLocation(value, userAction) {
@@ -513,7 +528,9 @@ html:not(.js) .combo { display: none; }
 
   locInput.addEventListener('focus', () => { locInput.select(); openCombo(); });
   locInput.addEventListener('input', () => { renderCombo(locInput.value); locList.classList.add('show'); locInput.setAttribute('aria-expanded', 'true'); if (comboItems.length) highlight(0); });
-  locInput.addEventListener('blur', () => { setTimeout(() => { closeCombo(); locInput.value = locDisplay(locSelect.value); }, 120); });
+  locInput.addEventListener('blur', () => { closeCombo(); locInput.value = locDisplay(locSelect.value); });
+  locList.addEventListener('mousedown', e => e.preventDefault());
+  document.addEventListener('pointerdown', e => { if (!e.target.closest('#combo')) closeCombo(); });
   locInput.addEventListener('keydown', e => {
     if (e.key === 'ArrowDown') { e.preventDefault(); if (!locList.classList.contains('show')) openCombo(); highlight(comboIndex + 1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); highlight(comboIndex - 1); }
