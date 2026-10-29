@@ -4,12 +4,12 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="google-site-verification" content="D1OD8QvSGFjCnXimbrykljDqjGLee6LBWZFQ4KSWd-k" />
-<title>LeadSignal: A {{ "{:,}".format(stats.row_count) }}-Business Google Maps Data Pipeline</title>
-<meta name="description" content="A Google Maps lead pipeline built end to end by Mohamed Abdulhalim: scraping, cleaning, phone enrichment, Postgres and a search tool over {{ "{:,}".format(stats.row_count) }} businesses in {{ stats.locations }} cities.">
+<title>LeadSignal: Search {{ "{:,}".format(stats.row_count) }} Businesses by City and Category</title>
+<meta name="description" content="Search {{ "{:,}".format(stats.row_count) }} business listings in {{ stats.locations }} cities with phone numbers, websites, addresses and ratings. Free CSV export. Built by Mohamed Abdelhalim. Data collected up to {{ data_as_of }}.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://leadsignal.halim.pro/"/>
-<meta property="og:title" content="LeadSignal: a {{ "{:,}".format(stats.row_count) }}-business data pipeline">
-<meta property="og:description" content="Scraping, cleaning, enrichment, Postgres and a search tool, built end to end. Search the dataset and export CSVs for free.">
+<meta property="og:title" content="LeadSignal: search {{ "{:,}".format(stats.row_count) }} businesses by city and category">
+<meta property="og:description" content="Phone numbers, websites, addresses and ratings for businesses in {{ stats.locations }} cities. Free to search and export.">
 <meta property="og:url" content="https://leadsignal.halim.pro/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://leadsignal.halim.pro/og-image.png">
@@ -194,7 +194,7 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
     </div>
     <a class="btn-nav" href="/app">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      Search the data
+      Search
     </a>
   </div>
 </nav>
@@ -202,13 +202,13 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
 <section class="hero">
   <div class="hero-inner">
     <div>
-      <div class="badge">Portfolio project · built end to end</div>
-      <h1 class="h1"><em>{{ "{:,}".format(stats.row_count // 1000) }}K</em> businesses.<br>One <span class="hollow">pipeline.</span></h1>
-      <p class="lede">LeadSignal is a Google Maps data pipeline I built alone: a scraper, a cleaning and phone enrichment stage, a Postgres database, and a search tool on top. <strong>The dataset is a frozen snapshot, and you can search it and export CSVs for free.</strong></p>
+      <div class="badge">Free to search · Data up to {{ data_as_of }}</div>
+      <h1 class="h1"><em>{{ "{:,}".format(stats.row_count // 1000) }}K</em> businesses.<br>One <span class="hollow">search.</span></h1>
+      <p class="lede">Search {{ "{:,}".format(stats.row_count) }} business listings by city and category, with phone numbers, websites, addresses and ratings, and export the results to CSV. <strong>Free, no signup.</strong> Built end to end by Mohamed Abdelhalim, from the scraper to the database to this site.</p>
       <div class="ctas">
         <a class="btn-primary" href="/app">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          Search the dataset
+          Search businesses
         </a>
         <a class="btn-outline" href="https://github.com/Mohamed-Abdulhalim/lead-signal" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
@@ -239,7 +239,7 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
         </div>
         {% endfor %}
       </div>
-      <div class="sample-foot">Live rows from the database, not a mockup.</div>
+      <div class="sample-foot">Real rows from the database, not a mockup.</div>
     </div>
     {% endif %}
   </div>
@@ -258,7 +258,7 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
   <div class="container">
     <div class="eyebrow">How it's built</div>
     <h2 class="section-h">From a Maps search<br>to a clean row</h2>
-    <p class="section-p">Each run took one city through five stages on GitHub Actions with no manual steps. Collection is switched off now, so the data is frozen, but the whole pipeline still runs on demand.</p>
+    <p class="section-p">Each run took one city through five stages on GitHub Actions with no manual steps. Collection stopped on {{ data_as_of }}, so the data is frozen, but the whole pipeline still runs on demand.</p>
 
     <div class="pipeline">
       <div class="stage">
@@ -353,7 +353,7 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
     </div>
     <a class="btn-white" href="/app">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      Search the dataset
+      Search businesses
     </a>
   </div>
 </div>
@@ -363,8 +363,8 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
     <div class="eyebrow">FAQ</div>
     <h2 class="section-h">Common questions</h2>
     <div class="faq-list">
-      <details class="faq"><summary>Is it free?</summary><div class="faq-body">Yes. LeadSignal is a portfolio project, not a commercial product. Any search shows the top 100 results by your sort order, and you can export them to CSV with no signup.</div></details>
-      <details class="faq"><summary>Is the data up to date?</summary><div class="faq-body">No. Collection has stopped and the dataset is a frozen snapshot. Some businesses will have moved, closed or changed numbers since they were collected.</div></details>
+      <details class="faq"><summary>Is it free?</summary><div class="faq-body">Yes. LeadSignal is a free tool built by Mohamed Abdelhalim. Any search shows the top 100 results by your sort order, and you can export them to CSV with no signup.</div></details>
+      <details class="faq"><summary>Is the data up to date?</summary><div class="faq-body">Not live. Collection stopped on {{ data_as_of }} and the data is not being refreshed. Listings were collected at different times before that date, so some are older. Businesses move, close and change phone numbers all the time, so check anything important before you rely on it.</div></details>
       <details class="faq"><summary>Which cities are covered?</summary><div class="faq-body">{{ stats.locations }} locations across the Gulf, Egypt, the UK, Europe, North America and Asia. A few are whole US states or Cairo districts rather than cities, and the search tool labels those. The tool's city list comes straight from the database, so it only offers places that have data.</div></details>
       <details class="faq"><summary>Is this affiliated with Google?</summary><div class="faq-body">No. LeadSignal uses publicly available business listing data and is not affiliated with, endorsed by, or connected to Google.</div></details>
       <details class="faq"><summary>How should I use the data?</summary><div class="faq-body">For legitimate outreach and research only. Follow the anti-spam and consent rules where you and your recipients are. Listings are removed on request; see the privacy page.</div></details>
@@ -377,20 +377,20 @@ footer { background: var(--black); border-top: 3px solid var(--yellow); padding:
   <div class="footer-inner">
     <div>
       <div class="footer-name">LeadSignal</div>
-      <p class="footer-desc">A Google Maps lead pipeline and search tool, built end to end by Mohamed Abdulhalim: scraping, cleaning, enrichment, Postgres and the web app.</p>
+      <p class="footer-desc">A Google Maps lead pipeline and search tool, built end to end by Mohamed Abdelhalim: scraping, cleaning, enrichment, Postgres and the web app.</p>
     </div>
     <div class="footer-links">
       <a href="/app">Search</a>
       <a href="/leads">Browse lists</a>
       <a href="/privacy">Privacy</a>
-      <a href="https://halim.pro" target="_blank" rel="noopener">Portfolio</a>
+      <a href="https://halim.pro" target="_blank" rel="noopener">halim.pro</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://github.com/Mohamed-Abdulhalim/lead-signal" target="_blank" rel="noopener">Source</a>
       <a href="https://startupfa.me/s/leadsignal?utm_source=leadsignal.halim.pro" target="_blank" rel="noopener"><img src="https://startupfa.me/badges/featured-badge.webp" alt="LeadSignal - Featured on Startup Fame" width="171" height="54" loading="lazy"/></a>
       <a href="https://fazier.com/launches/leadsignal-app.vercel.app" target="_blank" rel="noopener"><img src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=neutral" width="120" alt="Fazier badge" loading="lazy"/></a>
     </div>
   </div>
-  <div class="footer-copy">© <span id="year">2026</span> LeadSignal · Built by Mohamed Abdulhalim · Data sourced from publicly available business listings. Not affiliated with Google.</div>
+  <div class="footer-copy">© <span id="year">2026</span> LeadSignal · Built by Mohamed Abdelhalim · Data collected up to {{ data_as_of }} from publicly available business listings. Not affiliated with Google.</div>
 </footer>
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>

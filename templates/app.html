@@ -223,7 +223,7 @@ html:not(.js) .combo { display: none; }
 <section class="search-band">
   <div class="wrap">
     <h1 class="band-title">Search <em>{{ "{:,}".format(stats.row_count) }}</em> businesses</h1>
-    <p class="band-sub">{{ stats.locations }} cities, {{ stats.categories }} categories, {{ stats.phone_pct }}% with a phone number. Pick a city, then a category. Results are sorted by rating, and the top {{ max_rows }} of any search can be exported to CSV.</p>
+    <p class="band-sub">{{ stats.locations }} cities, {{ stats.categories }} categories, {{ stats.phone_pct }}% with a phone number. Pick a city, then a category. Results are sorted by rating, and the top {{ max_rows }} of any search can be exported to CSV. Data collected up to {{ data_as_of }}.</p>
 
     <form id="search-form" class="search-row" action="/app" method="GET" autocomplete="off">
       <div class="field">
@@ -339,11 +339,11 @@ html:not(.js) .combo { display: none; }
       <a href="/">About the project</a>
       <a href="/leads">Browse lists</a>
       <a href="/privacy">Privacy</a>
-      <a href="https://halim.pro" target="_blank" rel="noopener">Portfolio</a>
+      <a href="https://halim.pro" target="_blank" rel="noopener">halim.pro</a>
       <a href="https://www.linkedin.com/in/halim99/" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://github.com/Mohamed-Abdulhalim/lead-signal" target="_blank" rel="noopener">Source</a>
     </div>
-    <div class="footer-copy">© <span id="year">2026</span> LeadSignal · Built by Mohamed Abdulhalim · A frozen snapshot of publicly available business listings. Not affiliated with Google.</div>
+    <div class="footer-copy">© <span id="year">2026</span> LeadSignal · Built by Mohamed Abdelhalim · Data collected up to {{ data_as_of }} from publicly available business listings. Not affiliated with Google.</div>
   </div>
 </footer>
 

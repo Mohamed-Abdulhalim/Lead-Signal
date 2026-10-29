@@ -13,6 +13,7 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "").strip()
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "").strip()
 LEADS_TABLE = (os.environ.get("LEADS_TABLE") or os.environ.get("SUPABASE_TABLE") or "production_maps").strip()
 SITE_URL = "https://leadsignal.halim.pro"
+DATA_AS_OF = "October 15, 2026"
 OLD_HOST = "maps-scraper-gray.vercel.app"
 
 PER_PAGE = 20
@@ -296,6 +297,11 @@ def _clean_item(row):
     item["website"] = _safe_url(item.get("website"))
     item["profile_url"] = _safe_url(item.get("profile_url"))
     return item
+
+
+@app.context_processor
+def inject_globals():
+    return {"data_as_of": DATA_AS_OF}
 
 
 @app.before_request
