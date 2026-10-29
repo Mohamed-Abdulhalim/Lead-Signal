@@ -46,7 +46,8 @@ Row level security is on for every table. The public role can read listings and 
 
 ## The web app
 
-- `/app`: search by city and category, filter by rating, phone, website or address, sort, and export the visible results to CSV. Each search returns the top 100 results by rating.
+- `/app`: pick a city from a searchable list grouped by country, then a category that is guaranteed to have data for that city (with counts). Filter by rating, phone, website or address, sort, and export the top 100 rows of the search to CSV. The city and category lists are read from `lead_combos`, so they only offer what is in the database.
+- `/categories?location=...`: categories and counts for one city, from `lead_combos`.
 - `/leads/<category>-<city>`: server-rendered pages with real counts and a sample of listings. Pages for combinations with fewer than 20 listings are marked `noindex`.
 - `/sitemap.xml`: generated from `lead_combos`.
 
